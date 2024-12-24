@@ -1,9 +1,11 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { GetServerSideProps } from "next";
 import { prisma } from "@/prisma/client";
 import jwt from "jsonwebtoken";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 // Define TypeScript types for the props
 interface UserData {
@@ -14,15 +16,17 @@ interface UserData {
 
 interface NavbarProps {
   userData: UserData;
+  currentRoute: string;
 }
 
-const Navbar = ({ userData }: NavbarProps) => {
-  console.log(userData);
+const Navbar = ({ userData, currentRoute }: NavbarProps) => {
+  const pathname = usePathname();
+  const isActiveRoute = (route: string) => pathname === route;
   return (
     <div className="w-[95%] md:w-[92%] h-[70px] flex justify-between items-center p-5">
       {/* Logo */}
       <Link href="/pasaydan/com">
-        <p className="-tracking-tight">Pasaydan</p>
+        <p className="-tracking-tighter text-xl text-slate-800">Pasaydan</p>
       </Link>
       {/* Navigation Links */}
       <div className="hidden md:block">
@@ -30,18 +34,58 @@ const Navbar = ({ userData }: NavbarProps) => {
           {/* <Link href="/pasaydan/com">
             <li className="hover:text-slate-700 cursor-pointer">Home</li>
           </Link> */}
-          <Link href="/pasaydan/com/community">
-            <li className="hover:text-slate-700 cursor-pointer">Donate</li>
+          <Link href="/pasaydan/com/donate">
+            <li
+              className={`cursor-pointer ${
+                isActiveRoute("/pasaydan/com/donate")
+                  ? "text-blue-700"
+                  : "text-gray-700"
+              } hover:text-slate-700`}
+            >
+              Donate
+            </li>
           </Link>
           <Link href="/pasaydan/com/drive">
-            <li className="hover:text-slate-700 cursor-pointer">Drive</li>
+            <li
+              className={`cursor-pointer ${
+                isActiveRoute("/pasaydan/com/drive")
+                  ? "text-blue-700"
+                  : "text-gray-700"
+              } hover:text-slate-700`}
+            >
+              Drive
+            </li>
           </Link>
-          <li className="hover:text-slate-700 cursor-pointer">Contributions</li>
+          <li
+            className={`cursor-pointer ${
+              isActiveRoute("/pasaydan/com/contributions")
+                ? "text-blue-700"
+                : "text-gray-700"
+            } hover:text-slate-700`}
+          >
+            Contributions
+          </li>
           <Link href="/pasaydan/com/community">
-            <li className="hover:text-slate-700 cursor-pointer">Community</li>
+            <li
+              className={`cursor-pointer ${
+                isActiveRoute("/pasaydan/com/community")
+                  ? "text-blue-700"
+                  : "text-gray-700"
+              } hover:text-slate-700`}
+            >
+              Community
+            </li>
           </Link>
           <Link href="/pasaydan/com/about">
-            <li className="hover:text-slate-700 cursor-pointer">About</li>
+            <li
+              className={`cursor-pointer ${
+                isActiveRoute("/pasaydan/com/about")
+                  ? "text-blue-700"
+                  : "text-gray-700"
+              } hover:text-slate-700`}
+            >
+              About
+            </li>
           </Link>
         </ul>
       </div>
@@ -64,6 +108,19 @@ const Navbar = ({ userData }: NavbarProps) => {
       </div>
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
+  const userData = { email: "user@example.com" };
+  const currentRoute = req.url || "/pasaydan/com";
+
+  return {
+    props: {
+      userData,
+      currentRoute, // Pass current route to component
+    },
+  };
 };
 
 export default Navbar;
