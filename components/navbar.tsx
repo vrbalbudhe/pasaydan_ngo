@@ -16,10 +16,9 @@ interface UserData {
 
 interface NavbarProps {
   userData: UserData;
-  currentRoute: string;
 }
 
-const Navbar = ({ userData, currentRoute }: NavbarProps) => {
+const Navbar = ({ userData }: NavbarProps) => {
   const pathname = usePathname();
   const isActiveRoute = (route: string) => pathname === route;
   return (
@@ -108,19 +107,6 @@ const Navbar = ({ userData, currentRoute }: NavbarProps) => {
       </div>
     </div>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { req } = context;
-  const userData = { email: "user@example.com" };
-  const currentRoute = req.url || "/pasaydan/com";
-
-  return {
-    props: {
-      userData,
-      currentRoute, // Pass current route to component
-    },
-  };
 };
 
 export default Navbar;
