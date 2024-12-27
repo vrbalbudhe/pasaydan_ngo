@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GoLocation } from "react-icons/go";
+import { CiCirclePlus } from "react-icons/ci";
 import { MdOutlineAccessTime } from "react-icons/md";
 
 interface Drive {
@@ -20,13 +21,14 @@ interface Drive {
 export default function DriveInfo() {
   const { id } = useParams() as { id: string };
   const [DriveInformation, setDriveInformation] = useState<Drive | null>(null);
-  const [loading, setLoading] = useState<boolean>(true); // Add loading state
-  const [error, setError] = useState<string | null>(null); // Add error state
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [imagePaths, setImagePaths] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchDrive = async () => {
       try {
-        setLoading(true); // Set loading to true before fetching
+        setLoading(true);
         const response = await fetch(`/api/drive/${id}`);
 
         if (!response.ok) {
@@ -34,7 +36,9 @@ export default function DriveInfo() {
         }
 
         const data = await response.json();
+        setImagePaths(data?.photos);
         setDriveInformation(data);
+        console.log(data?.photos);
       } catch (error: any) {
         setError(
           error.message || "An error occurred while fetching the drive."
@@ -46,6 +50,8 @@ export default function DriveInfo() {
     fetchDrive();
   }, [id]);
 
+  const formattedPaths = imagePaths.map((path) => path.replace(/\\/g, "/"));
+  console.log(formattedPaths);
   if (loading) {
     return (
       <div className="w-full h-screen flex justify-center items-center text-center">
@@ -59,24 +65,17 @@ export default function DriveInfo() {
   }
 
   return (
-    <div className="w-[90%] min-h-screen justify-start flex flex-col items-center md:mb-10 mb-5">
-      <div className="w-full h-fit md:h-[400px] md:flex gap-5">
+    <div className="w-[80%] min-h-screen justify-start flex flex-col items-center md:mb-10 mb-5">
+      <div className="w-full h-fit md:h-[350px] md:flex gap-5">
         <div className="w-full md:w-[45%] h-full">
           <img
-            className="w-full h-full object-cover rounded-sm"
-            src="https://skift.com/wp-content/uploads/2022/06/GettyImages-1208049833-scaled-e1654782364566-1024x682.jpg"
+            className="w-full h-[300px] rounded-md object-cover md:rounded-md"
+            src={
+              formattedPaths.length > 0
+                ? `/${formattedPaths[0].replace("public/", "")}`
+                : "https://skift.com/wp-content/uploads/2022/06/GettyImages-1208049833-scaled-e1654782364566-1024x682.jpg" // Fallback image
+            }
           />
-          {/* {DriveInformation?.photos?.[0] ? (
-            <img
-              className="w-full h-[300px] object-cover rounded-md"
-              src={DriveInformation.photos[0]}
-              alt={DriveInformation.title}
-            />
-          ) : (
-            <div className="w-full h-[300px] flex justify-center items-center">
-              No Photos Available
-            </div>
-          )} */}
         </div>
         <div className="w-full md:w-[55%] h-fit p-2 flex flex-col">
           <div className="w-full flex-col h-1/3 gap-2 flex-wrap p-2 flex justify-center items-start">
@@ -111,15 +110,15 @@ export default function DriveInfo() {
         </div>
       </div>
       <div className="w-full h-full mt-2 md:mt-5 flex flex-col gap-2">
-        <div className="w-full gap-2 h-fit border-slate-300 rounded-lg flex flex-wrap">
-          {DriveInformation?.photos?.length ? (
-            DriveInformation.photos.map((photo, index) => (
+        <div className="w-full gap-4 h-fit border-slate-300 rounded-lg flex flex-wrap md:justify-start justify-center">
+          {formattedPaths?.length ? (
+            formattedPaths?.map((photo, index) => (
               <div
                 key={index}
-                className="w-[300px] h-[200px] bg-slate-200 rounded-md overflow-hidden"
+                className="md:w-[350px] w-full h-[210px] shadow-sm md:hover:scale-105 duration-500 rounded-md overflow-hidden"
               >
                 <img
-                  src={photo}
+                  src={`/${photo.replace("public/", "")}`}
                   alt={`Photo ${index + 1}`}
                   className="w-full h-full object-cover"
                 />

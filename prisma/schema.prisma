@@ -23,6 +23,7 @@ model Drive {
   startDate    String
   EndDate      String
   timeInterval String
+  photos       String[]
   createdAt    DateTime @default(now())
 }
 

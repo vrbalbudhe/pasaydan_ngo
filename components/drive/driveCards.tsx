@@ -67,6 +67,7 @@ export function DriveCards() {
           <SkeletonBox />
           <SkeletonBox />
           <SkeletonBox />
+          <SkeletonBox />
         </div>
       ) : error ? (
         <div className="w-full flex flex-wrap justify-start items-center gap-5 mb-10 text-center text-red-500">
@@ -80,7 +81,7 @@ export function DriveCards() {
         products?.slice(0, noOfDrives)?.map((product, index) => (
           <Card
             key={index}
-            className="md:w-[450px] w-full bg-[#2d232e] shadow-sm hover:shadow-md rounded-2xl border-none"
+            className="md:w-[450px] w-full bg-[#2d232e] shadow-sm hover:shadow-md rounded-lg border-none"
           >
             <CardHeader className="h-30">
               <CardTitle className="h-20 font-normal text-2xl text-white">
@@ -136,16 +137,18 @@ export function DriveCards() {
           </Card>
         ))
       )}
-      <div className="w-full md:mt-12 h-12 bg-[#2d232e] bottom-0 flex justify-center items-center rounded-sm">
-        <Button
-          className="bg-inherit hover:bg-slate-600 text-slate-100 hover:text-white"
-          onClick={() =>
-            setNoOfDrives((prev) => (prev !== null ? prev + 4 : 4))
-          }
-        >
-          Show More
-        </Button>
-      </div>
+      {products && noOfDrives > 4 && (
+        <div className="w-full md:mt-12 h-12 bg-[#2d232e] bottom-0 flex justify-center items-center rounded-sm">
+          <Button
+            className="bg-inherit hover:bg-slate-600 text-slate-100 hover:text-white"
+            onClick={() =>
+              setNoOfDrives((prev) => (prev !== null ? prev + 4 : 4))
+            }
+          >
+            Show More
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

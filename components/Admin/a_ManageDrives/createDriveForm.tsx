@@ -33,6 +33,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Time Interval must be at least 2 characters long" })
     .max(50),
+  photos: z.array(z.instanceof(File)).optional(), // Array of files for photo upload
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -40,26 +41,51 @@ type FormData = z.infer<typeof formSchema>;
 export default function CreateManageForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [files, setFiles] = useState<File[]>([]); // Track the uploaded files
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+    if (selectedFiles) {
+      setFiles(Array.from(selectedFiles));
+      setValue("photos", Array.from(selectedFiles)); // Set file values in the form
+    }
+  };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
     setError(null);
 
+    const formData = new FormData();
+
+    formData.append("title", data.title);
+    formData.append("location", data.location);
+    formData.append("description", data.description);
+    formData.append("status", data.status);
+    formData.append("dtype", data.dtype);
+    formData.append("startDate", data.startDate);
+    formData.append("EndDate", data.EndDate);
+    formData.append("timeInterval", data.timeInterval);
+
+    if (data.photos) {
+      data.photos.forEach((file) => {
+        formData.append("file", file);
+      });
+    }
+
+    console.log("this is testing:: ", formData);
     try {
       const response = await fetch("/api/drive/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -68,6 +94,7 @@ export default function CreateManageForm() {
 
       console.log("Drive created successfully");
     } catch (err: any) {
+      console.log(formData);
       setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -154,6 +181,24 @@ export default function CreateManageForm() {
           {errors.timeInterval && (
             <p className="text-red-500 text-sm">
               {errors.timeInterval?.message}
+            </p>
+          )}
+        </div>
+
+        {/* File Upload */}
+        <div className="mb-4">
+          <Label htmlFor="photos">Upload Photos</Label>
+          <input
+            type="file"
+            id="photos"
+            accept="image/*"
+            multiple
+            onChange={onFileChange}
+            className="p-2 rounded-md"
+          />
+          {files.length > 0 && (
+            <p className="text-green-500 text-sm">
+              {files.length} files selected
             </p>
           )}
         </div>
