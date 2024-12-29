@@ -17,8 +17,8 @@ export default async function Dashboard() {
 
   return (
     <div className="w-[90%] min-h-screen">
-      {/* <h1>Welcome to the Dashboard</h1>
-      <p>User Email: {user.email}</p> */}
+      <h1>Welcome to the Dashboard</h1>
+      <p>User Email: {user.email}</p>
     </div>
   );
 }

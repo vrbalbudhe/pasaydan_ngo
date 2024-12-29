@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Navigator from "../../components/navbar/navigator";
-import UserInformation from "../../components/navbar/userInformation";
+import UserInformation from "./userInformation";
 
 const Navbar = async () => {
   return (

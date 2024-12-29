@@ -1,17 +1,11 @@
 import { ReactNode } from "react";
 import Navbar from "./navbar";
 import Footer from "../../components/footer";
-import { headers } from "next/headers";
-
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default async function Layout({ children }: LayoutProps) {
-  const headersList = await headers();
-  const userHeader = headersList.get("x-user");
-  console.log("userHeader", userHeader);
-
   return (
     <div className="w-full min-h-screen flex justify-start items-center flex-col">
       <Navbar />

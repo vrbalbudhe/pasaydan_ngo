@@ -9,15 +9,15 @@ export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const response = NextResponse.next();
 
-  if (!token) {
-    response.headers.set("x-user", JSON.stringify({ guest: true }));
-    return response;
-  }
   // if (!token) {
-  //   console.log("No token found, redirecting to login...");
-  //   const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
-  //   return NextResponse.redirect(redirectUrl);
+  //   response.headers.set("x-user", JSON.stringify({ guest: true }));
+  //   return response;
   // }
+  if (!token) {
+    console.log("No token found, redirecting to login...");
+    const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
+    return NextResponse.redirect(redirectUrl);
+  }
 
   try {
     // Validate the JWT token
