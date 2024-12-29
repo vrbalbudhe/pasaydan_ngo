@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../../globals.css";
-import Layout from "@/components/layout";
+import Layout from "@/app/components/layout";
 import jwt from "jsonwebtoken";
 
 const geistSans = Geist({
@@ -21,17 +21,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  userData,
 }: {
   children: React.ReactNode;
-  userData: { email: string };
 }) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Layout userData={userData}>{children}</Layout>{" "}
+        <Layout>{children}</Layout>{" "}
       </body>
     </html>
   );

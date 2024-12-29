@@ -7,32 +7,42 @@ const secretKey = new TextEncoder().encode(
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
+  const response = NextResponse.next();
 
   if (!token) {
-    console.log("No token found, redirecting to login...");
-    const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
-    return NextResponse.redirect(redirectUrl);
+    response.headers.set("x-user", JSON.stringify({ guest: true }));
+    return response;
   }
+  // if (!token) {
+  //   console.log("No token found, redirecting to login...");
+  //   const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
+  //   return NextResponse.redirect(redirectUrl);
+  // }
 
   try {
+    // Validate the JWT token
     const { payload } = await jwtVerify(token, secretKey);
     console.log("Decoded JWT payload:", payload);
 
-    (req as any).user = payload;
+    // Proceed with the request if token is valid
+    response.headers.set("x-user", JSON.stringify(payload));
 
-    return NextResponse.next();
+    return response;
   } catch (error) {
+    const response = NextResponse.next();
     console.error("JWT verification failed:", error);
-    return NextResponse.redirect(
-      new URL("/pasaydan/auth/logsign", req.nextUrl.origin)
-    );
+    response.headers.set("x-user", JSON.stringify({ guest: true }));
+    return response;
   }
 }
 
+// Apply middleware only to specific routes
 export const config = {
   matcher: [
-    "/pasaydan/:nextData*.json",
-    "/pasaydan/admin",
-    "/pasaydan/admin/drives",
+    "/pasaydan/:nextData*.json", // JSON API routes (used in data fetching, not UI)
+    "/pasaydan/admin", // Admin dashboard (protected)
+    "/pasaydan/admin/drives", // Admin drives page (protected)
+    "/pasaydan/com/profile", // Profile page (protected)
+    "/pasaydan/com/:path*", // All other pages (protected)
   ],
 };

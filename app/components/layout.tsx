@@ -1,18 +1,20 @@
 import { ReactNode } from "react";
 import Navbar from "./navbar";
-import Footer from "./footer";
+import Footer from "../../components/footer";
+import { headers } from "next/headers";
 
 interface LayoutProps {
   children: ReactNode;
-  userData: {
-    email: string;
-  };
 }
 
-export default function Layout({ children, userData }: LayoutProps) {
+export default async function Layout({ children }: LayoutProps) {
+  const headersList = await headers();
+  const userHeader = headersList.get("x-user");
+  console.log("userHeader", userHeader);
+
   return (
     <div className="w-full min-h-screen flex justify-start items-center flex-col">
-      <Navbar userData={userData} />
+      <Navbar />
       <div className="w-[100%] min-h-screen flex justify-center items-start">
         <main className="w-full min-h-screen pt-5 flex justify-center items-start">
           {children}

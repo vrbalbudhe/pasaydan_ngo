@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z
@@ -20,6 +21,7 @@ type FormData = z.infer<typeof formSchema>;
 export function LoginSignup() {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -51,6 +53,7 @@ export function LoginSignup() {
         }
         const LoginedUser = await response.json();
         console.log(LoginedUser);
+        router.push("/pasaydan/com");
       } else {
         const response = await fetch("/api/auth/sign", {
           method: "POST",
