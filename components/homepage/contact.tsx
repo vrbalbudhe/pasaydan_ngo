@@ -57,16 +57,16 @@ function ContactUs() {
   };
 
   return (
-    <div className="w-full h-fit flex md:pt-20 md:pb-20 pt-0 pb-0 bg-[#edf6f9] justify-center items-center py-2 pl-2 pr-2 md:pr-2 md:pl-2">
+    <div className="w-full h-fit flex md:pt-20 md:pb-20 pt-0 pb-0 justify-center items-center py-2 pl-2 pr-2 md:pr-2 md:pl-2">
       <div className="w-[30%] h-full flex pl-2 p-2 justify-center items-center flex-col">
-        <h1 className="p-2 w-full h-[50%] text-7xl font-extrabold text-[#032d60]">
+        <h1 className="p-2 w-full h-[50%] text-7xl font-extrabold text-blue-500">
           Contact us
         </h1>
         <h1 className="p-5 w-full h-[50%] -tracking-tight text-md pl-2 text-slate-800 font-semibold">
           In case you have any query, or want any details about the type of{" "}
-          <span className="text-[#032d60] font-extrabold">Donations</span> or
+          <span className="text-blue-500 font-extrabold">Donations</span> or
           want to donate/ Participate in Our
-          <span className="text-[#032d60] font-extrabold">
+          <span className="text-blue-500 font-extrabold">
             {" "}
             Cycle Donation Drive.
           </span>

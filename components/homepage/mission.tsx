@@ -9,7 +9,7 @@ const Mission: React.FC = () => {
   return (
     <div>
       {/* Heading */}
-      <h2 className="text-5xl font-bold text-slate-900 text-centre mb-20">Our Vision and Mission</h2>
+      <h2 className="text-5xl font-bold text-slate-900 text-center mb-20">Our Vision and Mission</h2>
 
       <div className="flex flex-col md:flex-row justify-center items-center gap-8">
         {/* Vision Card */}
