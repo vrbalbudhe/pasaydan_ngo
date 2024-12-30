@@ -40,14 +40,14 @@ const HeroSection: React.FC = () => {
           {images.map((image, index) => (
             <Card
               key={index}
-              className={`w-full h-48 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100 transform ${
+              className={`w-full h-53 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100 transform ${
                 index % 2 === 0 ? 'translate-y-2' : '-translate-y-2'
               }`}
             >
               <img
                 src={image.src}
                 alt={`Image ${index + 1}`}
-                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                className="w-full h-full object-cover transition-all duration-300"
               />
             </Card>
           ))}
