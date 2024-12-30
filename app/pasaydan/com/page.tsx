@@ -1,4 +1,4 @@
-import { HeroSection } from "@/components/homepage/hero";
+import HeroSection  from "@/components/homepage/hero";
 import TitleInfo from "@/components/homepage/titleInfo";
 import Vision from "@/components/homepage/vison";
 import Image from "next/image";
