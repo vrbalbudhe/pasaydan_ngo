@@ -1,9 +1,10 @@
-import React from 'react';
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { headers } from "next/headers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Phone, MapPin, Edit, User } from 'lucide-react';
+import { Mail, Phone, MapPin, Edit, User } from "lucide-react";
 
 // Type definition based on Prisma schema
 type UserProfile = {
@@ -14,11 +15,12 @@ type UserProfile = {
   avatar: string | null;
   mobile: string | null;
   createdAt: Date;
-}
+};
 
-export default function Profile() {
-  // Mock data based on the actual User schema
-  // This will be replaced with real data from your backend
+export default async function Profile() {
+  const headersList = await headers();
+  const userHeader = headersList.get("x-user");
+  // console.log(userHeader);
   const userProfile: UserProfile = {
     id: "1",
     fullname: "Sarah Thompson",
@@ -26,7 +28,7 @@ export default function Profile() {
     address: "123 Volunteer Street, Charity City",
     avatar: null,
     mobile: "+1 (555) 123-4567",
-    createdAt: new Date("2023-01-15")
+    createdAt: new Date("2023-01-15"),
   };
 
   // Function to get initials for avatar fallback
@@ -34,28 +36,31 @@ export default function Profile() {
     if (!name) return "U";
     return name
       .split(" ")
-      .map(n => n[0])
+      .map((n) => n[0])
       .join("")
       .toUpperCase();
   };
 
   // Format date to readable string
   const formatDate = (date: Date) => {
-    return `Member since ${date.toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric'
+    return `Member since ${date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
     })}`;
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-[90%] container mx-auto px-4 py-8">
       {/* Header Section */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-24 w-24">
               {userProfile.avatar ? (
-                <AvatarImage src={userProfile.avatar} alt={userProfile.fullname || 'User'} />
+                <AvatarImage
+                  src={userProfile.avatar}
+                  alt={userProfile.fullname || "User"}
+                />
               ) : (
                 <AvatarFallback className="bg-primary/10">
                   {getInitials(userProfile.fullname)}
@@ -63,9 +68,13 @@ export default function Profile() {
               )}
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{userProfile.fullname || 'Anonymous User'}</h1>
+              <h1 className="text-2xl font-bold">
+                {userProfile.fullname || "Anonymous User"}
+              </h1>
               <p className="text-gray-500">{userProfile.email}</p>
-              <p className="text-sm text-gray-400">{formatDate(userProfile.createdAt)}</p>
+              <p className="text-sm text-gray-400">
+                {formatDate(userProfile.createdAt)}
+              </p>
             </div>
           </div>
           <Button className="gap-2">
@@ -140,17 +149,20 @@ export default function Profile() {
                     <div>
                       <h3 className="font-semibold mb-2">About Me</h3>
                       <p className="text-gray-600">
-                        {userProfile.fullname ? 
-                          `${userProfile.fullname} is a valued member of our NGO community.` : 
-                          'Welcome to our NGO community!'
-                        }
+                        {userProfile.fullname
+                          ? `${userProfile.fullname} is a valued member of our NGO community.`
+                          : "Welcome to our NGO community!"}
                       </p>
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-2">Contact Preferences</h3>
+                      <h3 className="font-semibold mb-2">
+                        Contact Preferences
+                      </h3>
                       <p className="text-gray-600">
-                        You can reach out through email{userProfile.mobile ? ' or phone' : ''}.
-                        {!userProfile.mobile && ' Consider adding a phone number for better communication.'}
+                        You can reach out through email
+                        {userProfile.mobile ? " or phone" : ""}.
+                        {!userProfile.mobile &&
+                          " Consider adding a phone number for better communication."}
                       </p>
                     </div>
                   </div>
@@ -162,8 +174,13 @@ export default function Profile() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-8 text-gray-500">
-                    <p>Activity tracking will be implemented in future updates.</p>
-                    <p className="text-sm mt-2">This section will show your participation in various NGO activities.</p>
+                    <p>
+                      Activity tracking will be implemented in future updates.
+                    </p>
+                    <p className="text-sm mt-2">
+                      This section will show your participation in various NGO
+                      activities.
+                    </p>
                   </div>
                 </CardContent>
               </Card>

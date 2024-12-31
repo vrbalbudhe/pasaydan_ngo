@@ -43,6 +43,6 @@ export const config = {
     "/pasaydan/admin", // Admin dashboard (protected)
     "/pasaydan/admin/drives", // Admin drives page (protected)
     "/pasaydan/com/profile", // Profile page (protected)
-    "/pasaydan/com/:path*", // All other pages (protected)
+    // "/pasaydan/com/:path*", // All other pages (protected)
   ],
 };

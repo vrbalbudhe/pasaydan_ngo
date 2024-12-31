@@ -103,7 +103,7 @@ export default function CalendarComponent() {
               modifiers={modifiers}
               modifiersClassNames={modifiersClassNames}
             />
-            <div className="w-full rounded-md py-2 pl-2 pr-2 border-2 h-full flex justify-center items-start gap-2">
+            <div className="w-full rounded-md py-2 pl-2 pr-2 border-2 min-h-fit flex-wrap flex justify-center items-start gap-2">
               <p className=" px-2 text-black -tracking-tight text-sm rounded-md py-1 ">
                 <span className="bg-green-400 px-2 py-0.2 mr-1 rounded-full"></span>
                 Cycle
