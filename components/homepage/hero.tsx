@@ -48,7 +48,7 @@ const HeroSection: React.FC = () => {
                 <h3 className="text-white text-2xl font-semibold">Be the reason a child smiles</h3>
               </div>
             </Card>
-            <Card className="rounded-3xl overflow-hidden relative aspect-square bg-emerald-800 p-6 text-white">
+            <Card className="rounded-3xl overflow-hidden relative aspect-square bg-blue-800 p-6 text-white">
               <div className="h-full flex flex-col justify-center items-center text-center">
                 <p className="text-lg">A small donation can be great help</p>
               </div>
@@ -71,7 +71,7 @@ const HeroSection: React.FC = () => {
           <div className="col-span-1">
             <Card className="rounded-3xl overflow-hidden relative aspect-square bg-blue-200 p-6 flex flex-col items-center justify-center text-center">
               <h3 className="text-xl font-semibold mb-4">Join 1000 people building a better tomorrow.</h3>
-              <Button className="bg-green-950 text-white rounded-full">Join Community</Button>
+              <Button className="bg-blue-950 text-white rounded-full">Join Community</Button>
             </Card>
           </div>
 
@@ -87,7 +87,7 @@ const HeroSection: React.FC = () => {
 
           {/* Right Column */}
           <div className="col-span-1 space-y-6">
-            <Card className="rounded-3xl overflow-hidden relative aspect-square bg-green-900 p-6 text-white">
+            <Card className="rounded-3xl overflow-hidden relative aspect-square bg-blue-900 p-6 text-white">
               <div className="h-full flex flex-col justify-center items-center text-center">
                 <h3 className="text-3xl">Make a difference in someone's life</h3>
               </div>
