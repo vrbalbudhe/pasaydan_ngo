@@ -55,7 +55,7 @@ const items = [
   },
   {
     title: "Data Download",
-    url: "/pasaydan/admin/dataDownload",
+    url: "/pasaydan/admin/downloadData",
     icon: Download,
   },
   {
