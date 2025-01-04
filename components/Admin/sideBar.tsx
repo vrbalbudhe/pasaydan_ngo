@@ -1,5 +1,14 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
-
+"use client";
+import {
+  Home,
+  Inbox,
+  Users,
+  Heart,
+  Award,
+  DollarSign,
+  Download,
+  Settings,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +19,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 
-// Menu items.
+// Menu items with updated symbols
 const items = [
   {
     title: "Home",
@@ -26,50 +36,76 @@ const items = [
   {
     title: "Users Information",
     url: "/pasaydan/admin/users",
-    icon: Calendar,
-  },
-  {
-    title: "Transactions",
-    url: "/pasaydan/admin/users",
-    icon: Search,
-  },
-  {
-    title: "Data Download",
-    url: "/pasaydan/admin/users",
-    icon: Search,
+    icon: Users,
   },
   {
     title: "Donation Requests",
-    url: "/pasaydan/admin/users",
-    icon: Search,
+    url: "/pasaydan/admin/donationRequests",
+    icon: Heart,
+  },
+  {
+    title: "Certificates",
+    url: "/pasaydan/admin/certificates",
+    icon: Award,
+  },
+  {
+    title: "Transactions",
+    url: "/pasaydan/admin/transactions",
+    icon: DollarSign,
+  },
+  {
+    title: "Data Download",
+    url: "/pasaydan/admin/dataDownload",
+    icon: Download,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/pasaydan/admin/settings",
     icon: Settings,
   },
 ];
 
 export function AppSidebar() {
+  const router = useRouter();
+
   return (
-    <Sidebar className="bg-[#2d232e]">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm">
-            Pasaydan Admin
+    <Sidebar className="w-64 border-none bg-[#40434e] text-white shadow-lg">
+      <SidebarContent className="bg-[#40434e]">
+        <SidebarGroup className="bg-[#40434e]">
+          <SidebarGroupLabel className="text-md text-white tracking-tighter mb-4 mt-12 pl-4">
+            Admin Window
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const isActive = router.pathname === item.url;
+
+                return (
+                  <SidebarMenuItem
+                    key={item.title}
+                    className={`group h-8 ${
+                      isActive ? "bg-[#565869] text-white" : ""
+                    }`}
+                  >
+                    <SidebarMenuButton asChild>
+                      <a
+                        href={item.url}
+                        aria-label={item.title}
+                        className={`flex items-center space-x-3 p-3 rounded-md transition-all ${
+                          isActive
+                            ? "font-semibold"
+                            : "hover:bg-[#565869] hover:shadow-md"
+                        }`}
+                      >
+                        <item.icon className="text-xl" />
+                        <span className="text-sm font-medium tracking-tight">
+                          {item.title}
+                        </span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

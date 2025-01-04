@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Lottie from 'lottie-react';
+import React from "react";
+import Lottie from "lottie-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
-import childJson from '@/assets/homepage/child.json';
-import cycleJson from '@/assets/homepage/cycle.json';
+import childJson from "@/assets/homepage/child.json";
+import cycleJson from "@/assets/homepage/cycle.json";
 
 export default function TitleInfo() {
   const lottieOptions = {
@@ -17,22 +17,24 @@ export default function TitleInfo() {
     autoplay: true,
     animationData: childJson,
     rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice'
-    }
+      preserveAspectRatio: "xMidYMid slice",
+    },
   };
   const lottie = {
     loop: true,
     autoplay: true,
     animationData: cycleJson,
     rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice'
-    }
+      preserveAspectRatio: "xMidYMid slice",
+    },
   };
 
   return (
     <div className="w-full h-full flex justify-center items-center flex-col">
       <div className="w-full h-[200px] flex justify-center items-center flex-col">
-        <h1 className="-tracking-tighter text-[70px] text-slate-800">पसायदान</h1>
+        <h1 className="-tracking-tighter text-[70px] text-slate-800">
+          पसायदान
+        </h1>
         <h1 className="-tracking-tighter text-xl md:text-3xl text-slate-800">
           जो जे वांच्छिल तो तें लाहो । प्राणिज
         </h1>
@@ -48,7 +50,7 @@ export default function TitleInfo() {
           <div className="absolute -top-20 right-0 w-24 h-24 z-10">
             <Lottie {...lottieOptions} />
           </div>
-          <Card className="w-full h-fit border rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+          <Card className="w-full h-fit border-none rounded-xl">
             <CardHeader className="w-full h-full flex flex-col gap-5">
               <CardDescription className="text-2xl shadow-none text-pretty">
                 पसायदान हा शब्द पासा (पसा) या दोन शब्दांची रचना आहे ज्याचा अर्थ
@@ -72,8 +74,8 @@ export default function TitleInfo() {
   );
 }
 
-
-{/*import {
+{
+  /*import {
   Card,
   CardContent,
   CardDescription,
@@ -118,4 +120,5 @@ export default function TitleInfo() {
       </div>
     </div>
   );
-}*/}
+}*/
+}

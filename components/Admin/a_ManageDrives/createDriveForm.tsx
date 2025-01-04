@@ -7,8 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// Define the Zod schema for validation
 const formSchema = z.object({
   title: z
     .string()
@@ -33,7 +31,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Time Interval must be at least 2 characters long" })
     .max(50),
-  photos: z.array(z.instanceof(File)).optional(), // Array of files for photo upload
+  photos: z.array(z.instanceof(File)).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -41,7 +39,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function CreateManageForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState<File[]>([]); // Track the uploaded files
+  const [files, setFiles] = useState<File[]>([]);
 
   const {
     register,
@@ -56,7 +54,7 @@ export default function CreateManageForm() {
     const selectedFiles = event.target.files;
     if (selectedFiles) {
       setFiles(Array.from(selectedFiles));
-      setValue("photos", Array.from(selectedFiles)); // Set file values in the form
+      setValue("photos", Array.from(selectedFiles));
     }
   };
 
@@ -102,8 +100,8 @@ export default function CreateManageForm() {
   };
 
   return (
-    <div className="max-w-xl w-full flex justify-center items-center flex-col shadow-md rounded-lg border mx-auto p-4">
-      <h2 className="text-xl font-bold text-center mb-6">Create a Drive</h2>
+    <div className="max-w-2xl w-full flex justify-center overflow-auto items-center flex-col shadow-md rounded-lg border mx-auto p-4">
+      <h2 className="text-xl font-bold text-left mb-6">Create a Drive</h2>
 
       {/* Displaying error if exists */}
       {error && <div className="bg-red-500 text-white p-2 mb-4">{error}</div>}

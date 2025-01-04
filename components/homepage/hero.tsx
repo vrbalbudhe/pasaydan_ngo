@@ -15,7 +15,7 @@ const HeroSection: React.FC = () => {
   const images = [hp1, hp2, hp3, hp4, hp5, hp6, hp7, hp8];
 
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-[90%] min-h-screen bg-white">
       <div className="container mx-auto px-4 py-20 flex flex-col lg:flex-row items-center justify-between">
         {/* Left side - Text and Symbol */}
         <div className="lg:w-1/2 flex flex-col items-center justify-center text-center mb-10 lg:mb-0 max-w-md mx-auto">

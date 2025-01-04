@@ -32,10 +32,8 @@ export default function RootAdminLayout({
       >
         <SidebarProvider>
           <AppSidebar />
-          <AdminLayout>
-            <SidebarTrigger />
-            {children}
-          </AdminLayout>
+          <SidebarTrigger className=" w-10 p-5 h-full text-[#323031]" />
+          <AdminLayout>{children}</AdminLayout>
         </SidebarProvider>
       </body>
     </html>

@@ -10,9 +10,8 @@ export async function POST(request: NextRequest) {
     await mkdir(uploadDir, { recursive: true });
     const data = await request.formData();
 
-    // Get the files and other form data fields
     const files = data.getAll("file") as File[];
-    const title = (data.get("title") as string | null) || ""; // Default to empty string if null
+    const title = (data.get("title") as string | null) || "";
     const location = (data.get("location") as string | null) || "";
     const description = (data.get("description") as string | null) || "";
     const dtype = (data.get("dtype") as string | null) || "";
@@ -25,18 +24,15 @@ export async function POST(request: NextRequest) {
     console.log(dtype);
     const photoPaths: string[] = [];
 
-    // Process each file and save it
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
       const filePath = path.join(uploadDir, file.name);
       await writeFile(filePath, buffer);
       console.log(`File uploaded successfully: ${path}`);
-      photoPaths.push(filePath); // Add the path to the array
+      photoPaths.push(filePath);
     }
 
-    // Create a new Drive entry in the database
     const newDrive = await prisma.drive.create({
       data: {
         title,
@@ -50,7 +46,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Respond with the new drive information
     return NextResponse.json(newDrive, { status: 201 });
   } catch (error) {
     console.error("Error processing POST request:", error);

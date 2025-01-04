@@ -1,29 +1,45 @@
 "use client";
 import CreateManageForm from "@/components/Admin/a_ManageDrives/createDriveForm";
+import { AdminDriveCards } from "@/components/Admin/a_ManageDrives/driveAdminCards";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function ManageDrives() {
   const [showForm, setShowForm] = useState(false);
+
   const toggleFormSwitch = () => {
     setShowForm((prev) => !prev);
   };
+
   return (
-    <div className="w-full min-h-screen">
-      <div className="w-full h-20 flex justify-between items-center">
-        <h1 className="-tracking-tight text-slate-800 text-2xl">
+    <div className="w-full min-h-screen relative bg-gray-50">
+      <div className="w-full h-20 mt-14 flex justify-between items-center px-4">
+        <h1 className="-tracking-tight text-slate-800 font-semibold text-2xl">
           Manage Drives
         </h1>
         <Link href="/pasaydan/admin/drives">
-          <Button onClick={() => toggleFormSwitch()}>
+          <Button className="bg-blue-600" onClick={() => toggleFormSwitch()}>
             {showForm ? "Remove" : "Create Drive"}
           </Button>
         </Link>
       </div>
-      <div className="relative w-full top-10 left-1/2 transform -translate-x-1/2 flex justify-center items-start pt-10 pb-10">
-        {showForm && <CreateManageForm />}
-      </div>
+      <AdminDriveCards />
+
+      {/* Modal Overlay */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex justify-center items-start overflow-auto bg-black/50 backdrop-blur-xl">
+          <div className="relative w-full max-w-2xl bg-white p-6 mt-10 mb-10">
+            <button
+              className="absolute top-10 right-10 bg-red-400 px-2.5 font-semibold text-white py-1 rounded-full hover:text-gray-800"
+              onClick={toggleFormSwitch}
+            >
+              ✕
+            </button>
+            <CreateManageForm />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

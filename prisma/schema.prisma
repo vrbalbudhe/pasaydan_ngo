@@ -30,10 +30,22 @@ model Drive {
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   fullname  String?
-  email     String
+  email     String   @unique
   password  String
   address   String?
   avatar    String?
   mobile    String?
+  createdAt DateTime @default(now())
+}
+
+model DonationRequests {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullname  String
+  mobile    String
+  email     String
+  address   String
+  type      String
+  quantity  String
+  status    String   @default("Pending")
   createdAt DateTime @default(now())
 }
