@@ -434,6 +434,68 @@ export default function DownloadData() {
                             }
                             initialFocus
                             className="rounded-md border"
+                            components={{
+                              Caption: ({ displayMonth, onMonthChange }) => {
+                                return (
+                                  <div className="flex justify-center gap-1 items-center py-2">
+                                    <Select
+                                      value={format(displayMonth, 'MMMM')}
+                                      onValueChange={(value) => {
+                                        const newMonth = new Date(displayMonth);
+                                        newMonth.setMonth(
+                                          ['January', 'February', 'March', 'April', 'May', 'June',
+                                           'July', 'August', 'September', 'October', 'November', 'December']
+                                          .indexOf(value)
+                                        );
+                                        onMonthChange(newMonth);
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-[130px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {Array.from({ length: 12 }, (_, i) => {
+                                          const month = new Date(0, i);
+                                          return (
+                                            <SelectItem
+                                              key={i}
+                                              value={format(month, 'MMMM')}
+                                            >
+                                              {format(month, 'MMMM')}
+                                            </SelectItem>
+                                          );
+                                        })}
+                                      </SelectContent>
+                                    </Select>
+                                    <Select
+                                      value={format(displayMonth, 'yyyy')}
+                                      onValueChange={(value) => {
+                                        const newMonth = new Date(displayMonth);
+                                        newMonth.setFullYear(parseInt(value));
+                                        onMonthChange(newMonth);
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-[90px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {Array.from({ length: 10 }, (_, i) => {
+                                          const year = new Date().getFullYear() - 5 + i;
+                                          return (
+                                            <SelectItem
+                                              key={year}
+                                              value={year.toString()}
+                                            >
+                                              {year}
+                                            </SelectItem>
+                                          );
+                                        })}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                );
+                              },
+                            }}
                           />
                         </div>
                         <div className="flex flex-col flex-1">
@@ -455,6 +517,68 @@ export default function DownloadData() {
                             }
                             initialFocus
                             className="rounded-md border"
+                            components={{
+                              Caption: ({ displayMonth, onMonthChange }) => {
+                                return (
+                                  <div className="flex justify-center gap-1 items-center py-2">
+                                    <Select
+                                      value={format(displayMonth, 'MMMM')}
+                                      onValueChange={(value) => {
+                                        const newMonth = new Date(displayMonth);
+                                        newMonth.setMonth(
+                                          ['January', 'February', 'March', 'April', 'May', 'June',
+                                           'July', 'August', 'September', 'October', 'November', 'December']
+                                          .indexOf(value)
+                                        );
+                                        onMonthChange(newMonth);
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-[130px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {Array.from({ length: 12 }, (_, i) => {
+                                          const month = new Date(0, i);
+                                          return (
+                                            <SelectItem
+                                              key={i}
+                                              value={format(month, 'MMMM')}
+                                            >
+                                              {format(month, 'MMMM')}
+                                            </SelectItem>
+                                          );
+                                        })}
+                                      </SelectContent>
+                                    </Select>
+                                    <Select
+                                      value={format(displayMonth, 'yyyy')}
+                                      onValueChange={(value) => {
+                                        const newMonth = new Date(displayMonth);
+                                        newMonth.setFullYear(parseInt(value));
+                                        onMonthChange(newMonth);
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-[90px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {Array.from({ length: 10 }, (_, i) => {
+                                          const year = new Date().getFullYear() - 5 + i;
+                                          return (
+                                            <SelectItem
+                                              key={year}
+                                              value={year.toString()}
+                                            >
+                                              {year}
+                                            </SelectItem>
+                                          );
+                                        })}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                );
+                              },
+                            }}
                           />
                         </div>
                       </div>
