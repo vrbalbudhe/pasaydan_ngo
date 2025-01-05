@@ -2,17 +2,31 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/prisma/client';
 import * as XLSX from 'xlsx';
 
-// Helper function to convert data to CSV
+// Helper function to convert data to CSV with proper UTF-8 encoding
 function convertToCSV(data: any[]) {
   if (!data || data.length === 0) return '';
-  const replacer = (key: any, value: any) => value === null ? '' : value;
+  
+  // Function to escape special characters and handle quotes
+  const escapeField = (field: any) => {
+    if (field === null || field === undefined) return '';
+    const stringField = String(field);
+    if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+      return `"${stringField.replace(/"/g, '""')}"`;
+    }
+    return stringField;
+  };
+
   const header = Object.keys(data[0]);
-  const csv = [
+  const rows = [
     header.join(','),
-    ...data.map(row => header.map(fieldName => 
-      JSON.stringify(row[fieldName], replacer)).join(','))
-  ].join('\r\n');
-  return csv;
+    ...data.map(row => 
+      header.map(fieldName => escapeField(row[fieldName])).join(',')
+    )
+  ];
+
+  // Add UTF-8 BOM at the start
+  const BOM = '\uFEFF';
+  return BOM + rows.join('\r\n');
 }
 
 // Helper function to convert data to Excel
@@ -181,7 +195,7 @@ export async function GET(request: Request) {
       const csv = convertToCSV(data);
       return new NextResponse(csv, {
         headers: {
-          'Content-Type': 'text/csv',
+          'Content-Type': 'text/csv;charset=utf-8',
           'Content-Disposition': `attachment; filename=${dataType}-${Date.now()}.csv`
         }
       });
