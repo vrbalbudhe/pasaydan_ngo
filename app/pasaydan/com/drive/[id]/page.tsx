@@ -151,3 +151,4 @@ const InfoRow = ({
     {text}
   </p>
 );
+ 

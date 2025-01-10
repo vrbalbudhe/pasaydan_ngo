@@ -21,6 +21,150 @@ import {
 } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 
+const items = [
+  {
+    title: "Dashboard",
+    url: "/pasaydan/admin",
+    icon: Home,
+  },
+  {
+    title: "Manage Drives",
+    url: "/pasaydan/admin/drives",
+    icon: Inbox,
+  },
+  {
+    title: "Users",
+    url: "/pasaydan/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Donations",
+    url: "/pasaydan/admin/donationRequests",
+    icon: Heart,
+  },
+  {
+    title: "Certificates",
+    url: "/pasaydan/admin/certificates",
+    icon: Award,
+  },
+  {
+    title: "Transactions",
+    url: "/pasaydan/admin/transactions",
+    icon: DollarSign,
+  },
+  {
+    title: "Downloads",
+    url: "/pasaydan/admin/downloadData",
+    icon: Download,
+  },
+  {
+    title: "Settings",
+    url: "/pasaydan/admin/settings",
+    icon: Settings,
+  },
+];
+
+export function AppSidebar() {
+  const router = useRouter();
+
+  return (
+    <Sidebar className="w-64 lg:w-72 border-none bg-[#40434e] text-white min-h-screen">
+      <SidebarContent className="bg-[#40434e]">
+        <div className="px-6 py-8">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+              <span className="text-lg font-bold text-white">P</span>
+            </div>
+            <h1 className="text-xl font-semibold tracking-tight text-white">Pasaydan</h1>
+          </div>
+
+          <SidebarGroup className="bg-[#40434e]">
+            <SidebarGroupLabel className="text-xs uppercase tracking-wider text-white font-medium px-4 mb-4">
+              Administration
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => {
+                  const isActive = router.pathname === item.url;
+
+                  return (
+                    <SidebarMenuItem
+                      key={item.title}
+                      className={`mb-1 ${
+                        isActive ? "bg-[#565869]" : ""
+                      }`}
+                    >
+                      <SidebarMenuButton asChild>
+    <a
+      href={item.url}
+      aria-label={item.title}
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+        isActive
+          ? "bg-[#565869] text-white"
+          : "text-white hover:bg-[#e0e0e0] hover:text-black"
+      }`}
+    >
+      <item.icon 
+        className={`w-5 h-5 transition-all ${
+          isActive ? "text-white" : "text-white hover:text-black"
+        }`} 
+      />
+      <span className={`text-sm font-medium ${
+        isActive ? "font-semibold" : ""
+      }`}>
+        {item.title}
+      </span>
+    </a>
+  </SidebarMenuButton>
+</SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
+
+        <div className="px-6 py-4 mt-auto border-t border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+              <Users className="w-4 h-4 text-gray-300" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">Admin Portal</p>
+              <p className="text-xs text-gray-300">Manage your NGO</p>
+            </div>
+          </div>
+        </div>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
+
+export default AppSidebar;
+
+{/*"use client";
+import {
+  Home,
+  Inbox,
+  Users,
+  Heart,
+  Award,
+  DollarSign,
+  Download,
+  Settings,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
+
 // Menu items with updated symbols
 const items = [
   {
@@ -112,4 +256,4 @@ export function AppSidebar() {
       </SidebarContent>
     </Sidebar>
   );
-}
+} */}

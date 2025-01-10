@@ -4,6 +4,154 @@ import { GoLocation } from "react-icons/go";
 import { BiDonateHeart } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
 import { FaExternalLinkAlt } from "react-icons/fa";
+import { MdTimer, MdOutlineAccessTime } from "react-icons/md";
+import { IoArrowRedoCircleSharp } from "react-icons/io5";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import SkeletonBox from "../skeleton";
+import Link from "next/link";
+
+export function DriveCards() {
+  const [error, setError] = React.useState<string | null>(null);
+  const [noOfDrives, setNoOfDrives] = React.useState<number | 4>(4);
+  const [products, setProducts] = React.useState<any[] | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [readMore, setReadMore] = React.useState<{ [key: number]: boolean }>({});
+
+  React.useEffect(() => {
+    const fetchDrives = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/drive`);
+        if (!response.ok) throw new Error("Failed to fetch drives");
+        const data = await response.json();
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message || "An error occurred while fetching drives");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrives();
+  }, []);
+
+  const getStatusStyles = (status: string) => {
+    return status === "pending" 
+      ? "bg-gradient-to-r from-green-400 to-green-500 ring-4 ring-blue-950/20" 
+      : "bg-gradient-to-r from-yellow-400 to-yellow-500 ring-4 ring-blue-950/20";
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[1, 2, 3, 4].map((i) => <SkeletonBox key={i} />)}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full p-4 text-red-500 bg-red-50 rounded-lg">
+        {error}
+      </div>
+    );
+  }
+
+  if (!products?.length) {
+    return (
+      <div className="w-full p-8 text-center text-gray-500 bg-gray-50 rounded-lg">
+        No Drives Found
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {products?.slice(0, noOfDrives)?.map((product, index) => (
+          <Card
+            key={index}
+            className="w-full overflow-hidden bg-gradient-to-br from-blue-100 via-white to-blue-100 hover:shadow-xl transition-all duration-300 border border-blue-100"
+          >
+            <CardHeader className="pb-4">
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-2xl font-semibold text-blue-950">
+                  {product?.title}
+                </CardTitle>
+                <div className={`w-4 h-4 rounded-full ${getStatusStyles(product?.status)}`} />
+              </div>
+              
+              <CardDescription className="space-y-3 mt-4">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <GoLocation className="text-blue-800 text-lg flex-shrink-0" />
+                  <span className="text-sm">{product?.location}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-700">
+                  <MdTimer className="text-blue-800 text-lg flex-shrink-0" />
+                  <span className="text-sm">{product?.timeInterval}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-700">
+                  <MdOutlineAccessTime className="text-blue-800 text-lg flex-shrink-0" />
+                  <span className="text-sm">
+                    {product?.startDate} - {product?.EndDate}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <IoArrowRedoCircleSharp className="text-blue-800 text-lg flex-shrink-0" />
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                    {product?.dtype} Donations
+                  </Badge>
+                </div>
+              </CardDescription>
+            </CardHeader>
+
+            <CardFooter className="pt-4 pb-6">
+              <Link href={`drive/${product.id}`} className="w-full">
+                <Button 
+                  className="w-1/2 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white shadow-md"
+                >
+                  <span className="flex-1">Show Details</span>
+                  <FaExternalLinkAlt className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {products && products.length > noOfDrives && (
+        <div className="w-full flex justify-center">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+            onClick={() => setNoOfDrives((prev) => (prev !== null ? prev + 4 : 4))}
+          >
+            Show More Drives
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+{/*"use client";
+import * as React from "react";
+import { GoLocation } from "react-icons/go";
+import { BiDonateHeart } from "react-icons/bi";
+import { Button } from "@/components/ui/button";
+import { FaExternalLinkAlt } from "react-icons/fa";
 import { MdTimer } from "react-icons/md";
 import { MdOutlineAccessTime } from "react-icons/md";
 import { IoArrowRedoCircleSharp } from "react-icons/io5";
@@ -118,7 +266,7 @@ export function DriveCards() {
               <Link href={`drive/${product.id}`}>
                 <Button className="bg-white text-black hover:bg-gray-200">
                   {/* {product?.location} */}
-                  Show Details
+                {/*}  Show Details
                   <FaExternalLinkAlt />
                 </Button>
               </Link>
@@ -151,4 +299,4 @@ export function DriveCards() {
       )}
     </div>
   );
-}
+} */}

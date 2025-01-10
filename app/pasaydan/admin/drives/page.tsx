@@ -19,7 +19,7 @@ export default function ManageDrives() {
           Manage Drives
         </h1>
         <Link href="/pasaydan/admin/drives">
-          <Button className="bg-blue-600" onClick={() => toggleFormSwitch()}>
+          <Button className="bg-black" onClick={() => toggleFormSwitch()}>
             {showForm ? "Remove" : "Create Drive"}
           </Button>
         </Link>
