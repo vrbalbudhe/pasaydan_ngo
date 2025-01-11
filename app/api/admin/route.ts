@@ -153,20 +153,8 @@ export async function GET(request: Request) {
           where.type = searchParams.get('type');
         }
 
-        data = await prisma.donationRequests.findMany({
-          where,
-          orderBy,
-          select: {
-            id: true,
-            fullname: true,
-            email: true,
-            mobile: true,
-            type: true,
-            quantity: true,
-            status: true,
-            createdAt: true
-          }
-        });
+        const GetAllDonationRequests = await prisma.donationRequests.findMany();
+        return NextResponse.json(GetAllDonationRequests, { status: 200 });
         break;
 
       default:
@@ -201,7 +189,7 @@ export async function GET(request: Request) {
       });
     } 
     
-    if (format === 'excel') {
+    if (format === 'xlsx') {
       const excel = convertToExcel(data);
       return new NextResponse(excel, {
         headers: {

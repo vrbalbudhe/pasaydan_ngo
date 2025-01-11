@@ -639,7 +639,7 @@ export default function DownloadData() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="csv">CSV</SelectItem>
-                      <SelectItem value="excel">Excel</SelectItem>
+                      <SelectItem value="xlsx">XLSX</SelectItem>
                     </SelectContent>
                   </Select>
 
