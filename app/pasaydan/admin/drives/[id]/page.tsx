@@ -219,6 +219,7 @@ export default function DriveUpdatePage() {
               className="w-full border border-gray-300 rounded-md p-2"
             >
               <option value="pending">Pending</option>
+              <option value="active">Active</option>
               <option value="completed">Completed</option>
             </select>
             {errors.status && (

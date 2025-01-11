@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Award, Copy, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+const cert = `${process.env.BASE_URL || "http://localhost:3000"}/public/PasaydanCertificates.jpg`;
+console.log("Certificate URL:", cert);
 const generateRandomDonationId = () => {
   return Math.random().toString(36).substr(2, 9);
 };
@@ -69,23 +70,29 @@ export default function Certificates() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen w-full flex flex-col justify-start items-start bg-gray-50 p-6">
       {/* Header Section */}
       <div className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-blue-50 rounded-lg">
             <Award className="h-6 w-6 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Manage Certifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Manage Certifications
+          </h1>
         </div>
-        <p className="text-gray-600 ml-11">Generate and manage donation certificates</p>
+        <p className="text-gray-600 ml-11">
+          Generate and manage donation certificates
+        </p>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-full mx-auto">
         <Card className="bg-white shadow-sm">
           <CardHeader className="border-b pb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">Generate New Certificate</CardTitle>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              Generate New Certificate
+            </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -93,7 +100,10 @@ export default function Certificates() {
               <div className="space-y-6">
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -110,7 +120,10 @@ export default function Certificates() {
 
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -127,7 +140,10 @@ export default function Certificates() {
 
                 {/* Donation ID Field */}
                 <div>
-                  <label htmlFor="donationId" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="donationId"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Donation ID
                   </label>
                   <div className="relative">
@@ -162,7 +178,9 @@ export default function Certificates() {
 
               {/* Right Side - Preview or Info */}
               <div className="bg-blue-50 rounded-lg p-6">
-                <h3 className="text-sm font-semibold text-blue-900 mb-3">Certificate Information</h3>
+                <h3 className="text-sm font-semibold text-blue-900 mb-3">
+                  Certificate Information
+                </h3>
                 <ul className="space-y-3 text-sm text-blue-800">
                   <li>• Certificate will be generated in PDF format</li>
                   <li>• An email will be sent to the provided address</li>
@@ -174,11 +192,13 @@ export default function Certificates() {
 
             {/* Message Display */}
             {message && (
-              <div className={`mt-6 p-4 rounded-lg text-sm ${
-                message.includes("success") || message.includes("copied")
-                  ? "bg-green-50 text-green-800 border border-green-100"
-                  : "bg-red-50 text-red-800 border border-red-100"
-              }`}>
+              <div
+                className={`mt-6 p-4 rounded-lg text-sm ${
+                  message.includes("success") || message.includes("copied")
+                    ? "bg-green-50 text-green-800 border border-green-100"
+                    : "bg-red-50 text-red-800 border border-red-100"
+                }`}
+              >
                 {message}
               </div>
             )}
@@ -203,14 +223,17 @@ export default function Certificates() {
             </div>
           </CardContent>
         </Card>
+        {/* <img
+          src="https://drive.google.com/uc?export=view&id=18g_jreJ_pazXvx5W7N2AmZ9Mim93Y42i"
+          alt="Certificate"
+        /> */}
       </div>
     </div>
   );
 }
 
-
-
-{/*"use client";
+{
+  /*"use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -264,17 +287,23 @@ export default function Certificates() {
 
   return (
     <div className="w-full h-full mx-auto p-6 space-y-4 bg-white border-none rounded-lg flex justify-start items-start flex-col">
-      {/* Header */}
-{/*     <div className="w-full h-20 flex justify-between items-center border-b pb-4">
+      {/* Header */
+}
+{
+  /*     <div className="w-full h-20 flex justify-between items-center border-b pb-4">
         <h1 className="tracking-tight text-slate-800 text-2xl font-bold">
           Manage Certifications
         </h1>
       </div>
 
-      {/* Form */}
-{/*     <div className="w-[400px] flex flex-col justify-start items-start bg-zinc-100 border-2 rounded-md p-4 space-y-4">
-        {/* Name Field */}
-{/*        <div className="w-full">
+      {/* Form */
+}
+{
+  /*     <div className="w-[400px] flex flex-col justify-start items-start bg-zinc-100 border-2 rounded-md p-4 space-y-4">
+        {/* Name Field */
+}
+{
+  /*        <div className="w-full">
           <label
             htmlFor="name"
             className="block text-sm font-medium text-gray-700"
@@ -291,8 +320,10 @@ export default function Certificates() {
           />
         </div>
 
-        {/* Email Field */}
-{/*        <div>
+        {/* Email Field */
+}
+{
+  /*        <div>
           <label
             htmlFor="email"
             className="block text-sm font-medium text-gray-700"
@@ -309,8 +340,10 @@ export default function Certificates() {
           />
         </div>
 
-        {/* Donation ID Field (Read-only) */}
-{/*        <div>
+        {/* Donation ID Field (Read-only) */
+}
+{
+  /*        <div>
           <label
             htmlFor="donationId"
             className="block text-sm font-medium text-gray-700"
@@ -326,8 +359,10 @@ export default function Certificates() {
           />
         </div>
 
-        {/* Button */}
-{/*        <Button
+        {/* Button */
+}
+{
+  /*        <Button
           className="w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200 ease-in-out"
           onClick={handleGenerateCertificate}
           disabled={loading}
@@ -335,8 +370,10 @@ export default function Certificates() {
           {loading ? "Generating..." : "Generate Certificate"}
         </Button>
 
-        {/* Message */}
-{/*}        {message && (
+        {/* Message */
+}
+{
+  /*}        {message && (
           <div
             className={`mt-4 p-3 rounded-md text-sm ${
               message.includes("successfully")
@@ -350,4 +387,5 @@ export default function Certificates() {
       </div>
     </div>
   );
-} */}
+} */
+}

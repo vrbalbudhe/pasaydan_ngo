@@ -3,7 +3,13 @@ import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
 import puppeteer from "puppeteer";
+import { readFileSync } from "fs";
 
+// Define the base64-encoded image data (replace with actual base64 string)
+const certificateImageBase64 = readFileSync(
+  path.join(process.cwd(), "public", "PasaydanCertificates.jpg"),
+  "base64"
+);
 interface CertificateRequestBody {
   userName: string;
   userEmail: string;
@@ -28,17 +34,12 @@ const generateCertificate = async (
   donationId: string
 ): Promise<string> => {
   try {
-    // Create a temporary HTML file for rendering
     const htmlContent = `
       <html>
         <head>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              text-align: center;
-            }
             .certificate {
-              background-image: url('C:\Users\varun\Desktop\projects.git\Pasaydan\pasaydan_ngo\public\PasaydanCertificates.jpg');
+              background-image: url('data:image/jpeg;base64,${certificateImageBase64}'); /* Base64 encoded image */
               background-size: cover;
               background-position: center;
               width: 595px;
@@ -48,6 +49,8 @@ const generateCertificate = async (
               justify-content: center;
               align-items: center;
               color: black;
+              font-family: Arial, sans-serif;
+              text-align: center;
             }
             .name {
               font-size: 35px;

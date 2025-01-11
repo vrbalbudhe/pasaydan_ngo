@@ -18,10 +18,7 @@ export async function POST(request: NextRequest) {
     const startDate = (data.get("startDate") as string | null) || "";
     const EndDate = (data.get("EndDate") as string | null) || "";
     const timeInterval = (data.get("timeInterval") as string | null) || "";
-    console.log(title);
-    console.log(location);
-    console.log(description);
-    console.log(dtype);
+    const status = (data.get("status") as string | null) || "";
     const photoPaths: string[] = [];
 
     for (const file of files) {
@@ -40,6 +37,7 @@ export async function POST(request: NextRequest) {
         description,
         dtype,
         startDate,
+        status,
         EndDate,
         timeInterval,
         photos: photoPaths,
