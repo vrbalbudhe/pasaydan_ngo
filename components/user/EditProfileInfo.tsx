@@ -13,7 +13,12 @@ type UserProfile = {
   id: string;
   fullname: string | null;
   email: string;
-  address: string | null;
+  streetAddress: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string | null;
   avatar: string | null;
   mobile: string | null;
 };
@@ -49,7 +54,12 @@ const UpdateProfileForm = ({
     const formPayload = new FormData();
     formPayload.append("fullname", formData.fullname || "");
     formPayload.append("email", formData.email);
-    formPayload.append("address", formData.address || "");
+    formPayload.append("streetAddress", formData.streetAddress || "");
+    formPayload.append("addressLine2", formData.addressLine2 || "");
+    formPayload.append("city", formData.city || "");
+    formPayload.append("state", formData.state || "");
+    formPayload.append("postalCode", formData.postalCode || "");
+    formPayload.append("country", formData.country || "");
     formPayload.append("mobile", formData.mobile || "");
     if (avatarFile) formPayload.append("avatar", avatarFile);
 
@@ -80,7 +90,7 @@ const UpdateProfileForm = ({
     <div className="flex items-start justify-center w-full">
       <form
         onSubmit={handleSubmit}
-        className="bg-[#2d232e] rounded-md  p-6 md:flex gap-10 w-[100%] max-w-4xl"
+        className="border-2 rounded-lg p-6 md:flex gap-10 w-[100%] max-w-4xl"
       >
         <div className="flex h-full md:w-1/3 flex-col gap-6 items-center">
           <Avatar className="h-32 w-32 border border-slate-200">
@@ -96,9 +106,8 @@ const UpdateProfileForm = ({
             )}
           </Avatar>
 
-          {/* Avatar upload input */}
           <div className="flex flex-col">
-            <Label htmlFor="avatar" className="text-white p-2">
+            <Label htmlFor="avatar" className="text-slate-800 p-2">
               Choose Avatar
             </Label>
             <Input
@@ -106,7 +115,7 @@ const UpdateProfileForm = ({
               name="avatar"
               type="file"
               accept="image/*"
-              className="text-white"
+              className="text-slate-800"
               onChange={handleAvatarChange}
             />
           </div>
@@ -118,7 +127,7 @@ const UpdateProfileForm = ({
           </Button>
         </div>
 
-        <div className="mt-10 md:mt-0 md:w-2/3 space-y-4 text-white text-sm">
+        <div className="mt-10 md:mt-0 md:w-2/3 space-y-4 text-slate-800 text-sm">
           <div>
             <Label htmlFor="fullname">Full Name</Label>
             <Input
@@ -141,18 +150,73 @@ const UpdateProfileForm = ({
               onChange={handleChange}
               placeholder="Enter your email"
               required
-              disabled // Freezes the email field
+              disabled
             />
           </div>
 
           <div>
-            <Label htmlFor="address">Address</Label>
-            <Textarea
-              id="address"
-              name="address"
-              value={formData.address || ""}
+            <Label htmlFor="streetAddress">Street Address</Label>
+            <Input
+              id="streetAddress"
+              name="streetAddress"
+              value={formData.streetAddress || ""}
               onChange={handleChange}
-              placeholder="Enter your address"
+              placeholder="Enter your street address"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="addressLine2">Address Line 2</Label>
+            <Input
+              id="addressLine2"
+              name="addressLine2"
+              value={formData.addressLine2 || ""}
+              onChange={handleChange}
+              placeholder="Enter additional address details"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              value={formData.city || ""}
+              onChange={handleChange}
+              placeholder="Enter your city"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="state">State</Label>
+            <Input
+              id="state"
+              name="state"
+              value={formData.state || ""}
+              onChange={handleChange}
+              placeholder="Enter your state"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="postalCode">Postal Code</Label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={formData.postalCode || ""}
+              onChange={handleChange}
+              placeholder="Enter your postal code"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              name="country"
+              value={formData.country || ""}
+              onChange={handleChange}
+              placeholder="Enter your country"
             />
           </div>
 

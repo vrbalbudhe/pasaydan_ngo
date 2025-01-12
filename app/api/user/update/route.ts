@@ -10,18 +10,16 @@ export async function POST(request: Request) {
     await mkdir(uploadDir, { recursive: true });
 
     const formData = await request.formData();
-    const fullname = formData.get("fullname")
-      ? String(formData.get("fullname"))
-      : undefined;
-    const email = formData.get("email")
-      ? String(formData.get("email"))
-      : undefined;
-    const address = formData.get("address")
-      ? String(formData.get("address"))
-      : undefined;
-    const mobile = formData.get("mobile")
-      ? String(formData.get("mobile"))
-      : undefined;
+    const fullname = formData.get("fullname")?.toString();
+    const email = formData.get("email")?.toString();
+    const mobile = formData.get("mobile")?.toString();
+
+    const streetAddress = formData.get("streetAddress")?.toString();
+    const addressLine2 = formData.get("addressLine2")?.toString();
+    const city = formData.get("city")?.toString();
+    const state = formData.get("state")?.toString();
+    const postalCode = formData.get("postalCode")?.toString();
+    const country = formData.get("country")?.toString();
 
     const avatar = formData.get("avatar");
 
@@ -40,15 +38,52 @@ export async function POST(request: Request) {
       );
     }
 
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    let addressId = existingUser.addressId;
+
+    if (streetAddress && city && state && postalCode && country) {
+      const addressData = {
+        streetAddress,
+        addressLine2,
+        city,
+        state,
+        postalCode,
+        country,
+      };
+
+      if (addressId) {
+        // Update the existing address
+        const updatedAddress = await prisma.address.update({
+          where: { id: addressId },
+          data: addressData,
+        });
+        addressId = updatedAddress.id;
+      } else {
+        // Create a new address
+        const newAddress = await prisma.address.create({
+          data: addressData,
+        });
+        addressId = newAddress.id;
+      }
+    }
+
     const updatedUser = await prisma.user.update({
-      where: {
-        email: email,
-      },
+      where: { email },
       data: {
-        fullname: fullname,
-        address: address,
-        mobile: mobile,
+        fullname,
+        mobile,
         avatar: avatarPath,
+        addressId,
       },
     });
 
