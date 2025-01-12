@@ -6,9 +6,9 @@ import path from "path";
 const uploadDir = path.join("public", "uploads");
 
 export async function POST(request: NextRequest) {
+  const data = await request.formData();
   try {
     await mkdir(uploadDir, { recursive: true });
-    const data = await request.formData();
 
     const files = data.getAll("file") as File[];
     const title = (data.get("title") as string | null) || "";
@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
     const EndDate = (data.get("EndDate") as string | null) || "";
     const timeInterval = (data.get("timeInterval") as string | null) || "";
     const status = (data.get("status") as string | null) || "";
+    const placeLink = (data.get("placeLink") as string | null) || "";
+    const geoLocation = (data.get("geoLocation") as object | null) || null;
     const photoPaths: string[] = [];
 
     for (const file of files) {
@@ -26,7 +28,7 @@ export async function POST(request: NextRequest) {
       const buffer = Buffer.from(bytes);
       const filePath = path.join(uploadDir, file.name);
       await writeFile(filePath, buffer);
-      console.log(`File uploaded successfully: ${path}`);
+      console.log(`File uploaded successfully: ${filePath}`);
       photoPaths.push(filePath);
     }
 
@@ -41,6 +43,8 @@ export async function POST(request: NextRequest) {
         EndDate,
         timeInterval,
         photos: photoPaths,
+        placeLink,
+        geoLocation,
       },
     });
 

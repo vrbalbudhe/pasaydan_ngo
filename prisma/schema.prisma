@@ -23,6 +23,8 @@ model Drive {
   startDate    String
   EndDate      String
   timeInterval String
+  geoLocation  Json?
+  placeLink    String?
   photos       String[]
   createdAt    DateTime @default(now())
 }

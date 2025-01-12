@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function Drive() {
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container md:w-[90%] mx-auto py-8 px-4">
       <div className="flex flex-col-reverse md:flex-row gap-8 lg:gap-12">
         {/* Sidebar */}
         <aside className="w-full md:w-1/4">
@@ -17,7 +17,7 @@ export default function Drive() {
                 <CalendarComponent />
               </CardContent>
             </Card>
-            
+
             <Card className="shadow-md bg-white">
               <CardContent className="p-4">
                 <DriveAccordian />
@@ -35,12 +35,12 @@ export default function Drive() {
             <Card className="bg-blue-50/50">
               <CardContent className="p-6">
                 <p className="text-base text-slate-700 leading-relaxed">
-                  Pasaydan Foundation organizes drives to donate blankets, bicycles,
-                  and food to underprivileged students and communities. These
-                  initiatives aim to provide essential resources to those in need,
-                  especially during winter. You can contribute by donating items,
-                  volunteering, or offering financial support to help continue these
-                  efforts.
+                  Pasaydan Foundation organizes drives to donate blankets,
+                  bicycles, and food to underprivileged students and
+                  communities. These initiatives aim to provide essential
+                  resources to those in need, especially during winter. You can
+                  contribute by donating items, volunteering, or offering
+                  financial support to help continue these efforts.
                 </p>
               </CardContent>
             </Card>
@@ -56,8 +56,8 @@ export default function Drive() {
   );
 }
 
-
-{/*import React from "react";
+{
+  /*import React from "react";
 import CalendarComponent from "@/components/drive/calender";
 import DriveEvents from "@/components/drive/driveEvents";
 import { DriveCards } from "@/components/drive/driveCards";
@@ -92,4 +92,5 @@ export default function drive() {
       </div>
     </div>
   );
-}*/}
+}*/
+}
