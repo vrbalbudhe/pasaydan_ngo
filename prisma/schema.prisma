@@ -28,14 +28,55 @@ model Drive {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  fullname  String?
-  email     String   @unique
-  password  String
-  address   String?
-  avatar    String?
-  mobile    String?
-  createdAt DateTime @default(now())
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userType       String   @default("individual")
+  fullname       String?
+  email          String   @unique
+  password       String
+  address        Address? @relation(fields: [addressId], references: [id])
+  addressId      String?  @db.ObjectId
+  avatar         String?
+  mobile         String?
+  createdAt      DateTime @default(now())
+  organizationId String?  @db.ObjectId
+}
+
+model Organization {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  orgId         String          @unique @default(uuid())
+  name          String?         @unique
+  email         String          @unique
+  password      String
+  contactPerson ContactPerson[]
+  address       Address?        @relation(fields: [addressId], references: [id])
+  addressId     String?         @db.ObjectId
+  avatar        String?
+  mobile        String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ContactPerson {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  email          String       @unique
+  mobile         String?
+  organizationId String       @db.ObjectId
+  Organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Address {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  streetAddress  String
+  addressLine2   String?
+  city           String
+  state          String
+  postalCode     String
+  country        String
+  userId         String?        @db.ObjectId
+  organizationId String?        @db.ObjectId
+  User           User[]
+  Organization   Organization[]
 }
 
 model DonationRequests {

@@ -14,6 +14,7 @@ const formSchema = z.object({
     .email("Please enter a valid email")
     .min(1, "Email is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  userType: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -34,9 +35,10 @@ export function LoginSignup() {
   const handleFormSubmit = async (data: {
     email: string;
     password: string;
+    userType?: string;
   }): Promise<void> => {
+    console.log(data);
     setError(null);
-
     try {
       if (isLogin) {
         const response = await fetch("/api/auth/login", {
@@ -44,15 +46,18 @@ export function LoginSignup() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+          }),
         });
+        const responseBody = await response.json();
+
         if (!response.ok) {
-          const errorMessage =
-            (await response.json())?.message || response.statusText;
-          throw new Error(`Login failed: Account Does Not Exists`);
+          const errorMessage = responseBody?.message;
+          throw new Error(`Login failed: ${errorMessage}`);
         }
-        const LoginedUser = await response.json();
-        console.log(LoginedUser);
+        console.log(responseBody);
         router.push("/pasaydan/com");
       } else {
         const response = await fetch("/api/auth/sign", {
@@ -62,12 +67,15 @@ export function LoginSignup() {
           },
           body: JSON.stringify(data),
         });
+        const responseBody = await response.json();
+
         if (!response.ok) {
-          const errorMessage =
-            (await response.json())?.message || response.statusText;
-          throw new Error(`Signup failed: Account Already Exists`);
+          const errorMessage = responseBody?.message || response.statusText;
+          throw new Error(`Signup failed: ${errorMessage}`);
         }
-        setIsLogin(false);
+
+        setIsLogin(true);
+        console.log(responseBody);
       }
     } catch (err) {
       const errorMessage =
@@ -87,6 +95,24 @@ export function LoginSignup() {
       )}
 
       <form onSubmit={handleSubmit(handleFormSubmit)}>
+        {!isLogin && (
+          <div className="mb-4">
+            <Label htmlFor="userType">User Type</Label>
+            <select
+              id="userType"
+              className="mt-2 border-2 w-full px-3 py-2 rounded"
+              {...register("userType")}
+            >
+              <option value="">Select your user type</option>
+              <option value="individual">Individual</option>
+              <option value="organisation">Organisation</option>
+            </select>
+            {errors.userType && (
+              <p className="text-red-500 text-sm">{errors.userType.message}</p>
+            )}
+          </div>
+        )}
+
         <div className="mb-4">
           <Label htmlFor="email">Email</Label>
           <Input
