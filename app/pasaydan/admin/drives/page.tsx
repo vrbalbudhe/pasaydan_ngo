@@ -4,6 +4,7 @@ import { AdminDriveCards } from "@/components/Admin/a_ManageDrives/driveAdminCar
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
+import { Inbox } from "lucide-react";
 
 export default function ManageDrives() {
   const [showForm, setShowForm] = useState(false);
@@ -15,9 +16,15 @@ export default function ManageDrives() {
   return (
     <div className="w-full min-h-screen relative bg-gray-50">
       <div className="w-full h-20 mt-14 flex justify-between items-center px-4">
-        <h1 className="-tracking-tight text-slate-800 font-semibold text-2xl">
-          Manage Drives
-        </h1>
+      <div className="flex items-center gap-3 mb-6">
+          <div className="bg-black p-2 rounded-lg">
+            <Inbox className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Manage Drives</h1>
+            <p className="text-sm text-gray-500 mt-1">Create and manage drives </p>
+          </div>
+        </div>
         <Link href="/pasaydan/admin/drives">
           <Button className="bg-black" onClick={() => toggleFormSwitch()}>
             {showForm ? "Remove" : "Create Drive"}

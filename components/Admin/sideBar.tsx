@@ -5,7 +5,7 @@ import {
   Users,
   Heart,
   Award,
-  DollarSign,
+  IndianRupeeIcon,
   Download,
   Settings,
 } from "lucide-react";
@@ -50,7 +50,7 @@ const items = [
   {
     title: "Transactions",
     url: "/pasaydan/admin/transactions",
-    icon: DollarSign,
+    icon: IndianRupeeIcon,
   },
   {
     title: "Downloads",
@@ -68,24 +68,24 @@ export function AppSidebar() {
   const router = useRouter();
 
   return (
-    <Sidebar className="w-64 lg:w-72 border-none bg-[#40434e] text-white min-h-screen">
+    <Sidebar className="w-60 lg:w-64 border-none bg-[#40434e] text-white min-h-screen">
       <SidebarContent className="bg-[#40434e]">
-        <div className="px-6 py-8">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="px-4 py-6">
+          <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
               <span className="text-lg font-bold text-white">P</span>
             </div>
-            <h1 className="text-xl font-semibold tracking-tight text-white">Pasaydan</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-white">Pasaydan</h1>
           </div>
 
           <SidebarGroup className="bg-[#40434e]">
-            <SidebarGroupLabel className="text-xs uppercase tracking-wider text-white font-medium px-4 mb-4">
+            <SidebarGroupLabel className="text-xs uppercase tracking-wider text-white font-medium px-3 mb-3">
               Administration
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => {
-                  const isActive = router.pathname === item.url;
+                  const isActive = window.location.pathname === item.url;
 
                   return (
                     <SidebarMenuItem
@@ -95,28 +95,26 @@ export function AppSidebar() {
                       }`}
                     >
                       <SidebarMenuButton asChild>
-    <a
-      href={item.url}
-      aria-label={item.title}
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-        isActive
-          ? "bg-[#565869] text-white"
-          : "text-white hover:bg-[#e0e0e0] hover:text-black"
-      }`}
-    >
-      <item.icon 
-        className={`w-5 h-5 transition-all ${
-          isActive ? "text-white" : "text-white hover:text-black"
-        }`} 
-      />
-      <span className={`text-sm font-medium ${
-        isActive ? "font-semibold" : ""
-      }`}>
-        {item.title}
-      </span>
-    </a>
-  </SidebarMenuButton>
-</SidebarMenuItem>
+                        <a
+                          href={item.url}
+                          aria-label={item.title}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                            isActive
+                              ? "bg-[#565869] text-white font-semibold"
+                              : "text-white hover:bg-[#565869]/50"
+                          }`}
+                        >
+                          <item.icon 
+                            className={`w-4 h-4 ${
+                              isActive ? "text-white" : "text-gray-300"
+                            }`} 
+                          />
+                          <span className="text-sm">
+                            {item.title}
+                          </span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                   );
                 })}
               </SidebarMenu>
@@ -124,8 +122,8 @@ export function AppSidebar() {
           </SidebarGroup>
         </div>
 
-        <div className="px-6 py-4 mt-auto border-t border-white/10">
-          <div className="flex items-center gap-3">
+        <div className="px-4 py-3 mt-auto border-t border-white/10">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
               <Users className="w-4 h-4 text-gray-300" />
             </div>
@@ -141,6 +139,8 @@ export function AppSidebar() {
 }
 
 export default AppSidebar;
+
+
 
 {/*"use client";
 import {
