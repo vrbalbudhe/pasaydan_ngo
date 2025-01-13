@@ -1,15 +1,9 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
+import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import puppeteer from "puppeteer";
-import { readFileSync } from "fs";
+import fs from "fs/promises";
+import path from "path";
 
-// Define the base64-encoded image data (replace with actual base64 string)
-const certificateImageBase64 = readFileSync(
-  path.join(process.cwd(), "public", "PasaydanCertificates.jpg"),
-  "base64"
-);
 interface CertificateRequestBody {
   userName: string;
   userEmail: string;
@@ -34,77 +28,108 @@ const generateCertificate = async (
   donationId: string
 ): Promise<string> => {
   try {
+    // Get the absolute path to the certificate image
+    const certificateImagePath = path.join(process.cwd(), 'public', 'PasaydanCertificates.jpg');
+    
+    // Read and encode the image
+    const imageBuffer = await fs.readFile(certificateImagePath);
+    const base64Image = imageBuffer.toString('base64');
+
     const htmlContent = `
+      <!DOCTYPE html>
       <html>
         <head>
           <style>
+            body {
+              margin: 0;
+              padding: 0;
+            }
             .certificate {
-              background-image: url('data:image/jpeg;base64,${certificateImageBase64}'); /* Base64 encoded image */
-              background-size: cover;
-              background-position: center;
-              width: 595px;
-              height: 842px;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              color: black;
-              font-family: Arial, sans-serif;
+              position: relative;
+              width: 100%;
+              height: 100vh;
+            }
+            .certificate-bg {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              z-index: 1;
+            }
+            .content {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 2;
               text-align: center;
+              width: 100%;
             }
             .name {
               font-size: 35px;
-              margin-top: 100px;
+              margin-bottom: 20px;
+              color: black;
+              font-family: 'Arial', sans-serif;
             }
             .donation-id {
               font-size: 20px;
+              color: black;
+              font-family: 'Arial', sans-serif;
             }
           </style>
         </head>
         <body>
           <div class="certificate">
-            <div class="name">${userName}</div>
-            <div class="donation-id">Donation ID: ${donationId}</div>
+            <img 
+              src="data:image/jpeg;base64,${base64Image}" 
+              class="certificate-bg"
+            />
+            <div class="content">
+              <div class="name">${userName}</div>
+              <div class="donation-id">Donation ID: ${donationId}</div>
+            </div>
           </div>
         </body>
       </html>
     `;
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      headless: 'new',
+    });
     const page = await browser.newPage();
-    await page.setContent(htmlContent);
-    await page.setViewport({ width: 595, height: 842 });
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    await page.setViewport({ width: 842, height: 595 }); // A4 size in pixels
 
-    const certificatesDir = path.join(process.cwd(), "public", "certificates");
-    if (!fs.existsSync(certificatesDir)) {
-      fs.mkdirSync(certificatesDir);
-    }
+    const certificatesDir = path.join(process.cwd(), 'public', 'certificates');
+    await fs.mkdir(certificatesDir, { recursive: true });
 
-    const outputPath = path.join(
-      certificatesDir,
-      `${userName}-certificate.pdf`
-    );
-    await page.pdf({ path: outputPath, format: "A4" });
+    const outputPath = path.join(certificatesDir, `${userName}-certificate.pdf`);
+    await page.pdf({ 
+      path: outputPath,
+      format: 'A4',
+      printBackground: true,
+      landscape: true,
+    });
 
     await browser.close();
 
     // Send email with the generated certificate
-    const subject = "Pasaydan Donation Certificate";
-    const text = `Dear ${userName},\n\nThank you for your donation (ID: ${donationId}). Please find your certificate attached.`;
-    const html = `<p>Dear ${userName},<br><br>Thank you for your donation (ID: ${donationId}). Please find your certificate attached.</p>`;
-
     await transporter.sendMail({
       from: process.env.EmailAddress,
       to: userEmail,
-      subject,
-      text,
-      html,
+      subject: "Pasaydan Donation Certificate",
+      text: `Dear ${userName},\n\nThank you for your donation (ID: ${donationId}). Please find your certificate attached.`,
+      html: `<p>Dear ${userName},<br><br>Thank you for your donation (ID: ${donationId}). Please find your certificate attached.</p>`,
       attachments: [
-        { filename: `${userName}-certificate.pdf`, path: outputPath },
+        { 
+          filename: `${userName}-certificate.pdf`,
+          path: outputPath
+        }
       ],
     });
 
-    fs.unlinkSync(outputPath);
+    await fs.unlink(outputPath);
     console.log("Certificate sent and deleted after sending.");
 
     return outputPath;
@@ -114,14 +139,13 @@ const generateCertificate = async (
   }
 };
 
-export const POST = async (req: Request) => {
-  const { userName, userEmail, donationId }: CertificateRequestBody =
-    await req.json();
-
+export async function POST(req: Request) {
   try {
+    const { userName, userEmail, donationId }: CertificateRequestBody = await req.json();
+
     if (!userName || !userEmail) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields." }),
+      return NextResponse.json(
+        { error: "Missing required fields." },
         { status: 400 }
       );
     }
@@ -130,17 +154,15 @@ export const POST = async (req: Request) => {
 
     await generateCertificate(userName, userEmail, donationIdToUse);
 
-    return new Response(
-      JSON.stringify({
-        message: "Certificate generated and sent successfully.",
-      }),
+    return NextResponse.json(
+      { message: "Certificate generated and sent successfully." },
       { status: 200 }
     );
   } catch (error) {
     console.error("Error in API handler:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to generate certificate." }),
+    return NextResponse.json(
+      { error: "Failed to generate certificate." },
       { status: 500 }
     );
   }
-};
+}
