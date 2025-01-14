@@ -1,9 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GoLocation } from "react-icons/go";
-import { CiCirclePlus } from "react-icons/ci";
 import { MdOutlineAccessTime } from "react-icons/md";
 
 interface Drive {
@@ -30,15 +28,12 @@ export default function DriveInfo() {
       try {
         setLoading(true);
         const response = await fetch(`/api/drive/${id}`);
-
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`Failed to fetch drive: ${response.statusText}`);
-        }
-
         const data = await response.json();
         setImagePaths(data?.photos);
         setDriveInformation(data);
-        console.log(data?.photos);
+        console.log(data);
       } catch (error: any) {
         setError(
           error.message || "An error occurred while fetching the drive."
@@ -51,82 +46,99 @@ export default function DriveInfo() {
   }, [id]);
 
   const formattedPaths = imagePaths.map((path) => path.replace(/\\/g, "/"));
-  console.log(formattedPaths);
+
   if (loading) {
     return (
-      <div className="w-full h-screen flex justify-center items-center text-center">
-        Loading...
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800"></div>
       </div>
     );
   }
 
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="rounded-lg bg-red-50 p-6 text-center text-red-600">
+          <p className="text-lg font-medium">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="w-[80%] min-h-screen justify-start flex flex-col items-center md:mb-10 mb-5">
-      <div className="w-full h-fit md:h-[350px] md:flex gap-5">
-        <div className="w-full md:w-[45%] h-full">
+    <div className="mx-auto w-[90%] px-4 py-8">
+      <div className="mb-12 grid gap-8 md:grid-cols-2">
+        <div className="relative overflow-hidden rounded-lg shadow-sm">
           <img
-            className="w-full h-[300px] rounded-md object-cover md:rounded-md"
+            className="h-[400px] w-full object-cover transition duration-500 hover:scale-105"
             src={
               formattedPaths.length > 0
                 ? `/${formattedPaths[0].replace("public/", "")}`
-                : "https://skift.com/wp-content/uploads/2022/06/GettyImages-1208049833-scaled-e1654782364566-1024x682.jpg" // Fallback image
+                : "https://thumb.ac-illust.com/b1/b170870007dfa419295d949814474ab2_t.jpeg"
             }
+            alt={DriveInformation?.title}
           />
         </div>
-        <div className="w-full md:w-[55%] h-fit p-2 flex flex-col">
-          <div className="w-full flex-col h-1/3 gap-2 flex-wrap p-2 flex justify-center items-start">
-            <p className="text-5xl font-semibold text-slate-800 tracking-tight">
+
+        <div className="flex flex-col justify-between space-y-6 p-4">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-slate-800 md:text-5xl">
               {DriveInformation?.title}
-            </p>
-            <div className="w-full flex flex-col justify-start gap-0.5 items-start">
+            </h1>
+
+            <div className="space-y-2">
               <InfoRow
                 icon={GoLocation}
                 text={DriveInformation?.location || "Location not available"}
+                iconClass="text-blue-500"
               />
               <InfoRow
                 icon={MdOutlineAccessTime}
                 text={`${DriveInformation?.startDate || "N/A"} - ${DriveInformation?.EndDate || "N/A"}`}
+                iconClass="text-green-500"
               />
               <InfoRow
                 icon={MdOutlineAccessTime}
                 text={DriveInformation?.timeInterval || "Time not available"}
+                iconClass="text-purple-500"
               />
               <InfoRow
                 icon={MdOutlineAccessTime}
                 text={DriveInformation?.dtype || "Type not specified"}
+                iconClass="text-orange-500"
               />
             </div>
           </div>
-          <div className="w-full flex-col h-fit border-2 flex-wrap rounded-2xl bg-slate-900 border-slate-200 p-5 flex justify-start items-start">
-            <p className="text-sm text-slate-200">
+
+          <div className="rounded-md bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-lg">
+            <p className="text-slate-200">
               {DriveInformation?.description.slice(0, 250) ||
                 "No description provided."}
             </p>
           </div>
         </div>
       </div>
-      <div className="w-full h-full mt-2 md:mt-5 flex flex-col gap-2">
-        <div className="w-full gap-4 h-fit border-slate-300 rounded-lg flex flex-wrap md:justify-start justify-center">
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-800">Photo Gallery</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {formattedPaths?.length ? (
             formattedPaths?.map((photo, index) => (
               <div
                 key={index}
-                className="md:w-[350px] w-full h-[210px] shadow-sm md:hover:scale-105 duration-500 rounded-md overflow-hidden"
+                className="group relative overflow-hidden rounded-xl shadow-lg"
               >
                 <img
                   src={`/${photo.replace("public/", "")}`}
                   alt={`Photo ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="h-64 w-full object-cover transition duration-500 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-black bg-opacity-0 transition duration-300 group-hover:bg-opacity-20"></div>
               </div>
             ))
           ) : (
-            <div className="md:w-full w-[100%] ml-2 mr-2 md:mr-0 md:ml-0 h-20 border-2 flex justify-center items-center border-yellow-200 rounded-2xl bg-yellow-50">
-              <p className="-tracking-tight text-slate-800 text-sm">
+            <div className="col-span-full rounded-xl bg-yellow-50 p-8 text-center">
+              <p className="text-lg font-medium text-yellow-800">
                 No Photos Available
               </p>
             </div>
@@ -140,15 +152,14 @@ export default function DriveInfo() {
 const InfoRow = ({
   icon: Icon,
   text,
+  iconClass,
 }: {
   icon: React.ElementType;
   text: string;
+  iconClass?: string;
 }) => (
-  <p className="text-sm text-slate-600 flex justify-center items-center gap-2">
-    <span className="text-sm inline">
-      <Icon />
-    </span>
-    {text}
-  </p>
+  <div className="flex items-center space-x-2 text-slate-600">
+    <Icon className={`text-lg ${iconClass}`} />
+    <span className="text-sm font-medium">{text}</span>
+  </div>
 );
- 

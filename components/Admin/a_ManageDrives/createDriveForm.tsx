@@ -1,14 +1,16 @@
 "use client";
 
+// Import necessary modules
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Define form schema
 const formSchema = z.object({
   title: z
     .string()
@@ -43,13 +45,17 @@ const formSchema = z.object({
     .optional(),
 });
 
+// Define form data type
 type FormData = z.infer<typeof formSchema>;
 
+// Create Manage Form component
 export default function CreateManageForm() {
+  // Initialize state variables
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
 
+  // Initialize form hook
   const {
     register,
     handleSubmit,
@@ -59,47 +65,45 @@ export default function CreateManageForm() {
     resolver: zodResolver(formSchema),
   });
 
+  // Handle file change event
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
     if (selectedFiles) {
-      setFiles(Array.from(selectedFiles));
-      setValue("photos", Array.from(selectedFiles));
+      const fileArray = Array.from(selectedFiles);
+      setFiles(fileArray);
+      setValue("photos", fileArray);
     }
   };
 
+  // Handle form submission
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("location", data.location);
-    formData.append("description", data.description);
-    formData.append("status", data.status);
-    formData.append("dtype", data.dtype);
-    formData.append("startDate", data.startDate);
-    formData.append("EndDate", data.EndDate);
-    formData.append("timeInterval", data.timeInterval);
-    formData.append("placeLink", data.placeLink || "");
-    formData.append("longitude", data.geoLocation?.longitude || "");
-    formData.append("latitude", data.geoLocation?.latitude || "");
-    console.log(formData);
-    if (data.photos) {
-      data.photos.forEach((file) => {
-        formData.append("file", file);
-      });
-    }
+    // Prepare request data
+    const requestData = {
+      ...data,
+      photos: files.map((file) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })),
+    };
 
     try {
       const response = await fetch("/api/drive/create", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
         throw new Error("Error submitting the form");
       }
-      console.log("this is dsd ", response);
+
+      console.log(requestData);
 
       console.log("Drive created successfully");
     } catch (err: any) {
@@ -260,14 +264,14 @@ export default function CreateManageForm() {
 
                 <div>
                   <Label
-                    htmlFor="EndDate"
+                    htmlFor="endDate"
                     className="text-sm font-medium text-gray-700"
                   >
                     End Date
                   </Label>
                   <Input
                     type="date"
-                    id="EndDate"
+                    id="endDate"
                     {...register("EndDate")}
                     className="mt-1 block w-full rounded-lg"
                   />
@@ -298,72 +302,11 @@ export default function CreateManageForm() {
                   </p>
                 )}
               </div>
-              <div>
-                <Label
-                  htmlFor="placeLink"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Place Link (Optional)
-                </Label>
-                <Input
-                  id="placeLink"
-                  {...register("placeLink")}
-                  className="mt-1 block w-full rounded-lg"
-                  placeholder="Enter the place URL"
-                />
-                {errors.placeLink && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.placeLink?.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="latitude"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Latitude (Optional)
-                </Label>
-                <Input
-                  type="text"
-                  id="latitude"
-                  {...register("geoLocation.latitude")}
-                  className="mt-1 block w-full rounded-lg"
-                  placeholder="Enter latitude"
-                />
-                {errors.geoLocation?.latitude && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.geoLocation.latitude?.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="longitude"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Longitude (Optional)
-                </Label>
-                <Input
-                  type="text"
-                  id="longitude"
-                  {...register("geoLocation.longitude")}
-                  className="mt-1 block w-full rounded-lg"
-                  placeholder="Enter longitude"
-                />
-                {errors.geoLocation?.longitude && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.geoLocation.longitude?.message}
-                  </p>
-                )}
-              </div>
             </div>
           </div>
 
-          {/* Files Section */}
-          <div>
+          {/* File Upload */}
+          <div className="space-y-4">
             <Label
               htmlFor="photos"
               className="text-sm font-medium text-gray-700"
@@ -371,32 +314,33 @@ export default function CreateManageForm() {
               Upload Photos
             </Label>
             <input
-              id="photos"
               type="file"
-              {...register("photos")}
-              onChange={onFileChange}
+              id="photos"
               multiple
-              className="mt-1 block w-full rounded-lg"
+              onChange={onFileChange}
+              className="mt-1 block w-full"
             />
             {files.length > 0 && (
-              <div className="mt-3 text-sm">
-                <span className="font-medium">Files to upload:</span>
+              <div className="mt-2">
                 <ul className="list-disc pl-5">
-                  {files.map((file, idx) => (
-                    <li key={idx}>{file.name}</li>
+                  {files.map((file, index) => (
+                    <li key={index} className="text-sm text-gray-700">
+                      {file.name}
+                    </li>
                   ))}
                 </ul>
               </div>
             )}
           </div>
 
-          <div className="mt-6 flex items-center justify-between">
+          {/* Submit Button */}
+          <div className="mt-6">
             <Button
               type="submit"
+              className="w-full bg-blue-600 text-white"
               disabled={loading}
-              className="px-6 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
-              {loading ? "Submitting..." : "Submit"}
+              {loading ? "Submitting..." : "Create Drive"}
             </Button>
           </div>
         </form>

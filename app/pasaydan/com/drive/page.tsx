@@ -7,18 +7,18 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function Drive() {
   return (
-    <div className="container md:w-[90%] mx-auto py-8 px-4">
-      <div className="flex flex-col-reverse md:flex-row gap-8 lg:gap-12">
+    <div className="container md:w-[95%] mx-auto py-8 px-4">
+      <div className="flex flex-col-reverse md:flex-row gap-8 lg:gap-5">
         {/* Sidebar */}
-        <aside className="w-full md:w-1/4">
-          <div className="sticky top-24 space-y-6">
-            <Card className="shadow-md bg-white">
-              <CardContent className="p-4">
+        <aside className="w-full md:w-[35%]">
+          <div className="sticky top-24 space-y-6 w-full">
+            <Card className="shadow-none border-none bg-white">
+              <CardContent className="w-full">
                 <CalendarComponent />
               </CardContent>
             </Card>
 
-            <Card className="shadow-md bg-white">
+            <Card className="shadow-none bg-white border-none">
               <CardContent className="p-4">
                 <DriveAccordian />
               </CardContent>
@@ -32,8 +32,8 @@ export default function Drive() {
             <h1 className="text-4xl md:text-5xl font-bold text-blue-950 mb-4">
               Drive
             </h1>
-            <Card className="bg-blue-50/50">
-              <CardContent className="p-6">
+            <Card className=" border-none shadow-none">
+              <CardContent className="p-3">
                 <p className="text-base text-slate-700 leading-relaxed">
                   Pasaydan Foundation organizes drives to donate blankets,
                   bicycles, and food to underprivileged students and

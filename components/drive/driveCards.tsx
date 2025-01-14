@@ -23,7 +23,9 @@ export function DriveCards() {
   const [noOfDrives, setNoOfDrives] = React.useState<number | 4>(4);
   const [products, setProducts] = React.useState<any[] | null>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [readMore, setReadMore] = React.useState<{ [key: number]: boolean }>({});
+  const [readMore, setReadMore] = React.useState<{ [key: number]: boolean }>(
+    {}
+  );
 
   React.useEffect(() => {
     const fetchDrives = async () => {
@@ -44,15 +46,17 @@ export function DriveCards() {
   }, []);
 
   const getStatusStyles = (status: string) => {
-    return status === "pending" 
-      ? "bg-gradient-to-r from-green-400 to-green-500 ring-4 ring-blue-950/20" 
+    return status === "pending"
+      ? "bg-gradient-to-r from-green-400 to-green-500 ring-4 ring-blue-950/20"
       : "bg-gradient-to-r from-yellow-400 to-yellow-500 ring-4 ring-blue-950/20";
   };
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[1, 2, 3, 4].map((i) => <SkeletonBox key={i} />)}
+        {[1, 2, 3, 4].map((i) => (
+          <SkeletonBox key={i} />
+        ))}
       </div>
     );
   }
@@ -79,16 +83,18 @@ export function DriveCards() {
         {products?.slice(0, noOfDrives)?.map((product, index) => (
           <Card
             key={index}
-            className="w-full overflow-hidden bg-gradient-to-br from-blue-100 via-white to-blue-100 hover:shadow-xl transition-all duration-300 border border-blue-100"
+            className="w-full overflow-hidden bg-gradient-to-tr from-zinc-50 via-white to-zinc-50 hover:shadow-md transition-all duration-300 border border-blue-100"
           >
             <CardHeader className="pb-4">
               <div className="flex justify-between items-start">
                 <CardTitle className="text-2xl font-semibold text-blue-950">
                   {product?.title}
                 </CardTitle>
-                <div className={`w-4 h-4 rounded-full ${getStatusStyles(product?.status)}`} />
+                <div
+                  className={`w-4 h-4 rounded-full ${getStatusStyles(product?.status)}`}
+                />
               </div>
-              
+
               <CardDescription className="space-y-3 mt-4">
                 <div className="flex items-center gap-2 text-gray-700">
                   <GoLocation className="text-blue-800 text-lg flex-shrink-0" />
@@ -109,7 +115,10 @@ export function DriveCards() {
 
                 <div className="flex items-center gap-2">
                   <IoArrowRedoCircleSharp className="text-blue-800 text-lg flex-shrink-0" />
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  >
                     {product?.dtype} Donations
                   </Badge>
                 </div>
@@ -118,9 +127,7 @@ export function DriveCards() {
 
             <CardFooter className="pt-4 pb-6">
               <Link href={`drive/${product.id}`} className="w-full">
-                <Button 
-                  className="w-1/2 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white shadow-md"
-                >
+                <Button className="w-1/2 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white shadow-md">
                   <span className="flex-1">Show Details</span>
                   <FaExternalLinkAlt className="ml-2 h-4 w-4" />
                 </Button>
@@ -134,7 +141,9 @@ export function DriveCards() {
         <div className="w-full flex justify-center">
           <Button
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
-            onClick={() => setNoOfDrives((prev) => (prev !== null ? prev + 4 : 4))}
+            onClick={() =>
+              setNoOfDrives((prev) => (prev !== null ? prev + 4 : 4))
+            }
           >
             Show More Drives
           </Button>
@@ -144,9 +153,8 @@ export function DriveCards() {
   );
 }
 
-
-
-{/*"use client";
+{
+  /*"use client";
 import * as React from "react";
 import { GoLocation } from "react-icons/go";
 import { BiDonateHeart } from "react-icons/bi";
@@ -265,8 +273,10 @@ export function DriveCards() {
             <CardFooter className="flex justify-between items-center">
               <Link href={`drive/${product.id}`}>
                 <Button className="bg-white text-black hover:bg-gray-200">
-                  {/* {product?.location} */}
-                {/*}  Show Details
+                  {/* {product?.location} */
+}
+{
+  /*}  Show Details
                   <FaExternalLinkAlt />
                 </Button>
               </Link>
@@ -299,4 +309,5 @@ export function DriveCards() {
       )}
     </div>
   );
-} */}
+} */
+}
