@@ -92,3 +92,14 @@ model DonationRequests {
   status    String   @default("Pending")
   createdAt DateTime @default(now())
 }
+
+model Certificates {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  donationId  String
+  email       String
+  type        String
+  fullname    String
+  mobile      String
+  description String?
+  createdAt   DateTime @default(now())
+}
