@@ -28,12 +28,17 @@ const generateCertificate = async (
   donationId: string
 ): Promise<string> => {
   try {
-    // Get the absolute path to the certificate image
-    const certificateImagePath = path.join(process.cwd(), 'public', 'PasaydanCertificates.jpg');
-    
-    // Read and encode the image
+    console.log(userName);
+    console.log(userEmail);
+    console.log(donationId);
+    const certificateImagePath = path.join(
+      process.cwd(),
+      "public",
+      "PasaydanCertificates.jpg"
+    );
+
     const imageBuffer = await fs.readFile(certificateImagePath);
-    const base64Image = imageBuffer.toString('base64');
+    const base64Image = imageBuffer.toString("base64");
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -101,19 +106,22 @@ const generateCertificate = async (
     `;
 
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: "new",
     });
     const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     await page.setViewport({ width: 842, height: 595 }); // A4 size in pixels
 
-    const certificatesDir = path.join(process.cwd(), 'public', 'certificates');
+    const certificatesDir = path.join(process.cwd(), "public", "certificates");
     await fs.mkdir(certificatesDir, { recursive: true });
 
-    const outputPath = path.join(certificatesDir, `${userName}-certificate.pdf`);
-    await page.pdf({ 
+    const outputPath = path.join(
+      certificatesDir,
+      `${userName}-certificate.pdf`
+    );
+    await page.pdf({
       path: outputPath,
-      format: 'A4',
+      format: "A4",
       printBackground: true,
       landscape: true,
     });
@@ -128,10 +136,10 @@ const generateCertificate = async (
       text: `Dear ${userName},\n\nThank you for your donation (ID: ${donationId}). Please find your certificate attached.`,
       html: `<p>Dear ${userName},<br><br>Thank you for your donation (ID: ${donationId}). Please find your certificate attached.</p>`,
       attachments: [
-        { 
+        {
           filename: `${userName}-certificate.pdf`,
-          path: outputPath
-        }
+          path: outputPath,
+        },
       ],
     });
 
@@ -146,9 +154,12 @@ const generateCertificate = async (
 };
 
 export async function POST(req: Request) {
+  const { userName, userEmail, donationId }: CertificateRequestBody =
+    await req.json();
+  console.log(userName);
+  console.log(userEmail);
+  console.log(donationId);
   try {
-    const { userName, userEmail, donationId }: CertificateRequestBody = await req.json();
-
     if (!userName || !userEmail) {
       return NextResponse.json(
         { error: "Missing required fields." },

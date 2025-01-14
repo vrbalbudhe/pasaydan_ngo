@@ -80,51 +80,46 @@ export default function DonationForm() {
     } finally {
       setLoading(false);
     }
-    // ... rest of the submit logic remains the same
   };
 
   return (
     <div className="relative min-h-screen py-12 md:py-20">
-      {/* Single Background Blob */}
-      {/* Enhanced Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Primary Blob */}
-        <div 
+        <div
           className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-          style={{ animationDelay: '0s' }}
+          style={{ animationDelay: "0s" }}
         />
-        {/* Secondary Blobs */}
-        <div 
+        <div
           className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-          style={{ animationDelay: '2s' }}
+          style={{ animationDelay: "2s" }}
         />
-        <div 
+        <div
           className="absolute bottom-1/3 left-1/2 w-[450px] h-[450px] bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-          style={{ animationDelay: '4s' }}
+          style={{ animationDelay: "4s" }}
         />
       </div>
 
       <div className="relative container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
-          {/* Left Section - Heading */}
-          <motion.div 
+          <motion.div
             className="w-full lg:w-1/2 text-center lg:text-left"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-              <span className="text-[#1a237e]">Donate</span> What You Can Spare <br />
+              <span className="text-[#1a237e]">Donate</span> What You Can Spare{" "}
+              <br />
               and Make a <br />
               <span className="text-[#1a237e]">Difference</span>
             </h1>
             <p className="mt-6 text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
-              Your contribution can change lives. Every donation, no matter how small, makes a significant impact on someone's life.
+              Your contribution can change lives. Every donation, no matter how
+              small, makes a significant impact on someone's life.
             </p>
           </motion.div>
 
-          {/* Right Section - Form */}
-          <motion.div 
+          <motion.div
             className="w-full lg:w-1/2"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -132,10 +127,13 @@ export default function DonationForm() {
           >
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100 p-6 sm:p-8 md:p-10">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Form fields remain the same */}
-                {/* Name Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="fullname" className="text-sm font-medium text-gray-700">Full Name</Label>
+                  <Label
+                    htmlFor="fullname"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Full Name
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Heart className="w-5 h-5" />
@@ -153,9 +151,13 @@ export default function DonationForm() {
                   </div>
                 </div>
 
-                {/* Mobile Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="mobile" className="text-sm font-medium text-gray-700">Mobile Number</Label>
+                  <Label
+                    htmlFor="mobile"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Mobile Number
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Phone className="w-5 h-5" />
@@ -173,9 +175,13 @@ export default function DonationForm() {
                   </div>
                 </div>
 
-                {/* Email Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</Label>
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Email Address
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Mail className="w-5 h-5" />
@@ -193,9 +199,13 @@ export default function DonationForm() {
                   </div>
                 </div>
 
-                {/* Address Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address</Label>
+                  <Label
+                    htmlFor="address"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Address
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Home className="w-5 h-5" />
@@ -213,15 +223,22 @@ export default function DonationForm() {
                   </div>
                 </div>
 
-                {/* Donate Type Select */}
                 <div className="space-y-2">
-                  <Label htmlFor="donateType" className="text-sm font-medium text-gray-700">Donation Type</Label>
+                  <Label
+                    htmlFor="donateType"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Donation Type
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">
                       <Package className="w-5 h-5" />
                     </span>
                     <Select onValueChange={(value) => setDonateType(value)}>
-                      <SelectTrigger id="donateType" className="pl-10 py-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      <SelectTrigger
+                        id="donateType"
+                        className="pl-10 py-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
                         <SelectValue placeholder="Select donation type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -233,9 +250,13 @@ export default function DonationForm() {
                   </div>
                 </div>
 
-                {/* Quantity Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="quantity" className="text-sm font-medium text-gray-700">Quantity</Label>
+                  <Label
+                    htmlFor="quantity"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Quantity
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Hash className="w-5 h-5" />
@@ -253,7 +274,6 @@ export default function DonationForm() {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -265,9 +285,25 @@ export default function DonationForm() {
                   >
                     {loading ? (
                       <>
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         <span>Processing...</span>
                       </>
@@ -287,9 +323,16 @@ export default function DonationForm() {
 
       <style jsx>{`
         @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(50px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(50px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
         }
         .animate-blob {
           animation: blob 15s infinite ease-in-out;
@@ -299,9 +342,8 @@ export default function DonationForm() {
   );
 }
 
-
-
-{/*"use client";
+{
+  /*"use client";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -489,4 +531,5 @@ export default function DonationForm() {
       </div>
     </div>
   );
-}*/}
+}*/
+}

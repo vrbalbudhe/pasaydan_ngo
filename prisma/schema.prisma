@@ -103,3 +103,26 @@ model Certificates {
   description String?
   createdAt   DateTime @default(now())
 }
+
+model Admin {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  role      String      @default("Admin")
+  name      String
+  email     String      @unique
+  password  String
+  mobile    String      @unique
+  subAdmins SubAdmins[]
+  createdAt DateTime    @default(now())
+}
+
+model SubAdmins {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  role      String   @default("MiniAdmin")
+  name      String
+  email     String   @unique
+  password  String
+  mobile    String   @unique
+  createdAt DateTime @default(now())
+  Admin     Admin?   @relation(fields: [adminId], references: [id])
+  adminId   String?  @db.ObjectId
+}
