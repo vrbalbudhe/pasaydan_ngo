@@ -59,23 +59,29 @@ const generateCertificate = async (
             }
             .content {
               position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
+              top: 0;
+              left: 0;
               z-index: 2;
-              text-align: center;
               width: 100%;
+              height: 100%;
             }
             .name {
-              font-size: 35px;
-              margin-bottom: 20px;
+              position: absolute;
+              top: 46%;
+              left: 39%;
+              font-size: 50px;
               color: black;
-              font-family: 'Arial', sans-serif;
+              font-family: 'Times New Roman', serif;
+              font-weight: bold;
             }
             .donation-id {
+              position: absolute;
+              top: 53%;
+              left: 39%;
               font-size: 20px;
               color: black;
               font-family: 'Arial', sans-serif;
+              font-weight: bold;
             }
           </style>
         </head>
