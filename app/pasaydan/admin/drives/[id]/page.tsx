@@ -448,7 +448,7 @@ export default function DriveUpdatePage() {
           </Button>
           <Button 
             type="submit" 
-            className="bg-blue-500 text-white"
+            className=" text-white"
             disabled={loading}
           >
             {loading ? (
