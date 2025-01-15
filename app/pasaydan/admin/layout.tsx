@@ -4,6 +4,7 @@ import "../../globals.css";
 import AdminLayout from "@/components/adminLayout";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Admin/sideBar";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,9 @@ export default function RootAdminLayout({
       >
         <SidebarProvider>
           <AppSidebar />
-          <SidebarTrigger className=" w-10 p-5 h-full text-[#323031]" />
+          <SidebarTrigger className="w-10 p-5 h-full text-[#323031]" />
           <AdminLayout>{children}</AdminLayout>
+          <Toaster />
         </SidebarProvider>
       </body>
     </html>
