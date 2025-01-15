@@ -37,7 +37,7 @@ const InfoCard: React.FC<{
   link?: string;
 }> = ({ icon: Icon, title, content, link }) => {
   return (
-    <div className="rounded-lg bg-white p-6 shadow-sm">
+    <div className="rounded-xl border bg-white p-6 shadow-sm">
       <div className="flex items-center gap-3">
         <Icon className="h-5 w-5 text-gray-500" />
         <h3 className="font-semibold text-gray-900">{title}</h3>
@@ -76,7 +76,10 @@ export default function DriveInfo() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch drive details"
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch drive details",
       });
     } finally {
       setLoading(false);
@@ -105,7 +108,9 @@ export default function DriveInfo() {
       <div className="flex h-[70vh] items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800">Drive Not Found</h2>
-          <p className="mt-2 text-gray-600">The drive you're looking for doesn't exist or has been removed.</p>
+          <p className="mt-2 text-gray-600">
+            The drive you're looking for doesn't exist or has been removed.
+          </p>
         </div>
       </div>
     );
@@ -117,22 +122,27 @@ export default function DriveInfo() {
       <div className="relative h-[60vh] w-full">
         <div className="absolute inset-0">
           <img
-            src={drive.photos[0] || '/placeholder-image.jpg'}
+            src={drive.photos[0] || "/placeholder-image.jpg"}
             alt={drive.title}
             className="h-full w-full object-cover"
           />
         </div>
         <div className="absolute inset-0 bg-black/50">
           <div className="container mx-auto h-full px-4">
-            <div className="flex h-full flex-col justify-end pb-16">
+            <div className="flex h-full pl-16 flex-col justify-end pb-16">
               <h1 className="text-4xl font-bold text-white md:text-6xl">
                 {drive.title}
               </h1>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant={
-                  drive.status === 'active' ? 'default' :
-                    drive.status === 'completed' ? 'secondary' : 'outline'
-                }>
+                <Badge
+                  variant={
+                    drive.status === "active"
+                      ? "default"
+                      : drive.status === "completed"
+                        ? "secondary"
+                        : "outline"
+                  }
+                >
                   {drive.status.toUpperCase()}
                 </Badge>
                 <Badge variant="outline">{drive.dtype}</Badge>
@@ -143,17 +153,19 @@ export default function DriveInfo() {
       </div>
 
       {/* Content Section */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid gap-12 md:grid-cols-3">
+      <div className="container w-[95%] mx-auto px-4 py-12">
+        <div className="w-full h-full flex flex-col-reverse md:flex-row gap-3">
           {/* Left Column - Details */}
-          <div className="md:col-span-2 space-y-8">
+          <div className="md:w-[70%] h-fit">
             <section className="rounded-lg bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-2xl font-bold">About This Drive</h2>
-              <p className="text-gray-700 leading-relaxed">{drive.description}</p>
+              <p className="text-gray-700 leading-relaxed">
+                {drive.description}
+              </p>
             </section>
 
             {/* Image Gallery */}
-            <section className="space-y-4">
+            <section className="">
               <h2 className="text-2xl font-bold">Photos</h2>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 {drive.photos.map((photo, index) => (
@@ -174,7 +186,7 @@ export default function DriveInfo() {
           </div>
 
           {/* Right Column - Info Cards */}
-          <div className="space-y-6">
+          <div className="md:w-[30%] flex gap-2 flex-col">
             <InfoCard
               icon={GoCalendar}
               title="Dates"
@@ -192,9 +204,20 @@ export default function DriveInfo() {
               link={drive.placeLink}
             />
             {drive.geoLocation && (
-              <div className="rounded-lg bg-white p-6 shadow-sm">
-                <div className="aspect-video w-full">
-                  {/* Add your map component here if needed */}
+              <div className="rounded-lg bg-white p-6 shadow-lg border border-gray-200">
+                <div className="text-gray-700">
+                  <span className="block text-md font-semibold">Latitude:</span>
+                  <span className="block text-gray-600">
+                    {drive.geoLocation.latitude}
+                  </span>
+                </div>
+                <div className="text-gray-700 mt-2">
+                  <span className="block text-md font-semibold">
+                    Longitude:
+                  </span>
+                  <span className="block text-gray-600">
+                    {drive.geoLocation.longitude}
+                  </span>
                 </div>
               </div>
             )}

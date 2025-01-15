@@ -25,7 +25,7 @@ export default function DonatePage() {
   return (
     <div className="w-[100%] flex flex-col justify-start pb-10 items-center min-h-screen bg-gradient-to-tr from-white via-blue-100 to-white/90">
       <DonationForm />
-      <div className="w-[90%] min-h-[500px] flex flex-col-reverse md:flex gap-3 justify-between ">
+      <div className="w-[90%] min-h-[500px] flex md:flex-row flex-col-reverse gap-3 justify-between ">
         <div className="md:w-[40%]">
           <GenerateCertificateForm />
         </div>
