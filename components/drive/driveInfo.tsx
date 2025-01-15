@@ -68,10 +68,10 @@ export default function DriveInfo() {
     try {
       const response = await fetch(`/api/drive/${id}`);
       const result = await response.json();
-      
+
       if (!response.ok) throw new Error(result.message);
-      
-      setDrive(result.data);
+      // console.log("this is check L", result);
+      setDrive(result);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -85,10 +85,10 @@ export default function DriveInfo() {
 
   useEffect(() => {
     fetchDrive();
-    
+
     // Set up polling for real-time updates
     const interval = setInterval(fetchDrive, 30000); // Poll every 30 seconds
-    
+
     return () => clearInterval(interval);
   }, [id]);
 
@@ -131,7 +131,7 @@ export default function DriveInfo() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <Badge variant={
                   drive.status === 'active' ? 'default' :
-                  drive.status === 'completed' ? 'secondary' : 'outline'
+                    drive.status === 'completed' ? 'secondary' : 'outline'
                 }>
                   {drive.status.toUpperCase()}
                 </Badge>
