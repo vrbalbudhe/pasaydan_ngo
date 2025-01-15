@@ -99,56 +99,58 @@ export default function CreateDriveForm() {
     
     try {
       const formData = new FormData();
-  
-      // Append form fields
-      Object.entries(data).forEach(([key, value]) => {
-        // Only append if the value exists and is not an empty string
-        if (value !== undefined && value !== "") {
-          // Handle geolocation data separately
-          if (key === 'latitude' || key === 'longitude') {
-            // Don't append individual lat/lng fields to FormData
-            return;
-          }
-          formData.append(key, value);
-        }
-      });
-  
-      // Handle geolocation as a single JSON object
+
+      // Append basic fields
+      formData.append('title', data.title);
+      formData.append('location', data.location);
+      formData.append('description', data.description);
+      formData.append('status', data.status);
+      formData.append('dtype', data.dtype);
+      formData.append('startDate', data.startDate);
+      formData.append('EndDate', data.EndDate);
+      formData.append('timeInterval', data.timeInterval);
+
+      // Handle placeLink
+      if (data.placeLink) {
+        formData.append('placeLink', data.placeLink);
+      }
+
+      // Handle geolocation
       if (data.latitude && data.longitude) {
         formData.append('geoLocation', JSON.stringify({
           latitude: data.latitude,
           longitude: data.longitude
         }));
       }
-  
+
       // Append files
       files.forEach(file => {
         formData.append('photos', file);
       });
-  
+
       // Submit form
       const response = await fetch("/api/drive/create", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         const result = await response.json();
         throw new Error(result.message || "Failed to create drive");
       }
-  
+
       const result = await response.json();
-  
+
       // Show success message
       toast({
         title: "Success",
         description: "Drive created successfully"
       });
-  
+
       // Reset form
       reset();
       setFiles([]);
-  
+
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -159,7 +161,7 @@ export default function CreateDriveForm() {
     } finally {
       setLoading(false);
     }
-  };
+};
   return (
     <Card className="max-w-3xl mx-auto">
       <CardHeader className="space-y-1">

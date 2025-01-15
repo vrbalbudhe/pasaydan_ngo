@@ -42,7 +42,7 @@ async function saveFile(file: File, fileName: string): Promise<string> {
 }
 
 export async function POST(request: Request) {
-  try {
+    try {
       const formData = await request.formData();
       
       // Extract files
@@ -51,67 +51,73 @@ export async function POST(request: Request) {
       // Handle file uploads
       const uploadedPaths: string[] = [];
       if (files.length > 0) {
-          if (files.length > 10) {
-              return NextResponse.json(
-                  { success: false, message: "Maximum 10 images allowed" },
-                  { status: 400 }
-              );
+        if (files.length > 10) {
+          return NextResponse.json(
+            { success: false, message: "Maximum 10 images allowed" },
+            { status: 400 }
+          );
+        }
+  
+        for (const file of files) {
+          if (file instanceof File) {
+            const filePath = await saveFile(file, file.name);
+            uploadedPaths.push(filePath);
           }
-
-          for (const file of files) {
-              if (file instanceof File) {
-                  const filePath = await saveFile(file, file.name);
-                  uploadedPaths.push(filePath);
-              }
-          }
+        }
       }
-
-      // Create the base data object with required fields
-      const driveData = {
-          title: formData.get('title') as string,
-          location: formData.get('location') as string,
-          description: formData.get('description') as string,
-          status: (formData.get('status') as string) || "pending",
-          dtype: formData.get('dtype') as string,
-          startDate: formData.get('startDate') as string,
-          EndDate: formData.get('EndDate') as string,
-          timeInterval: formData.get('timeInterval') as string,
-          photos: uploadedPaths,
+  
+      // Create base drive data
+      const driveData: any = {
+        title: formData.get('title') as string,
+        location: formData.get('location') as string,
+        description: formData.get('description') as string,
+        status: formData.get('status') as string || "pending",
+        dtype: formData.get('dtype') as string,
+        startDate: formData.get('startDate') as string,
+        EndDate: formData.get('EndDate') as string,
+        timeInterval: formData.get('timeInterval') as string,
+        photos: uploadedPaths,
       };
-
-      // Handle optional geoLocation
-      const latitude = formData.get('latitude');
-      const longitude = formData.get('longitude');
-      if (latitude && longitude) {
-          driveData['geoLocation'] = {
-              latitude: String(latitude),
-              longitude: String(longitude)
-          };
+  
+      // Handle placeLink
+      const placeLink = formData.get('placeLink');
+      if (placeLink) {
+        driveData.placeLink = placeLink as string;
       }
-
-      // Create drive in database - explicitly type the data
+  
+      // Handle geoLocation
+      const geoLocationStr = formData.get('geoLocation');
+      if (geoLocationStr) {
+        try {
+          const geoLocation = JSON.parse(geoLocationStr as string);
+          driveData.geoLocation = geoLocation;
+        } catch (error) {
+          console.error('Error parsing geoLocation:', error);
+        }
+      }
+  
+      // Create drive in database
       const drive = await prisma.drive.create({
-          data: driveData
+        data: driveData
       });
-
+  
       return NextResponse.json({
-          success: true,
-          drive,
-          message: "Drive created successfully"
+        success: true,
+        drive,
+        message: "Drive created successfully"
       });
-
-  } catch (error) {
+  
+    } catch (error) {
       console.error("Error creating drive:", error);
       return NextResponse.json(
-          { 
-              success: false, 
-              message: error instanceof Error ? error.message : "Failed to create drive"
-          },
-          { status: 500 }
+        { 
+          success: false, 
+          message: error instanceof Error ? error.message : "Failed to create drive"
+        },
+        { status: 500 }
       );
+    }
   }
-}
-
 export const config = {
     api: {
         bodyParser: false,
