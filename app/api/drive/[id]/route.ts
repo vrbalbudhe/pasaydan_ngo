@@ -5,12 +5,14 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
+  if (!params?.id) {
+    return NextResponse.json({ error: "Drive ID is required" }, { status: 400 });
+  }
 
   try {
     const drive = await prisma.drive.findUnique({
       where: {
-        id: id,
+        id: params.id,
       },
     });
 
