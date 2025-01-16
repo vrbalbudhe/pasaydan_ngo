@@ -18,7 +18,7 @@ interface Drive {
   title: string;
   location: string;
   startDate: string;
-  endDate: string; // Changed from EndDate to endDate
+  EndDate: string; // Changed from EndDate to endDate
   description: string;
   status: string;
   dtype: string;
@@ -37,22 +37,26 @@ const InfoCard: React.FC<{
   link?: string;
 }> = ({ icon: Icon, title, content, link }) => {
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
-      <div className="flex items-center gap-3">
-        <Icon className="h-5 w-5 text-gray-500" />
-        <h3 className="font-semibold text-gray-900">{title}</h3>
+    <div className="rounded-xl border  flex bg-white p-6 shadow-md border-gray-400 hover:bg-gray-200">
+      <div className="w-[20%] flex justify-center text-[200px] items-center">
+        <Icon className="h-5 w-5 text-gray-500 " />
       </div>
-      <p className="mt-2 text-gray-700">{content}</p>
-      {link && (
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-        >
-          View on Map <GoLinkExternal className="ml-1" />
-        </a>
-      )}
+      <div className="w-[80%] h-full">
+        <div className="flex items-center gap-3">
+          <h3 className="font-semibold text-gray-900">{title}</h3>
+        </div>
+        <p className="mt-2 text-gray-700">{content}</p>
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+          >
+            View on Map <GoLinkExternal className="ml-1" />
+          </a>
+        )}
+      </div>
     </div>
   );
 };
@@ -134,6 +138,7 @@ export default function DriveInfo() {
               </h1>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Badge
+                  className="text-white -tracking-tighter text-lg"
                   variant={
                     drive.status === "active"
                       ? "default"
@@ -144,7 +149,12 @@ export default function DriveInfo() {
                 >
                   {drive.status.toUpperCase()}
                 </Badge>
-                <Badge variant="outline">{drive.dtype}</Badge>
+                <Badge
+                  variant="outline"
+                  className="text-white -tracking-tighter text-lg"
+                >
+                  {drive.dtype}
+                </Badge>
               </div>
             </div>
           </div>
@@ -153,11 +163,11 @@ export default function DriveInfo() {
 
       {/* Content Section */}
       <div className="container w-[95%] mx-auto px-4 py-12">
-        <div className="w-full h-full flex flex-col-reverse md:flex-row gap-3">
+        <div className="w-full h-full flex flex-col-reverse md:flex-row gap-5">
           {/* Left Column - Details */}
-          <div className="md:w-[70%] h-fit">
+          <div className="md:w-[70%] h-fit text-wrap">
             <section className="rounded-lg mb-4 bg-white shadow-sm">
-              <h2 className=" text-2xl font-bold text-slate-800">
+              <h2 className=" text-4xl font-semibold mb-5 text-slate-800">
                 Description
               </h2>
               <p className="text-gray-700 text-md leading-relaxed">
@@ -166,8 +176,8 @@ export default function DriveInfo() {
             </section>
 
             {/* Image Gallery */}
-            <section className="">
-              <h2 className="text-2xl font-bold">Photos</h2>
+            <section className="mt-10">
+              <h2 className="text-4xl font-semibold mb-4">Photos</h2>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 {drive.photos.map((photo, index) => (
                   <div
@@ -191,7 +201,7 @@ export default function DriveInfo() {
             <InfoCard
               icon={GoCalendar}
               title="Dates"
-              content={`${drive.startDate} - ${drive.endDate}`} // Updated to endDate
+              content={`${drive.startDate} - ${drive.EndDate}`}
             />
             <InfoCard
               icon={MdOutlineAccessTime}
@@ -204,15 +214,15 @@ export default function DriveInfo() {
               content={drive.location}
               link={drive.placeLink}
             />
-            {drive.geoLocation && (
-              <div className="rounded-lg bg-white p-6 shadow-lg border border-gray-200">
+            {/* {drive.geoLocation && (
+              <div className="rounded-lg bg-white flex flex-col p-6 justify-center items-start gap-3 shadow-lg border border-gray-200">
                 <div className="text-gray-700">
                   <span className="block text-md font-semibold">Latitude:</span>
                   <span className="block text-gray-600">
                     {drive.geoLocation.latitude}
                   </span>
                 </div>
-                <div className="text-gray-700 mt-2">
+                <div className="text-gray-700">
                   <span className="block text-md font-semibold">
                     Longitude:
                   </span>
@@ -221,7 +231,7 @@ export default function DriveInfo() {
                   </span>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
