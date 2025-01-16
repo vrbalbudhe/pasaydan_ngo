@@ -40,13 +40,23 @@ export async function POST(request: Request) {
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
+      select: {
+        password: false,
+        id: true,
+        userType: true,
+        fullname: true,
+        email: true,
+        address: true,
+        addressId: true,
+        avatar: true,
+        mobile: true,
+        createdAt: true,
+        otp: false,
+      },
     });
 
     if (!existingUser) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     let addressId = existingUser.addressId;

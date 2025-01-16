@@ -89,8 +89,7 @@ export default function DriveInfo() {
   useEffect(() => {
     fetchDrive();
 
-    // Set up polling for real-time updates
-    const interval = setInterval(fetchDrive, 30000); // Poll every 30 seconds
+    const interval = setInterval(fetchDrive, 30000);
 
     return () => clearInterval(interval);
   }, [id]);
@@ -157,9 +156,11 @@ export default function DriveInfo() {
         <div className="w-full h-full flex flex-col-reverse md:flex-row gap-3">
           {/* Left Column - Details */}
           <div className="md:w-[70%] h-fit">
-            <section className="rounded-lg bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-2xl font-bold">About This Drive</h2>
-              <p className="text-gray-700 leading-relaxed">
+            <section className="rounded-lg mb-4 bg-white shadow-sm">
+              <h2 className=" text-2xl font-bold text-slate-800">
+                Description
+              </h2>
+              <p className="text-gray-700 text-md leading-relaxed">
                 {drive.description}
               </p>
             </section>

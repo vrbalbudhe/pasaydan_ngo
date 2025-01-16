@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "../../globals.css";
 import AdminLayout from "@/components/adminLayout";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -16,6 +16,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-poppins",
+});
+
 export const metadata: Metadata = {
   title: "Pasaydan Admin",
   description: "Developed By Varun, Shivam",
@@ -29,7 +35,7 @@ export default function RootAdminLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable}  antialiased`}
       >
         <SidebarProvider>
           <AppSidebar />

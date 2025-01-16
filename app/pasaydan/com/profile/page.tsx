@@ -179,30 +179,35 @@ export default function Profile() {
           country,
         } = userProfile.address;
         return (
-          <>
+          <div className="text-slate-700">
             {streetAddress && <div>{streetAddress}</div>}
             {addressLine2 && <div>{addressLine2}</div>}
             {city && <div>{city}</div>}
             {state && <div>{state}</div>}
             {postalCode && <div>{postalCode}</div>}
             {country && <div>{country}</div>}
-          </>
+          </div>
         );
       }
     }
-    return <div>{"Address not available"}</div>;
+    return (
+      <div className="text-sm text-red-500 -tracking-tighter">
+        {"Address not available"}
+      </div>
+    );
   };
 
   return (
     <div className="min-h-screen w-full">
-      <div className="max-w-[90%] mx-auto p-8">
+      <div className="md:w-[95%] w-full mx-auto p-8">
         {/* Header Card */}
-        <Card className="border-none shadow-none mb-4">
+        <Card className="border-none shadow-md mb-4 bg-blue-500 rounded-md">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <Avatar className="h-32 w-32 ring-4 ring-gray-100">
                 {userProfile.avatar ? (
                   <AvatarImage
+                    className="text-lg"
                     src={userProfile.avatar}
                     alt={
                       isUserProfile(userProfile)
@@ -219,12 +224,12 @@ export default function Profile() {
                 )}
               </Avatar>
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold text-gray-700">
+                <h1 className="text-3xl font-bold text-gray-100">
                   {isUserProfile(userProfile)
                     ? userProfile.fullname
                     : userProfile.name || "Anonymous User"}
                 </h1>
-                <p className="text-md text-gray-600">{userProfile.email}</p>
+                <p className="text-md text-gray-300">{userProfile.email}</p>
               </div>
               <div className="flex gap-3">
                 <Button
@@ -244,49 +249,40 @@ export default function Profile() {
         </Card>
 
         {/* Information Cards */}
-        <div className="w-[100%] flex gap-2">
-          <div className="w-[30%] flex flex-col gap-2">
-            <Card className="">
-              <CardHeader>
-                <CardTitle>Email</CardTitle>
+        <div className="w-[100%] flex flex-col md:flex-row gap-2">
+          <div className="w-full md:w-[30%] flex flex-col gap-2">
+            <Card className="rounded-lg bg-white p-2 shadow-xl border border-gray-300">
+              <CardHeader className="bg-gray-50 px-4 rounded-t-lg">
+                <CardTitle className="text-xl font-semibold text-gray-800">
+                  User Details
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-gray-500" />
-                  <span>{userProfile.email || "Not available"}</span>
+              <CardContent className="p-6 flex flex-col gap-4">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <Mail className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium">
+                    {userProfile.email || "Not available"}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Phone</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-gray-500" />
-                  <span>{userProfile.mobile || "Not available"}</span>
+                <div className="flex items-center gap-3 text-gray-700">
+                  <Phone className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium">
+                    {userProfile.mobile || "Not available"}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Member Since</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-gray-500" />
-                  <span>{formatDate(userProfile.createdAt)}</span>
+                <div className="flex items-center gap-3 text-gray-700">
+                  <User className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium">
+                    {formatDate(userProfile.createdAt)}
+                  </span>
                 </div>
+                <CardContent className="mt-4 bg-gray-50 p-0 text-sm rounded-lg">
+                  <p className="text-lg text-slate-800 font-semibold -tracking-tight">
+                    Address
+                  </p>
+                  {renderAddress()}
+                </CardContent>
               </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Address</CardTitle>
-              </CardHeader>
-              <CardContent>{renderAddress()}</CardContent>
             </Card>
 
             {userProfile.orgId && (
@@ -303,7 +299,7 @@ export default function Profile() {
               </Card>
             )}
           </div>
-          <div className="w-[70%]">
+          <div className="md:w-[70%] w-full">
             {!userProfile?.orgId && editForm && (
               <UpdateProfileForm initialProfile={userProfile as UserProfile} />
             )}

@@ -2,7 +2,13 @@
 
 import React from "react";
 import { FaQuoteLeft } from "react-icons/fa";
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Eye, Target } from "lucide-react";
 
@@ -12,27 +18,27 @@ const Mission: React.FC = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.3
-      }
-    }
+        staggerChildren: 0.3,
+      },
+    },
   };
 
   const itemAnimation = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
-    <div className="relative bg-gradient-to-b from-white to-blue-50 py-8 md:py-16">
+    <div className="relative  py-8 md:py-16">
       <div className="relative container mx-auto px-2 sm:px-4">
-        <motion.h2 
+        <motion.h2
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 text-center mb-8 md:mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -41,14 +47,14 @@ const Mission: React.FC = () => {
           Our Vision and Mission
         </motion.h2>
 
-        <motion.div 
+        <motion.div
           className="max-w-7xl mx-auto space-y-8 md:space-y-16"
           variants={containerAnimation}
           initial="hidden"
           animate="visible"
         >
           {/* Vision Section */}
-          <motion.div 
+          <motion.div
             className="flex flex-row items-center gap-4 md:gap-8 lg:gap-16"
             variants={itemAnimation}
           >
@@ -68,15 +74,17 @@ const Mission: React.FC = () => {
                   <div className="flex flex-col items-center space-y-2 sm:space-y-3 md:space-y-4">
                     <FaQuoteLeft className="text-xl sm:text-2xl md:text-3xl text-blue-900" />
                     <CardDescription className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-slate-700 font-medium leading-relaxed">
-                      To prescribe - by preach or by practice - the remedy to human suffering, whether spiritual, moral, physical, or material.
+                      To prescribe - by preach or by practice - the remedy to
+                      human suffering, whether spiritual, moral, physical, or
+                      material.
                     </CardDescription>
                   </div>
                 </CardContent>
               </Card>
             </div>
-            <motion.img 
-              src="/api/placeholder/600/400" 
-              alt="Vision illustration" 
+            <motion.img
+              src="/api/placeholder/600/400"
+              alt="Vision illustration"
               className="w-1/2 h-auto object-cover rounded-xl sm:rounded-2xl shadow-2xl"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
@@ -84,7 +92,7 @@ const Mission: React.FC = () => {
           </motion.div>
 
           {/* Mission Section */}
-          <motion.div 
+          <motion.div
             className="flex flex-row-reverse items-center gap-4 md:gap-8 lg:gap-16"
             variants={itemAnimation}
           >
@@ -104,15 +112,17 @@ const Mission: React.FC = () => {
                   <div className="flex flex-col items-center space-y-2 sm:space-y-3 md:space-y-4">
                     <FaQuoteLeft className="text-xl sm:text-2xl md:text-3xl text-blue-900" />
                     <CardDescription className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-slate-700 font-medium leading-relaxed">
-                      To adopt ways and means for the spiritual, moral & material progress of society based on Indian culture and traditions...
+                      To adopt ways and means for the spiritual, moral &
+                      material progress of society based on Indian culture and
+                      traditions...
                     </CardDescription>
                   </div>
                 </CardContent>
               </Card>
             </div>
-            <motion.img 
-              src="/api/placeholder/600/400" 
-              alt="Mission illustration" 
+            <motion.img
+              src="/api/placeholder/600/400"
+              alt="Mission illustration"
               className="w-1/2 h-auto object-cover rounded-xl sm:rounded-2xl shadow-2xl"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}

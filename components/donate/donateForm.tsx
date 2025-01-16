@@ -107,11 +107,11 @@ export default function DonationForm() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-              <span className="text-[#1a237e]">Donate</span> What You Can Spare{" "}
-              <br />
+            <h1 className="text-4xl sm:text-5xl text-slate-800 lg:text-6xl xl:text-7xl leading-tight">
+              <span className="text-[#1a237e] font-semibold">Donate</span> What
+              You Can Spare <br />
               and Make a <br />
-              <span className="text-[#1a237e]">Difference</span>
+              <span className="text-[#1a237e] font-semibold">Difference</span>
             </h1>
             <p className="mt-6 text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">
               Your contribution can change lives. Every donation, no matter how

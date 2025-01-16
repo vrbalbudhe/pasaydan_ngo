@@ -3,19 +3,19 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  try {
-    const {
-      userType,
-      email,
-      password,
-    }: { userType: string; email: string; password: string } = await req.json();
+  const {
+    userType,
+    email,
+    password,
+  }: { userType: string; email: string; password: string } = await req.json();
 
-    if (!userType || !email || !password) {
-      return NextResponse.json(
-        { error: "User type, email, and password are required" },
-        { status: 400 }
-      );
-    }
+  try {
+    // if (!userType || !email || !password) {
+    //   return NextResponse.json(
+    //     { error: "User type, email, and password are required" },
+    //     { status: 400 }
+    //   );
+    // }
 
     const existingAccount =
       (await prisma.user.findFirst({ where: { email } })) ||
