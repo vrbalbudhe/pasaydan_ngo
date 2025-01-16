@@ -1,7 +1,71 @@
-export default function () {
-    return (
+// app/pasaydan/admin/enterData/page.tsx
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+export default function EnterDataPage() {
+  return (
+    <div className="h-full flex-1 flex-col space-y-8 p-8 flex">
+      <div className="flex items-center justify-between space-y-2">
         <div>
-            l;l;l;
+          <h2 className="text-2xl font-bold tracking-tight">Enter Data</h2>
+          <p className="text-muted-foreground">
+            Manage and enter various types of data for the NGO
+          </p>
         </div>
-    )
+      </div>
+      
+      <Tabs defaultValue="drive" className="space-y-4">
+        <TabsList className="bg-background h-12">
+          <TabsTrigger value="drive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Drive Entry
+          </TabsTrigger>
+          <TabsTrigger value="organization" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Organization
+          </TabsTrigger>
+          <TabsTrigger value="user" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            User
+          </TabsTrigger>
+          <TabsTrigger value="donation" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Donation Request
+          </TabsTrigger>
+          <TabsTrigger value="certificate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Certificate
+          </TabsTrigger>
+          <TabsTrigger value="subadmin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            SubAdmin
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="drive" className="space-y-4">
+          {/* DriveEntryForm component will go here */}
+          <div>Drive Entry Form Coming Soon</div>
+        </TabsContent>
+        
+        <TabsContent value="organization" className="space-y-4">
+          {/* OrganizationEntryForm component will go here */}
+          <div>Organization Entry Form Coming Soon</div>
+        </TabsContent>
+        
+        <TabsContent value="user" className="space-y-4">
+          {/* UserEntryForm component will go here */}
+          <div>User Entry Form Coming Soon</div>
+        </TabsContent>
+        
+        <TabsContent value="donation" className="space-y-4">
+          {/* DonationRequestForm component will go here */}
+          <div>Donation Request Form Coming Soon</div>
+        </TabsContent>
+        
+        <TabsContent value="certificate" className="space-y-4">
+          {/* CertificateEntryForm component will go here */}
+          <div>Certificate Entry Form Coming Soon</div>
+        </TabsContent>
+        
+        <TabsContent value="subadmin" className="space-y-4">
+          {/* SubAdminEntryForm component will go here */}
+          <div>SubAdmin Entry Form Coming Soon</div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
 }
