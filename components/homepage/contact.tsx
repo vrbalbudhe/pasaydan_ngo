@@ -21,7 +21,9 @@ function ContactUs() {
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -60,41 +62,41 @@ function ContactUs() {
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-white to-blue-50 px-4 py-12 md:py-20">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Left Section */}
-        <motion.div 
+        <motion.div
           className="w-full lg:w-1/3 flex flex-col justify-center space-y-6 p-4"
           initial="hidden"
           animate="visible"
           variants={fadeIn}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-blue-900 leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-semibold text-blue-900 leading-tight">
             Contact us
           </h1>
-          
+
           <p className="text-sm md:text-base lg:text-lg text-slate-800 font-medium leading-relaxed">
             In case you have any query, or want any details about the type of{" "}
-            <span className="text-blue-900 font-extrabold">Donations</span> or
+            <span className="text-blue-900 font-bold">Donations</span> or
             want to donate/ Participate in Our
-            <span className="text-blue-900 font-extrabold">
+            <span className="text-blue-900 font-bold">
               {" "}
               Cycle Donation Drive.
             </span>
           </p>
-          
+
           <h2 className="text-xl md:text-2xl text-slate-800 font-bold">
             Feel Free To Connect With Us!
           </h2>
         </motion.div>
 
         {/* Right Section - Form */}
-        <motion.div 
+        <motion.div
           className="w-full lg:w-2/3"
           initial="hidden"
           animate="visible"
@@ -103,7 +105,9 @@ function ContactUs() {
         >
           <div className="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-blue-100">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-blue-900">Get in Touch</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-blue-900">
+                Get in Touch
+              </h2>
               <Mail className="w-6 h-6 text-blue-900" />
             </div>
 
@@ -177,7 +181,7 @@ function ContactUs() {
                   disabled={isSubmitting}
                 >
                   <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+                  <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
                 </motion.button>
               </div>
 

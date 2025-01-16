@@ -32,7 +32,7 @@ const MetricCard: React.FC<{
       <Card className="relative flex flex-col items-center p-4 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 overflow-hidden group bg-white/90 backdrop-blur border-2 border-blue-100">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
+
         {/* Content */}
         <div className="relative z-10">
           <motion.div
@@ -41,11 +41,11 @@ const MetricCard: React.FC<{
             transition={{ duration: 0.5 }}
           >
             {React.cloneElement(icon as React.ReactElement, {
-              className: "text-4xl sm:text-5xl md:text-7xl"
+              className: "text-4xl sm:text-5xl md:text-7xl",
             })}
           </motion.div>
-          
-          <motion.h2 
+
+          <motion.h2
             className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-900 mb-2"
             initial={{ scale: 0.5 }}
             whileInView={{ scale: 1 }}
@@ -53,7 +53,7 @@ const MetricCard: React.FC<{
           >
             {Math.floor(value)}+
           </motion.h2>
-          
+
           <p className="text-sm sm:text-base md:text-lg text-blue-700 font-medium">
             {label}
           </p>
@@ -158,10 +158,7 @@ const Metrics: React.FC = () => {
   }, [hasAnimated, targetValues]);
 
   return (
-    <div
-      ref={metricsRef}
-      className="relative bg-gradient-to-b from-white to-blue-50 py-16 md:py-24"
-    >
+    <div ref={metricsRef} className="relative  py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -170,9 +167,10 @@ const Metrics: React.FC = () => {
           className="text-center mb-12 md:mb-20"
         >
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 leading-tight">
-            THE GOAL: 
+            THE GOAL:
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-              {" "}1 MILLION BICYCLES
+              {" "}
+              1 MILLION BICYCLES
             </span>
             <br className="sm:hidden" />
             <span className="text-blue-900"> BY 2025</span>

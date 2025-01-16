@@ -7,6 +7,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Mail, Lock, User, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   email: z
@@ -22,7 +37,7 @@ type FormData = z.infer<typeof formSchema>;
 export function LoginSignup() {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const {
@@ -38,9 +53,8 @@ export function LoginSignup() {
     password: string;
     userType?: string;
   }): Promise<void> => {
-    console.log(data);
     setError(null);
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       if (isLogin) {
         const response = await fetch("/api/auth/login", {
@@ -56,10 +70,8 @@ export function LoginSignup() {
         const responseBody = await response.json();
 
         if (!response.ok) {
-          const errorMessage = responseBody?.message;
-          throw new Error(`Login failed: ${errorMessage}`);
+          throw new Error(`Login failed: ${responseBody?.message}`);
         }
-        console.log(responseBody);
         router.push("/pasaydan/com");
       } else {
         const response = await fetch("/api/auth/sign", {
@@ -72,129 +84,152 @@ export function LoginSignup() {
         const responseBody = await response.json();
 
         if (!response.ok) {
-          const errorMessage = responseBody?.message || response.statusText;
-          throw new Error(`Signup failed: ${errorMessage}`);
+          throw new Error(
+            `Signup failed: ${responseBody?.message || response.statusText}`
+          );
         }
-
         setIsLogin(true);
-        console.log(responseBody);
       }
     } catch (err) {
-      const errorMessage =
-        (err as Error).message || "Something went wrong. Please try again.";
-      setError(errorMessage);
+      setError(
+        (err as Error).message || "Something went wrong. Please try again."
+      );
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md border-2 border-slate-200 overflow-hidden mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-4">
-        {isLogin ? "Login" : "Sign Up"}
-      </h2>
-
-      {error && (
-        <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
-      )}
-
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        {!isLogin && (
-          <div className="mb-4">
-            <Label htmlFor="userType">User Type</Label>
-            <select
-              id="userType"
-              className="mt-2 border-2 w-full px-3 py-2 rounded"
-              {...register("userType")}
-            >
-              <option value="">Select your user type</option>
-              <option value="individual">Individual</option>
-              <option value="organisation">Organisation</option>
-            </select>
-            {errors.userType && (
-              <p className="text-red-500 text-sm">{errors.userType.message}</p>
-            )}
-          </div>
-        )}
-
-        <div className="mb-4 w-full text-left">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            className="mt-2 border-2"
-            {...register("email")}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="mb-4 w-full text-left">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            className="mt-2 border-2"
-            {...register("password")}
-          />
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password.message}</p>
-          )}
-        </div>
-
-        <Button
-          type="submit"
-          className={`w-full py-2 mt-4 text-white hover:bg-blue-700 ${
-            isLoading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600"
-          }`}
-          disabled={isLoading} // Disable button while loading
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center space-x-2">
-              <svg
-                className="w-4 h-4 animate-spin text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.963 7.963 0 014 12H0c0 2.137.835 4.084 2.207 5.563l1.793-1.272z"
-                ></path>
-              </svg>
-              <span>Processing...</span>
+    <div className="min-h-screen w-full flex items-center justify-center p-4">
+      <Card className="w-full max-w-xl">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center font-bold">
+            {isLogin ? "Welcome back" : "Create an account"}
+          </CardTitle>
+          <CardDescription className="text-center">
+            {isLogin
+              ? "Enter your credentials to access your account"
+              : "Enter your information to create your account"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
             </div>
-          ) : isLogin ? (
-            "Login"
-          ) : (
-            "Sign Up"
           )}
-        </Button>
-      </form>
 
-      <div className="text-center mt-4">
-        <p className="text-sm">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => setIsLogin((prev) => !prev)}
-            className="text-blue-600 hover:underline"
-          >
-            {isLogin ? "Sign Up" : "Login"}
-          </button>
-        </p>
-      </div>
+          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label
+                  className="text-left w-full flex justify-start"
+                  htmlFor="userType"
+                >
+                  User Type
+                </Label>
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue
+                      placeholder="Select your user type"
+                      {...register("userType")}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual</SelectItem>
+                    <SelectItem value="organisation">Organisation</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.userType && (
+                  <p className="text-sm text-red-500">
+                    {errors.userType.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2 w-full">
+              <Label
+                className="text-left w-full flex justify-start"
+                htmlFor="email"
+              >
+                Email
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  className="pl-10"
+                  {...register("email")}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                className="text-left w-full flex justify-start"
+                htmlFor="password"
+              >
+                Password
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  className="pl-10"
+                  {...register("password")}
+                />
+              </div>
+              {errors.password && (
+                <p className="text-sm text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {isLogin && (
+              <div className="text-right">
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-sm text-gray-600 hover:text-blue-600"
+                  onClick={() => router.push("/pasaydan/auth/forgotPassword")}
+                >
+                  Forgot password?
+                </Button>
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Please wait...</span>
+                </div>
+              ) : (
+                <span>{isLogin ? "Sign In" : "Create Account"}</span>
+              )}
+            </Button>
+
+            <div className="text-center text-sm">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+              <Button
+                variant="link"
+                className="p-0 h-auto font-semibold hover:text-blue-600"
+                onClick={() => setIsLogin((prev) => !prev)}
+              >
+                {isLogin ? "Sign up" : "Sign in"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -6,16 +6,11 @@ import logo from "@/assets/homepage/logo.png";
 
 const Navbar = async () => {
   return (
-    <div className="w-[95%] md:w-[92%] h-[70px] flex justify-between items-center p-5">
+    <div className="w-[100%] md:w-[92%] h-[70px] flex justify-between items-center md:p-5 pl-5 pr-5">
       {/* Logo */}
       <Link href="/pasaydan/com" className="flex items-center gap-2">
-        <Image
-          src={logo.src}
-          alt="Pasaydan Logo"
-          width={50} // Adjust width as needed
-          height={50} // Adjust height as needed
-        />
-        <p className="-tracking-tighter text-xl text-slate-800">Pasaydan</p>
+        <Image src={logo.src} alt="Pasaydan Logo" width={50} height={50} />
+        <p className="-tracking-tighter text-lg text-slate-800">Pasaydan</p>
       </Link>
 
       <Navigator />

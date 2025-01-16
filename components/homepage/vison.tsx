@@ -11,12 +11,14 @@ const cardsDict = [
     desc: "Our mission is to contribute to the betterment of society. We work towards providing food to the needy, promoting education, and ensuring access to healthcare services. Our goal is to raise awareness within the community and strive for a better future. We are committed to addressing people's challenges by utilizing resources in the right direction. This journey can become even more impactful with your support.",
   },
   {
-    Image: "https://img.freepik.com/premium-vector/cozy-blanket-icon_444196-23906.jpg",
+    Image:
+      "https://img.freepik.com/premium-vector/cozy-blanket-icon_444196-23906.jpg",
     Header: "Donating Blankets",
     desc: "We aim to provide warmth and comfort to the underprivileged during cold seasons by distributing blankets. Every donation helps shield people from harsh weather conditions, ensuring their basic needs are met. Join us in bringing a little warmth into their lives and spreading kindness across communities.",
   },
   {
-    Image: "https://static.vecteezy.com/system/resources/previews/010/353/075/non_2x/cycling-sport-color-icon-illustration-vector.jpg",
+    Image:
+      "https://static.vecteezy.com/system/resources/previews/010/353/075/non_2x/cycling-sport-color-icon-illustration-vector.jpg",
     Header: "Donating Cycles",
     desc: "Transportation is a major challenge for many. By donating cycles, we empower individuals with a means to travel to schools, workplaces, or markets. This initiative not only helps save time but also promotes eco-friendly commuting, benefiting both the individual and the environment.",
   },
@@ -26,7 +28,8 @@ const cardsDict = [
     desc: "Blood donation is a noble cause that saves lives. We actively organize blood donation camps to ensure hospitals have an adequate supply for emergencies. Your donation can make the difference between life and death for someone in need. Be a hero—donate blood today.",
   },
   {
-    Image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa-4xBdVDWVv9B_AogOH3atcHxBZ23OMMjMw&s",
+    Image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa-4xBdVDWVv9B_AogOH3atcHxBZ23OMMjMw&s",
     Header: "Donating Clothes",
     desc: "Clothing donations are a great way to help those in need. By donating gently used clothes, you can provide warmth and comfort to individuals who are facing hardships. Your donation can make a difference in someone's life by giving them dignity and hope. Donate clothes today.",
   },
@@ -45,12 +48,12 @@ export default function Vision() {
   };
 
   return (
-    <div className="relative bg-gradient-to-b from-white via-[#f8faff] to-[#edf2ff] py-16 md:py-24">
-    {/* Background Decorations */}
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#f0f5ff] rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#e6eeff] rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
-    </div>
+    <div className=" relative md:w-[90%]  py-16 md:py-24">
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#f0f5ff] rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#e6eeff] rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
+      </div>
 
       <div className="relative container mx-auto px-4">
         <motion.div
@@ -64,7 +67,7 @@ export default function Vision() {
           </h1>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           initial="hidden"
           whileInView="visible"
@@ -74,9 +77,9 @@ export default function Vision() {
             visible: {
               opacity: 1,
               transition: {
-                staggerChildren: 0.2
-              }
-            }
+                staggerChildren: 0.2,
+              },
+            },
           }}
         >
           {cardsDict.map((card, index) => (
@@ -84,12 +87,12 @@ export default function Vision() {
               key={index}
               variants={{
                 hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
+                visible: { opacity: 1, y: 0 },
               }}
             >
               <Card className="h-full bg-white/90 backdrop-blur border-2 border-[#e3e8ee] rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                 <CardHeader className="p-6">
-                  <motion.div 
+                  <motion.div
                     className="w-32 h-32 mx-auto mb-4"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
@@ -104,11 +107,13 @@ export default function Vision() {
                     {card.Header}
                   </h2>
                 </CardHeader>
-                
+
                 <CardContent className="px-6 pb-6 text-center">
                   <motion.div
                     initial={false}
-                    animate={{ height: expandedIndex === index ? "auto" : "100px" }}
+                    animate={{
+                      height: expandedIndex === index ? "auto" : "100px",
+                    }}
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
@@ -116,7 +121,7 @@ export default function Vision() {
                       {card.desc}
                     </p>
                   </motion.div>
-                  
+
                   <motion.div
                     className="mt-4"
                     whileHover={{ scale: 1.05 }}
@@ -139,10 +144,18 @@ export default function Vision() {
       {/* CSS Animation Styles */}
       <style jsx>{`
         @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
         }
         .animate-blob {
           animation: blob 7s infinite;
