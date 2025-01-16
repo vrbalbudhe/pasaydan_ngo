@@ -1,4 +1,3 @@
-
 "use client";
 import {
   Home,
@@ -64,6 +63,11 @@ const items = [
     icon: Download,
   },
   {
+    title: "Manage Admins",
+    url: "/pasaydan/admin/logsign",
+    icon: Download,
+  },
+  {
     title: "Settings",
     url: "/pasaydan/admin/settings",
     icon: Settings,
@@ -81,7 +85,9 @@ export function AppSidebar() {
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
               <span className="text-lg font-bold text-white">P</span>
             </div>
-            <h1 className="text-lg font-semibold tracking-tight text-white">Pasaydan</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-white">
+              Pasaydan
+            </h1>
           </div>
 
           <SidebarGroup className="bg-[#40434e]">
@@ -96,25 +102,24 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem
                       key={item.title}
-                      className={`mb-1 ${isActive ? "bg-[#565869]" : ""
-                        }`}
+                      className={`mb-1 ${isActive ? "bg-[#565869]" : ""}`}
                     >
                       <SidebarMenuButton asChild>
                         <a
                           href={item.url}
                           aria-label={item.title}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${isActive
-                            ? "bg-[#565869] text-white font-semibold"
-                            : "text-white hover:bg-[#565869]/50"
-                            }`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                            isActive
+                              ? "bg-[#565869] text-white font-semibold"
+                              : "text-white hover:bg-[#565869]/50"
+                          }`}
                         >
                           <item.icon
-                            className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-300"
-                              }`}
+                            className={`w-4 h-4 ${
+                              isActive ? "text-white" : "text-gray-300"
+                            }`}
                           />
-                          <span className="text-sm">
-                            {item.title}
-                          </span>
+                          <span className="text-sm">{item.title}</span>
                         </a>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -143,9 +148,8 @@ export function AppSidebar() {
 
 export default AppSidebar;
 
-
-
-{/*"use client";
+{
+  /*"use client";
 import {
   Home,
   Inbox,
@@ -259,4 +263,5 @@ export function AppSidebar() {
       </SidebarContent>
     </Sidebar>
   );
-} */}
+} */
+}

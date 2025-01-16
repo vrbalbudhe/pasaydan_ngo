@@ -86,8 +86,8 @@ export function DriveCards() {
             className="w-full overflow-hidden bg-gradient-to-tr from-zinc-50 via-white to-zinc-50 hover:shadow-md transition-all duration-300 border border-blue-100"
           >
             <CardHeader className="pb-4">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-2xl font-semibold text-blue-950">
+              <div className="flex justify-between items-start mb-5">
+                <CardTitle className="text-3xl md:hover:text-blue-600 cursor-pointer font-normal text-slate-900">
                   {product?.title}
                 </CardTitle>
                 <div
@@ -95,29 +95,29 @@ export function DriveCards() {
                 />
               </div>
 
-              <CardDescription className="space-y-3 mt-4">
+              <CardDescription className="w-full h-full flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-gray-700">
-                  <GoLocation className="text-blue-800 text-lg flex-shrink-0" />
+                  <GoLocation className="text-slate-800 text-2xl flex-shrink-0" />
                   <span className="text-sm">{product?.location}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-700">
-                  <MdTimer className="text-blue-800 text-lg flex-shrink-0" />
+                  <MdTimer className="text-slate-800 text-2xl flex-shrink-0" />
                   <span className="text-sm">{product?.timeInterval}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-700">
-                  <MdOutlineAccessTime className="text-blue-800 text-lg flex-shrink-0" />
+                  <MdOutlineAccessTime className="text-slate-800 text-2xl flex-shrink-0" />
                   <span className="text-sm">
                     {product?.startDate} - {product?.EndDate}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <IoArrowRedoCircleSharp className="text-blue-800 text-lg flex-shrink-0" />
+                  <IoArrowRedoCircleSharp className="text-slate-800 text-2xl flex-shrink-0" />
                   <Badge
                     variant="secondary"
-                    className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    className="bg-zinc-200 py-2 cursor-pointer hover:text-white rounded-full text-slate-700 hover:bg-blue-600"
                   >
                     {product?.dtype} Donations
                   </Badge>
@@ -127,7 +127,7 @@ export function DriveCards() {
 
             <CardFooter className="pt-4 pb-6">
               <Link href={`drive/${product.id}`} className="w-full">
-                <Button className="w-1/2 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white shadow-md">
+                <Button className="w-1/2 bg-zinc-800 md:hover:bg-zinc-800 md:hover:text-blue-600 rounded-full  text-white shadow-md">
                   <span className="flex-1">Show Details</span>
                   <FaExternalLinkAlt className="ml-2 h-4 w-4" />
                 </Button>

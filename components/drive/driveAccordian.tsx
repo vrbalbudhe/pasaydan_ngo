@@ -13,45 +13,41 @@ export default function DriveAccordion() {
       Head: "Is this drive timings are volatile?",
       Content:
         "Mostly Drives timings are not volatile, but if we want to reschedule we will inform it on prior basis.",
-      Icon: "🕒"
+      Icon: "🕒",
     },
     {
       Head: "What is the schedule?",
       Content: "The drive is scheduled for 15th December, 2024.",
-      Icon: "📅"
+      Icon: "📅",
     },
     {
       Head: "How to participate in this drives?",
       Content:
         "Just Be in the location on given timings our pasaydan will catch your attention.",
-      Icon: "🤝"
+      Icon: "🤝",
     },
     {
       Head: "How to participate?",
       Content: "Sign up on our platform and confirm your slot.",
-      Icon: "✍️"
+      Icon: "✍️",
     },
   ];
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-none shadow-none">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-blue-950">
-          <TbInfoSquareRounded className="w-5 h-5" />
-          Drive Information
+        <CardTitle className="flex font-normal items-center gap-2 text-lg text-slate-800">
+          <TbInfoSquareRounded className="text-3xl" />
+          <p>Drive Information</p>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Accordion
-          type="single"
-          collapsible
-          className="w-full space-y-2"
-        >
+        <Accordion type="single" collapsible className="w-full space-y-2">
           {informationDict.map((info, index) => (
             <AccordionItem
               key={index}
               value={`item-${index + 1}`}
-              className="border rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors"
+              className="border shadow-md border-gray-300 rounded-2xl px-4 py-2 hover:bg-gray-50 transition-colors"
             >
               <AccordionTrigger className="flex gap-3 text-left hover:no-underline">
                 <div className="flex items-center gap-3">
@@ -76,7 +72,8 @@ export default function DriveAccordion() {
   );
 }
 
-{/*import {
+{
+  /*import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -132,4 +129,5 @@ export default function DriveAccordian() {
       </Accordion>
     </div>
   );
-} */}
+} */
+}

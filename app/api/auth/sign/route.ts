@@ -10,12 +10,6 @@ export async function POST(req: Request) {
   }: { userType: string; email: string; password: string } = await req.json();
 
   try {
-    // if (!userType || !email || !password) {
-    //   return NextResponse.json(
-    //     { error: "User type, email, and password are required" },
-    //     { status: 400 }
-    //   );
-    // }
 
     const existingAccount =
       (await prisma.user.findFirst({ where: { email } })) ||

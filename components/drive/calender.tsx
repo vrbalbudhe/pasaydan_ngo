@@ -103,51 +103,53 @@ export default function CalendarComponent() {
               modifiers={modifiers}
               modifiersClassNames={modifiersClassNames}
             />
-            <div className="w-full rounded-md py-2 pl-2 pr-2 border-2 min-h-fit flex-wrap flex justify-center items-start gap-2">
-              <p className=" px-2 text-black -tracking-tight text-sm rounded-md py-1 ">
-                <span className="bg-green-400 px-2 py-0.2 mr-1 rounded-full"></span>
+            <div className="w-full rounded-md py-2 pl-2 pr-2 min-h-fit flex-wrap flex justify-center items-start gap-2">
+              <p className=" px-2 bg-green-400 text-white cursor-pointer md:hover:text-green-400 md:hover:bg-white -tracking-tight text-sm rounded-md py-1 ">
+                <span className=" mr-1 rounded-full"></span>
                 Cycle
               </p>
-              <p className=" px-2 text-black -tracking-tight text-sm rounded-md py-1 ">
-                <span className="bg-red-400 px-2 py-0.2 mr-1 rounded-full"></span>
+              <p className=" px-2 bg-red-400 text-white cursor-pointer md:hover:text-red-400 md:hover:bg-white -tracking-tight text-sm rounded-md py-1 ">
+                <span className=" mr-1 rounded-full"></span>
                 Blood
               </p>
-              <p className=" px-2 text-black -tracking-tight text-sm rounded-md py-1 ">
-                <span className="bg-blue-400 px-2 py-0.2 mr-1 rounded-full"></span>
+              <p className=" px-2 bg-blue-400 text-white cursor-pointer md:hover:text-blue-400 md:hover:bg-white -tracking-tight text-sm rounded-md py-1 ">
+                <span className=" mr-1 rounded-full"></span>
                 Blanket
               </p>
-              <p className=" px-2 text-black -tracking-tight text-sm rounded-md py-1 ">
-                <span className="bg-orange-400 px-2 py-0.2 mr-1 rounded-full"></span>
+              <p className=" px-2 bg-orange-400 text-white cursor-pointer md:hover:text-orange-400 md:hover:bg-white -tracking-tight text-sm rounded-md py-1 ">
+                <span className=" mr-1 rounded-full"></span>
                 Food
               </p>
             </div>
           </div>
           <div className="mt-4">
-            <h1 className="p-2 text-md mb-2 md:text-sm flex justify-start items-center gap-2 md:gap-1 text-slate-800">
-              <span className="text-slate-900 text-xl -tracking-tight">
-                <BsCalendar2Event />
-              </span>
-              Upcoming Drives
-            </h1>
+            {products?.length && (
+              <h1 className="p-2 text-md mb-2 md:text-md flex justify-start items-center gap-2 md:gap-2 text-slate-800">
+                <span className="text-slate-900 text-2xl -tracking-tight">
+                  <BsCalendar2Event />
+                </span>
+                Upcoming Drives
+              </h1>
+            )}
             {products
               ?.filter((product) => product.status === "pending")
               .map((product) => (
                 <div
                   key={product?.id}
-                  className={`p-4 mb-2 shadow-sm hover:shadow-md hover:border-slate-200 bg-slate-200 border-zinc-200 rounded-md flex justify-between items-center `}
+                  className={`p-4 mb-2 shadow-md hover:shadow-md hover:border-slate-200 border border-gray-300 rounded-2xl flex justify-between items-center `}
                 >
-                  <div className="w-full flex flex-col gap-1">
-                    <h2 className="text-md text-slate-900 font-semibold tracking-tight">
+                  <div className="w-full flex flex-col gap-2">
+                    <h2 className="text-xl text-blue-600 cursor-pointer">
                       {product?.title}
                     </h2>
-                    <p className="text-sm flex justify-start gap-2 items-center text-emerald-500 font-semibold -tracking-tight">
-                      <span className="inline text-lg text-slate-800">
+                    <p className="text-sm flex justify-start gap-2 items-center text-slate-800 font-semibold -tracking-tight">
+                      <span className="inline text-xl text-slate-800">
                         <MdLocationOn />
                       </span>
                       {product?.location}
                     </p>
                     <p className="text-zinc-800 gap-2 flex justify-start items-center tracking-tighter text-sm">
-                      <span className="inline text-lg text-slate-800">
+                      <span className="inline text-xl text-slate-800">
                         <BsCalendar2Date />
                       </span>
                       {product?.startDate} <span className="text-black">-</span>{" "}
