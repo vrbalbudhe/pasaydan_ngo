@@ -59,6 +59,11 @@ const items = [
     icon: Download,
   },
   {
+    title: "EnterData",
+    url: "/pasaydan/admin/enterData",
+    icon: Download,
+  },
+  {
     title: "Settings",
     url: "/pasaydan/admin/settings",
     icon: Settings,
@@ -91,24 +96,21 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem
                       key={item.title}
-                      className={`mb-1 ${
-                        isActive ? "bg-[#565869]" : ""
-                      }`}
+                      className={`mb-1 ${isActive ? "bg-[#565869]" : ""
+                        }`}
                     >
                       <SidebarMenuButton asChild>
                         <a
                           href={item.url}
                           aria-label={item.title}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                            isActive
-                              ? "bg-[#565869] text-white font-semibold"
-                              : "text-white hover:bg-[#565869]/50"
-                          }`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${isActive
+                            ? "bg-[#565869] text-white font-semibold"
+                            : "text-white hover:bg-[#565869]/50"
+                            }`}
                         >
-                          <item.icon 
-                            className={`w-4 h-4 ${
-                              isActive ? "text-white" : "text-gray-300"
-                            }`} 
+                          <item.icon
+                            className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-300"
+                              }`}
                           />
                           <span className="text-sm">
                             {item.title}
