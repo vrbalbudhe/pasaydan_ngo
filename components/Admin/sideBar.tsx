@@ -8,6 +8,8 @@ import {
   IndianRupeeIcon,
   Download,
   Settings,
+  FileText,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar,
@@ -60,12 +62,12 @@ const items = [
   {
     title: "EnterData",
     url: "/pasaydan/admin/enterData",
-    icon: Download,
+    icon: FileText,
   },
   {
     title: "Manage Admins",
     url: "/pasaydan/admin/logsign",
-    icon: Download,
+    icon: Shield,
   },
   {
     title: "Settings",
@@ -108,18 +110,20 @@ export function AppSidebar() {
                         <a
                           href={item.url}
                           aria-label={item.title}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                             isActive
                               ? "bg-[#565869] text-white font-semibold"
                               : "text-white hover:bg-[#565869]/50"
                           }`}
                         >
                           <item.icon
-                            className={`w-4 h-4 ${
+                            className={`w-5 h-5 ${
                               isActive ? "text-white" : "text-gray-300"
                             }`}
                           />
-                          <span className="text-sm">{item.title}</span>
+                          <span className="text-sm font-medium">
+                            {item.title}
+                          </span>
                         </a>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

@@ -30,16 +30,18 @@ interface FetchAllDonationRequestsProps {
 export default function FetchAllDonationRequests({
   statusFilter,
   searchQuery,
-  onStatusSelect
+  onStatusSelect,
 }: FetchAllDonationRequestsProps) {
-  const [donationRequests, setDonationRequests] = useState<DonationRequestCardProps[]>([]);
+  const [donationRequests, setDonationRequests] = useState<
+    DonationRequestCardProps[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusCounts, setStatusCounts] = useState<StatusCounts>({
     all: 0,
     pending: 0,
     approved: 0,
-    rejected: 0
+    rejected: 0,
   });
 
   useEffect(() => {
@@ -52,19 +54,24 @@ export default function FetchAllDonationRequests({
         }
 
         const data = await response.json();
-        
+
         if (Array.isArray(data)) {
           setDonationRequests(data);
-          const counts = data.reduce((acc, request) => {
-            acc.all++;
-            acc[request.status.toLowerCase() as keyof Omit<StatusCounts, 'all'>]++;
-            return acc;
-          }, {
-            all: 0,
-            pending: 0,
-            approved: 0,
-            rejected: 0
-          });
+          const counts = data.reduce(
+            (acc, request) => {
+              acc.all++;
+              acc[
+                request.status.toLowerCase() as keyof Omit<StatusCounts, "all">
+              ]++;
+              return acc;
+            },
+            {
+              all: 0,
+              pending: 0,
+              approved: 0,
+              rejected: 0,
+            }
+          );
           setStatusCounts(counts);
           setError(null);
         } else {
@@ -88,13 +95,14 @@ export default function FetchAllDonationRequests({
 
   // Filter and sort the requests with enhanced search
   const filteredRequests = donationRequests
-    .filter(request => {
-      const matchesStatus = statusFilter === "All" || request.status === statusFilter;
-      
+    .filter((request) => {
+      const matchesStatus =
+        statusFilter === "All" || request.status === statusFilter;
+
       if (!matchesStatus) return false;
-      
+
       if (searchQuery === "") return true;
-      
+
       // Enhanced search across all fields
       const searchableFields = [
         request.fullname,
@@ -104,8 +112,10 @@ export default function FetchAllDonationRequests({
         request.type,
         request.quantity,
       ];
-      
-      return searchableFields.some(field => searchInField(field.toString(), searchQuery));
+
+      return searchableFields.some((field) =>
+        searchInField(field.toString(), searchQuery)
+      );
     })
     .sort((a, b) => {
       const statusPriority = { Pending: 0, Approved: 1, Rejected: 2 };
@@ -146,16 +156,19 @@ export default function FetchAllDonationRequests({
             key={label}
             onClick={() => onStatusSelect(label as any)}
             className={`inline-flex items-center px-6 py-2 rounded text-sm font-medium transition-colors
-              ${statusFilter === label
-                ? "bg-white text-black border border-gray-300" // Selected state
-                : "bg-black text-white hover:bg-gray-800"      // Default state
+              ${
+                statusFilter === label
+                  ? "bg-gray-200 text-slate-800 rounded-full" // Selected state
+                  : "bg-inherit text-slate-900 border-2 border-slate-200 rounded-full hover:bg-gray-200" // Default state
               }`}
           >
             {label}
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs 
-              ${statusFilter === label
-                ? "bg-gray-100 text-black"
-                : "bg-gray-700 text-white"
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs 
+              ${
+                statusFilter === label
+                  ? "bg-gray-100 text-black"
+                  : "bg-gray-700 text-white"
               }`}
             >
               {count}
@@ -173,10 +186,7 @@ export default function FetchAllDonationRequests({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredRequests.map((request) => (
-            <DonationRequestCard
-              key={request.id}
-              {...request}
-            />
+            <DonationRequestCard key={request.id} {...request} />
           ))}
         </div>
       )}
@@ -184,7 +194,8 @@ export default function FetchAllDonationRequests({
   );
 }
 
-{/*"use client";
+{
+  /*"use client";
 import { useState, useEffect } from "react";
 import DonationRequestCard from "@/components/Admin/a_DonationRequests/requestCard";
 
@@ -244,4 +255,5 @@ export default function FetchAllDonationRequests() {
       ))}
     </>
   );
-}*/}
+}*/
+}
