@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { FaRegEdit } from "react-icons/fa";
+import { SiAdblock } from "react-icons/si";
 import {
   Table,
   TableBody,
@@ -18,6 +20,7 @@ interface SubAdmin {
   email: string;
   mobile: string;
   address: string;
+  canEdit: boolean;
 }
 
 export default function SubAdminsTable() {
@@ -146,6 +149,9 @@ export default function SubAdminsTable() {
                     ID
                   </TableHead>
                   <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                    Edit
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Name
                   </TableHead>
                   <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
@@ -158,7 +164,7 @@ export default function SubAdminsTable() {
                     Address
                   </TableHead>
                   <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Actions
+                    Delete
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -174,6 +180,21 @@ export default function SubAdminsTable() {
                     <TableCell className="px-4 py-3 text-sm text-gray-800">
                       {subAdmin.id}
                     </TableCell>
+                    <TableCell className="px-4 py-3 text-sm">
+                      <button
+                        onClick={() => handleDelete(subAdmin?.id || "NA")}
+                        className="text-slate-800 hover:text-slate-600 focus:outline-none p-1 rounded-full hover:bg-red-50 transition-colors"
+                      >
+                        {!subAdmin.canEdit ? (
+                          <FaRegEdit size={20} />
+                        ) : (
+                          <p className="text-red-500 hover:text-red-600">
+                            <SiAdblock size={20} />
+                          </p>
+                        )}
+                      </button>
+                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-sm text-gray-800">
                       {subAdmin.name || "NA"}
                     </TableCell>

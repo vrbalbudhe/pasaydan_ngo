@@ -47,6 +47,7 @@ model User {
 model Organization {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   orgId         String          @unique @default(uuid())
+  userType      String          @default("organization")
   name          String?         @unique
   email         String          @unique
   password      String
@@ -108,7 +109,7 @@ model Certificates {
 
 model Admin {
   id        String      @id @default(auto()) @map("_id") @db.ObjectId
-  role      String      @default("Admin")
+  userType  String      @default("Admin")
   name      String
   email     String      @unique
   password  String
@@ -119,7 +120,7 @@ model Admin {
 
 model SubAdmins {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  role      String   @default("MiniAdmin")
+  userType  String   @default("MiniAdmin")
   name      String
   email     String   @unique
   password  String
@@ -127,4 +128,5 @@ model SubAdmins {
   createdAt DateTime @default(now())
   Admin     Admin?   @relation(fields: [adminId], references: [id])
   adminId   String?  @db.ObjectId
+  canEdit   Boolean  @default(false)
 }

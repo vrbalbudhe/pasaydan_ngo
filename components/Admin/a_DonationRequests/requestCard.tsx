@@ -19,9 +19,9 @@ type DonationDetails = {
 interface DonationRequestCardProps extends DonationDetails {}
 
 const statusStyles = {
-  Pending: "text-slate-900 border border-yellow-200 bg-yellow-300",
-  Approved: "text-green-500 bg-green-100",
-  Rejected: "text-red-500 bg-red-100",
+  Pending: "text-yellow-800 bg-yellow-100 border border-yellow-200",
+  Approved: "text-green-800 bg-green-100 border border-green-200",
+  Rejected: "text-red-800 bg-red-100 border border-red-200",
 };
 
 async function updateDonationStatus(
@@ -91,64 +91,75 @@ export default function DonationRequestCard({
   };
 
   return (
-    <Card
-      className={cn(
-        "w-[450px] shadow-lg border rounded-lg bg-white"
-      )}
-    >
-      <CardContent className="p-6 space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm text-blue-600">
-            <span className="font-semibold text-gray-900">Full Name:</span>{" "}
-            {fullname}
-          </p>
-          <p className="text-sm text-blue-600">
-            <span className="font-semibold text-gray-900">Mobile:</span>{" "}
-            {mobile}
-          </p>
-          <p className="text-sm text-blue-600">
-            <span className="font-semibold text-gray-900">Email:</span> {email}
-          </p>
-          <p className="text-sm text-blue-600">
-            <span className="font-semibold text-gray-900">Address:</span>{" "}
-            {address}
-          </p>
-          <p className="text-sm text-blue-600">
-            <span className="font-semibold text-gray-900">Donation Type:</span>{" "}
-            {type}
-          </p>
-          <p className="text-sm text-blue-600">
-            <span className="font-semibold text-gray-900">Quantity:</span>{" "}
-            {quantity}
-          </p>
-          <p
-            className={`text-sm font-semibold px-3 py-1 rounded-full w-fit ${
+    <Card className="max-w-lg bg-white border border-gray-200 rounded-lg shadow">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h5 className="text-xl font-bold tracking-tight text-gray-900">
+            Donation Request
+          </h5>
+          <span
+            className={`text-sm font-medium px-3 py-1 rounded-full ${
               statusStyles[status]
             }`}
           >
             {status}
-          </p>
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Full Name</p>
+              <p className="text-sm text-gray-900">{fullname}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Mobile</p>
+              <p className="text-sm text-gray-900">{mobile}</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-500">Email</p>
+            <p className="text-sm text-gray-900">{email}</p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-500">Address</p>
+            <p className="text-sm text-gray-900">{address}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Donation Type</p>
+              <p className="text-sm text-gray-900">{type}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Quantity</p>
+              <p className="text-sm text-gray-900">{quantity}</p>
+            </div>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end gap-4 p-4">
+
+      <CardFooter className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
         <Button
-          className="bg-green-500 text-white hover:bg-green-600 rounded-lg px-6 py-2"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
           onClick={handleApproval}
           disabled={
             isProcessing || status === "Approved" || status === "Rejected"
           }
         >
-          <CheckCircle className="mr-2" />
+          <CheckCircle className="w-4 h-4 mr-2" />
           Approve
         </Button>
         <Button
-          className="bg-red-500 text-white hover:bg-red-600 rounded-lg px-6 py-2"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
           onClick={handleRejection}
           disabled={
             isProcessing || status === "Approved" || status === "Rejected"
           }
         >
-          <XCircle className="mr-2" />
+          <XCircle className="w-4 h-4 mr-2" />
           Reject
         </Button>
       </CardFooter>

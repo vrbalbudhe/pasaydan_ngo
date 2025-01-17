@@ -5,34 +5,66 @@ const secretKey = new TextEncoder().encode(
   process.env.JWT_SECRET || "your_jwt_secret"
 );
 
+async function verifyToken(req: NextRequest) {
+  const token = req.cookies.get("token")?.value;
+  if (!token) {
+    return null;
+  }
+  try {
+    const { payload } = await jwtVerify(token, secretKey);
+    return payload;
+  } catch (error) {
+    console.error("JWT verification failed:", error);
+    return null;
+  }
+}
+
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
-  const response = NextResponse.next();
-  if (!token) {
+  const pathname = req.nextUrl.pathname;
+  if (!token && pathname !== "/pasaydan/auth/logsign") {
     console.log("No token found, redirecting to login...");
     const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
     return NextResponse.redirect(redirectUrl);
   }
 
-  try {
-    const { payload } = await jwtVerify(token, secretKey);
-    response.headers.set("x-user", JSON.stringify(payload));
-    return response;
-  } catch (error) {
-    const response = NextResponse.next();
-    console.error("JWT verification failed:", error);
-    response.headers.set("x-user", JSON.stringify({ guest: true }));
-    return response;
+  const payload = await verifyToken(req);
+  console.log(payload);
+  if (!payload && pathname !== "/pasaydan/auth/logsign") {
+    console.log("Invalid token, redirecting to login...");
+    const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
+    return NextResponse.redirect(redirectUrl);
   }
+
+  const userRole = payload?.role;
+  console.log("user roles : ", userRole);
+  if (pathname.startsWith("/pasaydan/com/profile")) {
+    if (userRole !== "individual" && userRole !== "organization") {
+      console.log(
+        "Access denied for non-user/non-org role on /pasaydan/com/profile"
+      );
+      const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  if (pathname.startsWith("/pasaydan/admin")) {
+    if (userRole !== "Admin" && userRole !== "MiniAdmin") {
+      console.log(
+        "Access denied for non-admin/non-subadmin role on /pasaydan/admin"
+      );
+      return NextResponse.json(
+        { error: "Access denied. Insufficient permissions." },
+        { status: 403 }
+      );
+    }
+  }
+
+  const response = NextResponse.next();
+  response.headers.set("x-user", JSON.stringify(payload)); // Add user payload to headers
+  return response;
 }
 
-// Apply middleware only to specific routes
 export const config = {
-  matcher: [
-    "/pasaydan/:nextData*.json", // JSON API routes (used in data fetching, not UI)
-    // "/pasaydan/admin", // Admin dashboard (protected)
-    // "/pasaydan/admin/drives", // Admin drives page (protected)
-    "/pasaydan/com/profile", // Profile page (protected)
-    // "/pasaydan/com/:path*", // All other pages (protected)
-  ],
+  matcher: ["/pasaydan/com/profile", "/pasaydan/admin/:path*"],
 };

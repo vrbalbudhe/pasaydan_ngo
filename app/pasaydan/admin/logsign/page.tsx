@@ -11,7 +11,7 @@ import SubAdminsTable from "@/components/Admin/a_LogSign/fecthSubAdmins";
 
 const SignInPage = () => {
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-start p-4">
+    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-start p-5">
       <SubAdminsTable />
       {/* <Card className="w-full shadow-lg">
         <CardHeader className="space-y-2 text-center">

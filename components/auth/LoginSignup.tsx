@@ -72,7 +72,12 @@ export function LoginSignup() {
         if (!response.ok) {
           throw new Error(`Login failed: ${responseBody?.message}`);
         }
-        router.push("/pasaydan/com");
+
+        if (responseBody?.data?.role === "MiniAdmin" || "Admin") {
+          router.push("/pasaydan/admin");
+        } else {
+          router.push("/pasaydan/com");
+        }
       } else {
         const response = await fetch("/api/auth/sign", {
           method: "POST",
