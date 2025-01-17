@@ -30,6 +30,9 @@ export default function DonationForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log(formData);
+    console.log(address);
+    console.log(donateType);
     e.preventDefault();
     if (
       !formData.fullname ||

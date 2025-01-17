@@ -44,6 +44,7 @@
     "multer-gridfs-storage": "^5.0.2",
     "next": "15.1.0",
     "next-connect": "^1.0.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.16",
     "pdfkit": "^0.16.0",
     "puppeteer": "^23.11.1",
@@ -60,6 +61,7 @@
     "sharp": "^0.33.5",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "telegram-bot-api": "^2.0.1",
     "uuid": "^11.0.5",
     "xlsx": "^0.18.5",
     "zod": "^3.24.1"
