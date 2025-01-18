@@ -1,9 +1,11 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDown, Heart } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 import logo from '@/assets/homepage/logo.png';
 import hp1 from '@/assets/homepage/hp1.png';
 import hp2 from '@/assets/homepage/hp2.png';
@@ -17,6 +19,50 @@ interface CardWithImageProps {
   className?: string;
   titleClassName?: string;
 }
+
+const carouselItems = [
+  {
+    imageSrc: hp2.src,
+    imageAlt: "Child smiling",
+    title: "Be the reason someone smiles",
+    type: "image"
+  },
+  {
+    type: "text",
+    content: "The world changes when we care. And that change begins with YOU!",
+    bgColor: "bg-blue-500"
+  },
+  {
+    imageSrc: hp1.src,
+    imageAlt: "Teacher",
+    title: "Inspire change, Inspire education",
+    type: "image"
+  },
+  {
+    type: "text",
+    content: "Join 1000 people building a better tomorrow.",
+    bgColor: "bg-blue-300",
+    buttonText: "Join Our Drives",
+    buttonLink: "/pasaydan/com/drive"
+  },
+  {
+    imageSrc: hp3.src,
+    imageAlt: "Students",
+    title: "Give Hope, Give Life",
+    type: "image"
+  },
+  {
+    imageSrc: hp4.src,
+    imageAlt: "Learning",
+    title: "Helping those in need",
+    type: "image"
+  },
+  {
+    type: "text",
+    content: "Your generosity creates a ripple effect that lasts a lifetime. START THE RIPPLE!",
+    bgColor: "bg-blue-800"
+  }
+];
 
 const CardWithImage: React.FC<CardWithImageProps> = ({ 
   imageSrc, 
@@ -51,9 +97,11 @@ const CardWithImage: React.FC<CardWithImageProps> = ({
       onHoverEnd={() => setIsHovered(false)}
     >
       <Card className="h-full p-0 border-0">
-        <img 
+        <Image 
           src={imageSrc} 
           alt={imageAlt} 
+          width={500}
+          height={500}
           className="w-full h-full object-cover"
         />
         <AnimatePresence>
@@ -76,6 +124,75 @@ const CardWithImage: React.FC<CardWithImageProps> = ({
   );
 };
 
+const Carousel: React.FC = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => 
+        prevIndex === carouselItems.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative w-full h-96 overflow-hidden rounded-3xl">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute inset-0"
+        >
+          {carouselItems[currentIndex].type === 'image' ? (
+            <div className="relative h-full">
+              <Image
+                src={carouselItems[currentIndex].imageSrc}
+                alt={carouselItems[currentIndex].imageAlt}
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 p-6 flex items-end">
+                <h3 className="text-white text-xl text-center italic font-semibold italic">
+                  {carouselItems[currentIndex].title}
+                </h3>
+              </div>
+            </div>
+          ) : (
+            <div className={`h-full ${carouselItems[currentIndex].bgColor} p-6 flex flex-col items-center justify-center text-white`}>
+              <p className="text-lg text-center italic">
+                {carouselItems[currentIndex].content}
+              </p>
+              {carouselItems[currentIndex].buttonText && (
+                <Link href={carouselItems[currentIndex].buttonLink || '#'}>
+                  <Button className="mt-4 bg-blue-950 text-white rounded-full">
+                    {carouselItems[currentIndex].buttonText}
+                  </Button>
+                </Link>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {carouselItems.map((_, index) => (
+          <button
+            key={index}
+            className={`w-2 h-2 rounded-full ${
+              index === currentIndex ? 'bg-white' : 'bg-white/50'
+            }`}
+            onClick={() => setCurrentIndex(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const TextCard: React.FC<{
   children: React.ReactNode;
   className?: string;
@@ -92,7 +209,7 @@ const TextCard: React.FC<{
   return (
     <Card className={`rounded-3xl overflow-hidden relative aspect-square ${className}`}>
       <motion.div 
-        className="h-full p-6"
+        className="h-full p-4 sm:p-6"
         initial="initial"
         whileHover="hover"
         variants={cardAnimation}
@@ -109,28 +226,16 @@ const HeroSection: React.FC = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  const floatingAnimation = {
-    initial: { y: 0 },
-    animate: {
-      y: [-10, 0, -10],
-      transition: {
-        duration: 2,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  };
-
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-white to-blue-50">
       {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
         <div className="absolute top-0 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-2 sm:px-4 text-center mb-8 sm:mb-16">
+      <div className="w-[80%] mx-auto relative z-10">
         {/* Header Section */}
         <motion.div 
           className="text-center mb-12"
@@ -139,15 +244,19 @@ const HeroSection: React.FC = () => {
           variants={fadeIn}
           transition={{ duration: 0.6 }}
         >
-          {/* ... Header content remains the same ... */}
           <div className="flex justify-center mb-2">
-            <motion.img
-              src={logo.src}
-              alt="Pasaydan Logo"
-              className="mb-2 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full"
+            <motion.div
               whileHover={{ scale: 1.1 }}
               transition={{ type: "spring", stiffness: 300 }}
-            />
+            >
+              <Image
+                src={logo}
+                alt="Pasaydan Logo"
+                width={64}
+                height={64}
+                className="mb-2 rounded-full"
+              />
+            </motion.div>
           </div>
           
           <motion.h1 
@@ -171,116 +280,94 @@ const HeroSection: React.FC = () => {
             ~ संत ज्ञानेश्वर महाराज ~
           </motion.p>
           
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Button 
-              className="bg-blue-950 hover:bg-blue-900 text-white px-8 py-2 rounded-full text-lg"
+          <Link href="/pasaydan/com/donate" className="relative z-20">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Heart className="mr-2 h-5 w-5" />
-              Donate now
-            </Button>
-          </motion.div>
+              <Button 
+                className="bg-blue-950 hover:bg-blue-900 text-white px-8 py-2 rounded-full text-lg"
+              >
+                <Heart className="mr-2 h-5 w-5" />
+                Donate now
+              </Button>
+            </motion.div>
+          </Link>
         </motion.div>
 
-        {/* Card Grid */}
-        <div className="grid grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-5 max-w-7xl mx-auto px-1 sm:px-2 md:px-4">
-          {/* Left Column */}
-          <motion.div 
-            className="col-span-1 space-y-2 sm:space-y-3 md:space-y-4 -mt-[65px] sm:-mt-[90px] md:-mt-[110px] lg:-mt-[130px]"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.2 }}
-          >
-            <CardWithImage 
-              imageSrc={hp2.src}
-              imageAlt="Child smiling"
-              title="Be the reason someone smiles"
-            />
-            <TextCard className="bg-blue-500">
-              <div className="h-full flex flex-col justify-center items-center text-center text-white">
-                <p className="text-2xl italic bold">
-                  The world changes when we care. And that change begins with YOU!
-                </p>
-              </div>
-            </TextCard>
-          </motion.div>
+        {/* Responsive Layout */}
+        <div className="hidden lg:block">
+          {/* Desktop Grid */}
+          <div className="grid grid-cols-5 gap-5 max-w-7xl mx-auto">
+            {/* Original grid content... */}
+            <div className="col-span-1 space-y-5 -mt-[130px]">
+              <CardWithImage 
+                imageSrc={hp2.src}
+                imageAlt="Child smiling"
+                title="Be the reason someone smiles"
+              />
+              <TextCard className="bg-blue-500">
+                <div className="h-full flex flex-col justify-center items-center text-center text-white">
+                  <p className="text-2xl italic bold">
+                    The world changes when we care. And that change begins with YOU!
+                  </p>
+                </div>
+              </TextCard>
+            </div>
 
-          {/* Middle-Left Column */}
-          <motion.div 
-            className="col-span-1 pt-[22px] sm:pt-[30px] md:pt-[38px] lg:pt-[45px]"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.3 }}
-          >
-            <CardWithImage 
-              imageSrc={hp1.src}
-              imageAlt="Teacher"
-              title="Inspire change, Inspire education"
-              className="aspect-[3/4]"
-            />
-          </motion.div>
+            <div className="col-span-1 pt-[45px]">
+              <CardWithImage 
+                imageSrc={hp1.src}
+                imageAlt="Teacher"
+                title="Inspire change, Inspire education"
+                className="aspect-[3/4]"
+              />
+            </div>
 
-          {/* Center Column */}
-          <motion.div 
-            className="col-span-1 pt-[60px] sm:pt-[80px] md:pt-[100px] lg:pt-[120px]"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.4 }}
-          >
-            <TextCard className="bg-blue-300">
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <h3 className="text-xl font-semibold mb-4">
-                  Join 1000 people building a better tomorrow.
-                </h3>
-                <Button className="bg-blue-950 text-white rounded-full">
-                  Join Our Drives
-                </Button>
-              </div>
-            </TextCard>
-          </motion.div>
+            <div className="col-span-1 pt-[120px]">
+              <TextCard className="bg-blue-300">
+                <div className="h-full flex flex-col items-center justify-center text-center">
+                  <h3 className="text-xl font-semibold mb-4">
+                    Join 1000 people building a better tomorrow.
+                  </h3>
+                  <Link href="/pasaydan/com/drive">
+                    <Button className="bg-blue-950 text-white rounded-full">
+                      Join Our Drives
+                    </Button>
+                  </Link>
+                </div>
+              </TextCard>
+            </div>
 
-          {/* Middle-Right Column */}
-          <motion.div 
-            className="col-span-1 lg:pt-[45px]"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.5 }}
-          >
-            <CardWithImage 
-              imageSrc={hp3.src}
-              imageAlt="Students"
-              title="Give Hope, Give Life"
-              className="aspect-[3/4]"
-            />
-          </motion.div>
+            <div className="col-span-1 pt-[45px]">
+              <CardWithImage 
+                imageSrc={hp3.src}
+                imageAlt="Students"
+                title="Give Hope, Give Life"
+                className="aspect-[3/4]"
+              />
+            </div>
 
-          {/* Right Column */}
-          <motion.div 
-            className="col-span-1 space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 -mt-[67px] sm:-mt-[90px] md:-mt-[115px] lg:-mt-[135px]"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.6 }}
-          >
-            <CardWithImage 
-              imageSrc={hp4.src}
-              imageAlt="Learning"
-              title="Helping those in need"
-              titleClassName="text-xl"
-            />
-            <TextCard className="bg-blue-800">
-              <div className="h-full flex flex-col justify-center items-center text-center text-white">
-                <h3 className="text-lg italic">Your generosity creates a ripple effect that lasts a lifetime</h3>
-                <h4 className="text-2xl italic bold">START THE RIPPLE!</h4>
-              </div>
-            </TextCard>
-          </motion.div>
+            <div className="col-span-1 space-y-5 -mt-[135px]">
+              <CardWithImage 
+                imageSrc={hp4.src}
+                imageAlt="Learning"
+                title="Helping those in need"
+                titleClassName="text-xl"
+              />
+              <TextCard className="bg-blue-800">
+                <div className="h-full flex flex-col justify-center items-center text-center text-white">
+                  <h3 className="text-lg italic">Your generosity creates a ripple effect that lasts a lifetime</h3>
+                  <h4 className="text-2xl italic bold">START THE RIPPLE!</h4>
+                </div>
+              </TextCard>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile/Tablet Carousel */}
+        <div className="lg:hidden">
+          <Carousel />
         </div>
       </div>
 

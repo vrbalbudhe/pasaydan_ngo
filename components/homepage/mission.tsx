@@ -36,7 +36,7 @@ const Mission: React.FC = () => {
   };
 
   return (
-    <div className="relative  py-8 md:py-16">
+    <div className="relative w-4/5 mx-auto py-8 md:py-16">
       <div className="relative container mx-auto px-2 sm:px-4">
         <motion.h2
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 text-center mb-8 md:mb-12"

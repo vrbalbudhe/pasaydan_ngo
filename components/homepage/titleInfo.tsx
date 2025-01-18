@@ -38,7 +38,7 @@ export default function TitleInfo() {
   };
 
   return (
-    <div className="relative min-h-screen  py-12 md:py-20">
+    <div className="relative min-h-screen w-4/5 mx-auto py-12 md:py-20">
       {/* Background Decorations */}
 
       <div className="relative container mx-auto px-4">
@@ -58,14 +58,14 @@ export default function TitleInfo() {
           </motion.h1>
 
           <motion.h2
-            className="text-xl sm:text-2xl md:text-3xl text-blue-800 font-semibold"
+            className="text-xl sm:text-2xl md:text-3xl text-slate-800 font-semibold"
             variants={fadeInUp}
           >
             जो जे वांच्छिल तो तें लाहो । प्राणिज
           </motion.h2>
 
           <motion.p
-            className="text-sm sm:text-base md:text-lg text-blue-700"
+            className="text-sm sm:text-base md:text-lg text-slate-700"
             variants={fadeInUp}
           >
             ~ संत ज्ञानेश्वर महाराज
@@ -120,7 +120,7 @@ export default function TitleInfo() {
                 </CardDescription>
 
                 {/* English Description */}
-                <CardDescription className="text-sm sm:text-base md:text-lg text-blue-800 text-center">
+                <CardDescription className="text-sm sm:text-base md:text-lg text-slate-800 text-center">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

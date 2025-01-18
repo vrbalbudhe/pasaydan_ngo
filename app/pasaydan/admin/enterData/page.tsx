@@ -3,6 +3,7 @@
 // app/pasaydan/admin/enterData/page.tsx
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import DriveEntryForm from "@/components/Admin/a_EnterData/DriveEntryForm"
 
 export default function EnterDataPage() {
   return (
@@ -18,7 +19,7 @@ export default function EnterDataPage() {
       
       <Tabs defaultValue="drive" className="space-y-4">
         <TabsList className="bg-background h-12">
-          <TabsTrigger value="drive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+        <TabsTrigger value="drive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             Drive Entry
           </TabsTrigger>
           <TabsTrigger value="organization" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -39,9 +40,9 @@ export default function EnterDataPage() {
         </TabsList>
 
         <TabsContent value="drive" className="space-y-4">
-          {/* DriveEntryForm component will go here */}
-          <div>Drive Entry Form Coming Soon</div>
+          <DriveEntryForm />
         </TabsContent>
+        
         
         <TabsContent value="organization" className="space-y-4">
           {/* OrganizationEntryForm component will go here */}
