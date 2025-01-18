@@ -15,16 +15,20 @@ export default function DonationRequest() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 pb-5">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-black p-2 rounded-lg">
-            <Heart className="h-8 w-8 text-white" />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-black p-2 rounded-lg">
+              <Heart className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Manage Donation Requests
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                View and manage all incoming donation requests
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Donation Requests</h1>
-            <p className="text-sm text-gray-500 mt-1">View and manage all incoming donation requests</p>
-          </div>
-        </div>
-          
+
           {/* Search Bar */}
           <div className="relative w-full sm:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -42,9 +46,9 @@ export default function DonationRequest() {
 
         {/* Main Content */}
         <div className="mt-6">
-          <FetchAllDonationRequests 
-            statusFilter={selectedStatus} 
-            searchQuery={searchQuery} 
+          <FetchAllDonationRequests
+            statusFilter={selectedStatus}
+            searchQuery={searchQuery}
             onStatusSelect={setSelectedStatus}
           />
         </div>
@@ -53,9 +57,8 @@ export default function DonationRequest() {
   );
 }
 
-
-
-{/*import FetchAllDonationRequests from "@/components/Admin/a_DonationRequests/fetchAllDonationRequests";
+{
+  /*import FetchAllDonationRequests from "@/components/Admin/a_DonationRequests/fetchAllDonationRequests";
 
 export default function DonationRequest() {
   return (
@@ -70,4 +73,5 @@ export default function DonationRequest() {
       </div>
     </div>
   );
-}*/}
+}*/
+}

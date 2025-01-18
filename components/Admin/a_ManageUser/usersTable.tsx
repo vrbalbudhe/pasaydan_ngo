@@ -93,6 +93,34 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
     }
   };
 
+  const handleDeleteOrganisation = async (id: string) => {
+    const confirmed = confirm(
+      "Are you sure you want to delete this Oraganisation?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch("/api/org/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (response.ok) {
+        alert("Organisation deleted successfully.");
+        setUserData((prev) => prev.filter((user) => user.id !== id));
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error deleting Organisation:", error);
+      alert("An error occurred while deleting the Organisation.");
+    }
+  };
+
   const filteredUsers = userData.filter((user) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -321,7 +349,9 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-sm">
                       <button
-                        onClick={() => handleDelete(org?.id || "NA")}
+                        onClick={() =>
+                          handleDeleteOrganisation(org?.id || "NA")
+                        }
                         className="text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full hover:bg-red-50 transition-colors"
                       >
                         <RiDeleteBin7Line size={20} />
