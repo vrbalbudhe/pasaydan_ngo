@@ -16,40 +16,62 @@ import { useToast } from '@/hooks/use-toast'
 import Papa from 'papaparse'
 import { Loader2 } from "lucide-react"
 
-// Define the schema structure
-const driveSchema = {
-  required: [
-    'title',
-    'location',
-    'description',
-    'dtype',
-    'startDate',
-    'EndDate',
-    'timeInterval'
-  ],
-  optional: [
-    'placeLink',
-    'geolocation.latitude',
-    'geolocation.longitude'
-  ]
+const VALID_STATUSES = ['pending', 'active', 'completed'] as const
+type DriveStatus = typeof VALID_STATUSES[number]
+
+// Field configuration
+const fieldConfig = {
+  baseFields: {
+    title: { required: true },
+    location: { required: true },
+    description: { required: true },
+    dtype: { required: true },
+    startDate: { required: true, format: 'DD-MM-YYYY' },
+    EndDate: { required: true, format: 'DD-MM-YYYY' },
+    timeInterval: { required: true },
+    status: { required: false, format: 'pending/active/completed' },
+    placeLink: { required: false },
+    'geolocation.latitude': { required: false },
+    'geolocation.longitude': { required: false },
+  }
 }
 
 interface GeoLocation {
-  latitude?: string;
-  longitude?: string;
+  latitude?: string
+  longitude?: string
 }
 
 interface DriveData {
   title: string
   location: string
   description: string
-  status?: string
+  status?: DriveStatus
   dtype: string
   startDate: string
   EndDate: string
   timeInterval: string
   placeLink?: string
   geolocation?: GeoLocation
+}
+
+// Get header name with format and requirement hints
+const getHeaderName = (field: string): string => {
+  const config = fieldConfig.baseFields[field as keyof typeof fieldConfig.baseFields]
+  if (!config) return field
+
+  let header = field
+  if (field === 'status') {
+    return 'status (pending/active/completed)'
+  }
+  if (config.format) {
+    header = `${header} (${config.format})`
+  }
+  if (config.required) {
+    header = `${header}*`
+  } else {
+    header = `${header} (optional)`
+  }
+  return header
 }
 
 const DriveEntryForm = () => {
@@ -59,60 +81,38 @@ const DriveEntryForm = () => {
   const [isParsingFile, setIsParsingFile] = useState(false)
   const { toast } = useToast()
 
-  // Function to get CSV headers dynamically
-  const getCSVHeaders = () => {
-    return [...driveSchema.required, ...driveSchema.optional]
-  }
-
-  // Function to get display headers with format hints
-  const getDisplayHeaders = () => {
-    return getCSVHeaders().map(header => {
-      if (header === 'startDate') return 'startDate (DD-MM-YYYY)'
-      if (header === 'EndDate') return 'EndDate (DD-MM-YYYY)'
-      return header
-    })
-  }
-
   const convertToYYYYMMDD = (dateStr: string): string => {
-    const parts = dateStr.split('-');
-    if (parts.length !== 3) return dateStr;
-  
-    const day = parts[0].padStart(2, '0');
-    const month = parts[1].padStart(2, '0');
-    const year = parts[2];
-  
-    return `${year}-${month}-${day}`;
+    if (!dateStr) return dateStr
+    const cleanDate = dateStr.replace(/ \(DD-MM-YYYY\)\*?/, '')
+    const parts = cleanDate.split('-')
+    if (parts.length !== 3) return dateStr
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
   }
 
   const getSampleData = () => {
     return {
-      title: 'Sample Drive',
-      location: 'Mumbai',
-      description: 'Drive description here',
-      dtype: 'Food',
-      startDate: '15-01-2025',
-      EndDate: '16-01-2025',
-      timeInterval: '10:00 AM - 5:00 PM',
-      placeLink: 'https://maps.google.com',
-      'geolocation.latitude': '12.1678',
-      'geolocation.longitude': '31.5432'
+      'title*': 'Sample Drive',
+      'location*': 'Mumbai',
+      'description*': 'Drive description here',
+      'dtype*': 'Food',
+      'startDate (DD-MM-YYYY)*': '15-01-2025',
+      'EndDate (DD-MM-YYYY)*': '16-01-2025',
+      'timeInterval*': '10:00 AM - 5:00 PM',
+      'status (pending/active/completed)': 'pending',
+      'placeLink (optional)': 'https://maps.google.com',
+      'geolocation.latitude (optional)': '12.1678',
+      'geolocation.longitude (optional)': '31.5432'
     }
   }
 
   const downloadTemplate = () => {
-    const headers = getDisplayHeaders()
+    const headers = Object.keys(fieldConfig.baseFields).map(getHeaderName)
     const sampleData = getSampleData()
-    const dataRow = headers.map(header => {
-      const cleanHeader = header.split(' ')[0] // Remove format hints for data lookup
-      return String(sampleData[cleanHeader] || '')
-    })
+    const dataRow = headers.map(header => String(sampleData[header] || ''))
     
     const csvContent = Papa.unparse({
       fields: headers,
       data: [dataRow]
-    }, {
-      quotes: true,
-      delimiter: ','
     })
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -128,22 +128,41 @@ const DriveEntryForm = () => {
     const errors: string[] = []
     
     data.forEach((row, index) => {
-      driveSchema.required.forEach(field => {
-        const rawValue = row[field] || row[`${field} (DD-MM-YYYY)`] // Check both with and without format hint
-        if (!rawValue?.toString().trim()) {
-          errors.push(`Row ${index + 1}: ${field} is required`)
+      // Validate required fields
+      Object.entries(fieldConfig.baseFields).forEach(([field, config]) => {
+        if (config.required) {
+          const headerVariations = [
+            field,
+            `${field}*`,
+            `${field} (${config.format})`,
+            `${field} (${config.format})*`
+          ]
+          
+          const value = headerVariations.reduce((val, header) => 
+            val || row[header]?.toString().trim(), '')
+          
+          if (!value) {
+            errors.push(`Row ${index + 1}: ${field} is required`)
+          }
         }
       })
-      
-      const dateRegex = /^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-\d{4}$/
-      const startDate = row.startDate || row['startDate (DD-MM-YYYY)']
-      const endDate = row.EndDate || row['EndDate (DD-MM-YYYY)']
 
-      if (startDate && !dateRegex.test(startDate)) {
+      // Date validation
+      const dateRegex = /^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-\d{4}$/
+      const startDateKey = Object.keys(row).find(k => k.startsWith('startDate'))
+      const endDateKey = Object.keys(row).find(k => k.startsWith('EndDate'))
+      
+      if (startDateKey && row[startDateKey] && !dateRegex.test(row[startDateKey])) {
         errors.push(`Row ${index + 1}: Start date should be in DD-MM-YYYY format`)
       }
-      if (endDate && !dateRegex.test(endDate)) {
+      if (endDateKey && row[endDateKey] && !dateRegex.test(row[endDateKey])) {
         errors.push(`Row ${index + 1}: End date should be in DD-MM-YYYY format`)
+      }
+
+      // Status validation
+      const statusKey = 'status (pending/active/completed)'
+      if (row[statusKey] && !VALID_STATUSES.includes(row[statusKey].toLowerCase() as DriveStatus)) {
+        errors.push(`Row ${index + 1}: Status must be one of: ${VALID_STATUSES.join(', ')}`)
       }
     })
     
@@ -152,25 +171,72 @@ const DriveEntryForm = () => {
 
   const transformDataForSubmission = (data: any[]): DriveData[] => {
     return data.map(row => {
-      const transformedRow: DriveData = {
-        title: row.title,
-        location: row.location,
-        description: row.description,
-        dtype: row.dtype,
-        startDate: convertToYYYYMMDD(row.startDate || row['startDate (DD-MM-YYYY)']),
-        EndDate: convertToYYYYMMDD(row.EndDate || row['EndDate (DD-MM-YYYY)']),
-        timeInterval: row.timeInterval,
-        placeLink: row.placeLink || undefined
+      // Initialize with required fields
+      const transformed: DriveData = {
+        title: '',
+        location: '',
+        description: '',
+        dtype: '',
+        startDate: '',
+        EndDate: '',
+        timeInterval: '',
+        status: 'pending', // Default status
       }
-  
-      if (row['geolocation.latitude'] || row['geolocation.longitude']) {
-        transformedRow.geolocation = {
-          latitude: row['geolocation.latitude'],
-          longitude: row['geolocation.longitude']
+
+      // Map fields from CSV to data structure
+      Object.entries(fieldConfig.baseFields).forEach(([field, config]) => {
+        let headerToUse = ''
+        const possibleHeaders = [
+          field,
+          `${field}*`,
+          `${field} (${config.format})`,
+          `${field} (${config.format})*`,
+          field === 'status' ? 'status (pending/active/completed)' : '',
+          `${field} (optional)`
+        ]
+
+        // Find the first header that exists in the row
+        for (const header of possibleHeaders) {
+          if (row[header]) {
+            headerToUse = header
+            break
+          }
         }
-      }
-  
-      return transformedRow
+
+        const value = row[headerToUse]?.toString().trim()
+
+        switch(field) {
+          case 'startDate':
+          case 'EndDate':
+            if (value) {
+              transformed[field] = convertToYYYYMMDD(value)
+            }
+            break
+
+          case 'status':
+            transformed.status = (value?.toLowerCase() as DriveStatus || 'pending')
+            break
+
+          case 'placeLink':
+            if (value) transformed.placeLink = value
+            break
+
+          case 'geolocation.latitude':
+          case 'geolocation.longitude':
+            if (value) {
+              if (!transformed.geolocation) transformed.geolocation = {}
+              transformed.geolocation[field.split('.')[1] as keyof GeoLocation] = value
+            }
+            break
+
+          default:
+            if (field in transformed) {
+              transformed[field as keyof DriveData] = value || ''
+            }
+        }
+      })
+
+      return transformed
     })
   }
 
@@ -211,7 +277,6 @@ const DriveEntryForm = () => {
   const clearData = () => {
     setCSVData([])
     setErrors([])
-    // Reset file input
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     if (fileInput) fileInput.value = ''
   }
@@ -250,17 +315,22 @@ const DriveEntryForm = () => {
   }
 
   const getTableColumns = () => {
-    const columns = [...driveSchema.required]
-    driveSchema.optional.forEach(field => {
-      if (csvData.some(row => {
-        if (field.includes('geolocation')) {
-          return row.geolocation && (row.geolocation.latitude || row.geolocation.longitude)
-        }
-        return row[field as keyof DriveData]
-      })) {
-        columns.push(field)
+    const baseColumns = ['title', 'location', 'description', 'dtype', 'startDate', 'EndDate', 'timeInterval', 'status']
+    const optionalColumns = ['placeLink']
+    
+    const columns = [...baseColumns]
+    
+    // Add optional columns if they have data
+    optionalColumns.forEach(col => {
+      if (csvData.some(row => row[col as keyof DriveData])) {
+        columns.push(col)
       }
     })
+    
+    // Add geolocation columns if they have data
+    if (csvData.some(row => row.geolocation?.latitude)) columns.push('geolocation.latitude')
+    if (csvData.some(row => row.geolocation?.longitude)) columns.push('geolocation.longitude')
+    
     return columns
   }
 
@@ -327,7 +397,7 @@ const DriveEntryForm = () => {
                         <TableCell key={column}>
                           {column.startsWith('geolocation.') 
                             ? row.geolocation?.[column.split('.')[1] as keyof GeoLocation] || '-'
-                            : row[column as keyof DriveData] || '-'}
+                            : (row[column as keyof DriveData] || '-')}
                         </TableCell>
                       ))}
                     </TableRow>
