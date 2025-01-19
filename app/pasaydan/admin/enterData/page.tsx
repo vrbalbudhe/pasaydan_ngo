@@ -4,6 +4,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DriveEntryForm from "@/components/Admin/a_EnterData/DriveEntryForm"
+import DonationRequestForm from "@/components/Admin/a_EnterData/DonationRequestForm"
 
 export default function EnterDataPage() {
   return (
@@ -22,20 +23,11 @@ export default function EnterDataPage() {
         <TabsTrigger value="drive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             Drive Entry
           </TabsTrigger>
-          <TabsTrigger value="organization" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            Organization
-          </TabsTrigger>
-          <TabsTrigger value="user" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            User
-          </TabsTrigger>
           <TabsTrigger value="donation" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             Donation Request
           </TabsTrigger>
           <TabsTrigger value="certificate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             Certificate
-          </TabsTrigger>
-          <TabsTrigger value="subadmin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            SubAdmin
           </TabsTrigger>
         </TabsList>
 
@@ -43,20 +35,10 @@ export default function EnterDataPage() {
           <DriveEntryForm />
         </TabsContent>
         
-        
-        <TabsContent value="organization" className="space-y-4">
-          {/* OrganizationEntryForm component will go here */}
-          <div>Organization Entry Form Coming Soon</div>
-        </TabsContent>
-        
-        <TabsContent value="user" className="space-y-4">
-          {/* UserEntryForm component will go here */}
-          <div>User Entry Form Coming Soon</div>
-        </TabsContent>
+
         
         <TabsContent value="donation" className="space-y-4">
-          {/* DonationRequestForm component will go here */}
-          <div>Donation Request Form Coming Soon</div>
+         <DonationRequestForm />
         </TabsContent>
         
         <TabsContent value="certificate" className="space-y-4">
