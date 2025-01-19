@@ -60,12 +60,32 @@ export default function DonationRequestCard({
 }: DonationRequestCardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const generateRandomDonationId = () => {
+    return Math.random().toString(36).substr(2, 9);
+  };
+  const donationId = generateRandomDonationId();
+
   const handleApproval = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
 
     try {
       await updateDonationStatus(id, "Approved");
+      const response2 = await fetch("/api/certificate/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: fullname,
+          userEmail: email,
+          donationId: donationId,
+        }),
+      });
+      // userName, userEmail, donationId
+      if (!response2.ok) {
+        throw new Error("Failed to create certificate");
+      }
       alert("Donation request approved successfully.");
       status = "Approved";
     } catch (error) {

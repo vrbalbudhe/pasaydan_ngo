@@ -29,7 +29,7 @@ const formSchema = z.object({
     .email("Please enter a valid email")
     .min(1, "Email is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  userType: z.string().optional(),
+  userType: z.string().optional(), // User type can be optional
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -44,6 +44,7 @@ export function LoginSignup() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue, // Set value programmatically if needed
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
@@ -55,6 +56,7 @@ export function LoginSignup() {
   }): Promise<void> => {
     setError(null);
     setIsLoading(true);
+    console.log("Form Data:", data);
     try {
       if (isLogin) {
         const response = await fetch("/api/auth/login", {
@@ -65,6 +67,7 @@ export function LoginSignup() {
           body: JSON.stringify({
             email: data.email,
             password: data.password,
+            userType: data.userType,
           }),
         });
         const responseBody = await response.json();
@@ -73,7 +76,10 @@ export function LoginSignup() {
           throw new Error(`Login failed: ${responseBody?.message}`);
         }
 
-        if (responseBody?.data?.role === "MiniAdmin" || "Admin") {
+        if (
+          responseBody?.data?.role === "MiniAdmin" ||
+          responseBody?.data?.role === "Admin"
+        ) {
           router.push("/pasaydan/admin");
         } else {
           router.push("/pasaydan/com");
@@ -84,7 +90,11 @@ export function LoginSignup() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            userType: data.userType,
+            email: data.email,
+            password: data.password,
+          }),
         });
         const responseBody = await response.json();
 
@@ -133,7 +143,7 @@ export function LoginSignup() {
                 >
                   User Type
                 </Label>
-                <Select>
+                <Select onValueChange={(value) => setValue("userType", value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue
                       placeholder="Select your user type"
@@ -142,7 +152,7 @@ export function LoginSignup() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="individual">Individual</SelectItem>
-                    <SelectItem value="organisation">Organisation</SelectItem>
+                    <SelectItem value="organization">Organization</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.userType && (

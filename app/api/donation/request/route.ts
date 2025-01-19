@@ -61,6 +61,31 @@ export async function POST(req: Request) {
       },
     });
 
+    if (createDonationRequest) {
+      const message = `
+      🎉 *Donation Request Created* 🎉
+      
+      👤 *Name:* ${fullname}
+      📧 *Email:* ${email}
+      📱 *Mobile:* ${mobile}
+      🏠 *Address:* ${address}
+      💖 *Donation Type:* ${type}
+      📦 *Quantity:* ${quantity}
+      🟢 *Status:* Pending
+      📅 *Created At:* ${new Date().toLocaleString()}
+      
+      --------------------------------------
+      `;
+
+      await fetch("http://localhost:3000/api/telegram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
+      });
+    }
+
     return NextResponse.json(
       { message: "Donation Request Created successfully" },
       { status: 201 }

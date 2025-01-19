@@ -10,6 +10,9 @@ export async function POST(req: Request) {
   }: { userType: string; email: string; password: string } = await req.json();
 
   try {
+    console.log("User Type:", userType);
+    console.log("Email:", email);
+    console.log("Password:", password);
 
     const existingAccount =
       (await prisma.user.findFirst({ where: { email } })) ||
@@ -24,22 +27,43 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (userType === "organisation") {
-      await prisma.organization.create({
+    if (userType === "organization") {
+      const newOrg = await prisma.organization.create({
         data: {
           email,
           password: hashedPassword,
         },
       });
-    } else {
-      await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-        },
-      });
+
+      if (!newOrg) {
+        return NextResponse.json(
+          {
+            error:
+              "Could not create organization account, please try again later",
+          },
+          { status: 500 }
+        );
+      }
     }
 
+    if (userType === "individual") {
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+        },
+      });
+
+      if (!newUser) {
+        return NextResponse.json(
+          {
+            error:
+              "Could not create individual account, please try again later",
+          },
+          { status: 500 }
+        );
+      }
+    }
     return NextResponse.json(
       { message: "Account created successfully" },
       { status: 201 }

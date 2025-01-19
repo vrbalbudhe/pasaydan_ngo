@@ -29,14 +29,14 @@ export async function middleware(req: NextRequest) {
   }
 
   const payload = await verifyToken(req);
-  console.log(payload);
+  console.log("this is the payload: :", payload);
   if (!payload && pathname !== "/pasaydan/auth/logsign") {
     console.log("Invalid token, redirecting to login...");
     const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
     return NextResponse.redirect(redirectUrl);
   }
 
-  const userRole = payload?.role;
+  const userRole = payload?.role || payload?.userType;
   console.log("user roles : ", userRole);
   if (pathname.startsWith("/pasaydan/com/profile")) {
     if (userRole !== "individual" && userRole !== "organization") {
@@ -66,5 +66,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/pasaydan/com/profile", "/pasaydan/admin/:path*"],
+  matcher: [
+    "/pasaydan/com/profile",
+    "/pasaydan/admin/:path*",
+    // "/api/drive/:path*",
+  ],
 };
