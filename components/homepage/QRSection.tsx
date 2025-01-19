@@ -11,7 +11,7 @@ const QRSection = () => {
     if (qrRef.current) {
       new QRious({
         element: qrRef.current,
-        value: 'https://your-donation-form-url.com', // Replace with your actual donation form URL
+        value: '/pasaydan/com/donation', // Replace with your actual donation form URL
         size: 200,
         backgroundAlpha: 0,
         foreground: '#1e40af', // Deep blue color matching your theme
