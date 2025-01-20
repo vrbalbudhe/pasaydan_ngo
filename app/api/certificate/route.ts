@@ -143,10 +143,10 @@ const generateCertificate = async (
       ],
     });
 
-    await fs.unlink(outputPath);
-    console.log("Certificate sent and deleted after sending.");
+    console.log("Certificate sent and ready for download.");
 
-    return outputPath;
+    // Return the path to the certificate for download
+    return `/certificates/${userName}-certificate.pdf`;
   } catch (error) {
     console.error("Error generating certificate:", error);
     throw error;
@@ -168,11 +168,17 @@ export async function POST(req: Request) {
     }
 
     const donationIdToUse = donationId || generateRandomDonationId();
-
-    await generateCertificate(userName, userEmail, donationIdToUse);
+    const certificateUrl = await generateCertificate(
+      userName,
+      userEmail,
+      donationIdToUse
+    );
 
     return NextResponse.json(
-      { message: "Certificate generated and sent successfully." },
+      {
+        message: "Certificate generated and sent successfully.",
+        certificateUrl,
+      },
       { status: 200 }
     );
   } catch (error) {
