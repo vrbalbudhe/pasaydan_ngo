@@ -87,18 +87,34 @@ export default function DonationForm() {
 
   return (
     <div className="relative min-h-screen py-12 md:py-20">
+      {/* Blob Animations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-          style={{ animationDelay: "0s" }}
+        <motion.div
+          className="absolute top-1/4 left-10 w-[400px] h-[400px] bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+          animate={{
+            scale: [1, 1.1, 1],
+            x: [0, 30, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
         />
-        <div
-          className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-          style={{ animationDelay: "2s" }}
-        />
-        <div
-          className="absolute bottom-1/3 left-1/2 w-[450px] h-[450px] bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-          style={{ animationDelay: "4s" }}
+        <motion.div
+          className="absolute bottom-1/4 left-20 w-[350px] h-[350px] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, -20, 0],
+            y: [0, 40, 0],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            repeatType: "reverse",
+            delay: 1,
+          }}
         />
       </div>
 
@@ -323,24 +339,6 @@ export default function DonationForm() {
           </motion.div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes blob {
-          0%,
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(50px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 15s infinite ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }
