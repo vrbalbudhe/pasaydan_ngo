@@ -135,6 +135,11 @@ model SubAdmins {
 
 
 
+enum UserType {
+  INDIVIDUAL
+  ORGANIZATION
+}
+
 enum TransactionType {
   UPI
   NET_BANKING
@@ -172,6 +177,7 @@ model Transaction {
   name              String
   email             String
   phone             String
+  userType          UserType  @default(INDIVIDUAL)
   amount            Float
   type              TransactionType
   transactionId     String    @unique
@@ -193,4 +199,3 @@ model Transaction {
   Organization      Organization? @relation(fields: [organizationId], references: [id])
   organizationId    String?   @db.ObjectId
 }
-
