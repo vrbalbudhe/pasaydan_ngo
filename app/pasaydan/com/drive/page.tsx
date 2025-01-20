@@ -7,7 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const renderHeading = () => {
   return (
-    <div className="max-w-3xl">
+    <div
+    // className="max-w-3xl"
+    >
       <h1 className="text-4xl md:text-5xl font-normal text-slate-900 mb-4">
         Drive
       </h1>
