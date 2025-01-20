@@ -12,6 +12,8 @@ const generateRandomDonationId = () => {
 export default function CertificateGenerationForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+
+  const [certificateUrl, setCertificateUrl] = useState("");
   const [type, setType] = useState("");
   const [mobile, setMobile] = useState("");
   const [description, setDescription] = useState("");
@@ -42,6 +44,13 @@ export default function CertificateGenerationForm() {
       });
 
       const data = await response.json();
+
+      if (response.ok) {
+        setCertificateUrl(data.certificateUrl);
+        setMessage(data.message);
+      } else {
+        setMessage(data.error || "Failed to generate certificate");
+      }
 
       if (response.ok) {
         const response1 = await fetch("/api/certificate/create", {
@@ -307,13 +316,20 @@ export default function CertificateGenerationForm() {
                   "Generate Certificate"
                 )}
               </Button>
+              {certificateUrl && (
+                <div className="mt-4">
+                  <a
+                    href={certificateUrl}
+                    download
+                    className="text-blue-500 underline"
+                  >
+                    Click here to download your certificate
+                  </a>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
-        {/* <img
-          src="https://drive.google.com/uc?export=view&id=18g_jreJ_pazXvx5W7N2AmZ9Mim93Y42i"
-          alt="Certificate"
-        /> */}
       </div>
     </div>
   );

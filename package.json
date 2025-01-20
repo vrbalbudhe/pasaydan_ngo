@@ -60,6 +60,7 @@
     "papaparse": "^5.5.1",
     "pdfkit": "^0.16.0",
     "puppeteer": "^23.11.1",
+    "qrious": "^4.0.2",
     "react": "^18.0.0",
     "react-avatar-editor": "^13.0.2",
     "react-day-picker": "^8.10.1",
