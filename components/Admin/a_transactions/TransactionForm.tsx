@@ -5,11 +5,6 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { 
-  TransactionType, 
-  TransactionNature, 
-  UserType 
-} from "@/types/api";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,52 +23,50 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { TransactionType, TransactionNature, UserType } from "@prisma/client";
 
-// Form validation schema
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  amount: z.coerce.number().positive({
-    message: "Amount must be a positive number.",
-  }),
-  date: z.string().min(1, {
-    message: "Please select a date.",
-  }),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  amount: z.string().min(1, "Amount is required").transform((val) => parseFloat(val)), // Changed to string
   type: z.enum(["UPI", "NET_BANKING", "CARD", "CASH"]),
   transactionNature: z.enum(["CREDIT", "DEBIT"]),
   userType: z.enum(["INDIVIDUAL", "ORGANIZATION"]),
+  date: z.string(),
   transactionId: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function TransactionForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize form
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      amount: undefined,
-      date: new Date().toISOString().split('T')[0],
+      email: "",
+      phone: "",
+      amount: "", // Initialize as empty string
       type: "CASH",
       transactionNature: "CREDIT",
       userType: "INDIVIDUAL",
+      date: new Date().toISOString().split('T')[0],
       transactionId: "",
     },
   });
 
-  // Form submission handler
   async function onSubmit(data: FormData) {
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
 
       // If type is CASH, remove transactionId
-      const submitData = data.type === "CASH" 
-        ? { ...data, transactionId: undefined }
-        : data;
+      const submitData = {
+        ...data,
+        amount: parseFloat(data.amount.toString()), // Convert to number for API
+        transactionId: data.type === "CASH" ? undefined : data.transactionId,
+      };
 
       const response = await fetch("/api/admin/transactions", {
         method: "POST",
@@ -88,12 +81,12 @@ export default function TransactionForm() {
       }
 
       toast.success("Transaction added successfully");
-      form.reset(); // Reset form
+      form.reset();
     } catch (error) {
-      toast.error("Failed to add transaction");
       console.error("Error:", error);
+      toast.error("Failed to add transaction");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -116,6 +109,44 @@ export default function TransactionForm() {
             )}
           />
 
+          {/* Email Field */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="email" 
+                    placeholder="Enter email" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Phone Field */}
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="tel" 
+                    placeholder="Enter phone number" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Amount Field */}
           <FormField
             control={form.control}
@@ -125,9 +156,10 @@ export default function TransactionForm() {
                 <FormLabel>Amount (₹)</FormLabel>
                 <FormControl>
                   <Input 
-                    type="number" 
-                    placeholder="Enter amount" 
+                    type="number"
+                    placeholder="Enter amount"
                     {...field}
+                    onChange={(e) => field.onChange(e.target.value)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -135,32 +167,14 @@ export default function TransactionForm() {
             )}
           />
 
-          {/* Date Field */}
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Transaction Type */}
+          {/* Payment Type */}
           <FormField
             control={form.control}
             name="type"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Payment Type</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select payment type" />
@@ -186,10 +200,7 @@ export default function TransactionForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nature</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select nature" />
@@ -215,10 +226,7 @@ export default function TransactionForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>User Type</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select user type" />
@@ -232,6 +240,21 @@ export default function TransactionForm() {
                     ))}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Date Field */}
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -259,8 +282,8 @@ export default function TransactionForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Adding Transaction..." : "Add Transaction"}
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Adding Transaction..." : "Add Transaction"}
         </Button>
       </form>
     </Form>
