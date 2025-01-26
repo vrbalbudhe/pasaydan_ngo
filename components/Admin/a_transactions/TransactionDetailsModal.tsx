@@ -1,17 +1,19 @@
 // components/Admin/a_transactions/TransactionDetailsModal.tsx
 "use client";
 
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { Transaction } from "@prisma/client";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 interface TransactionDetailsModalProps {
   isOpen: boolean;
@@ -31,13 +33,15 @@ const DetailRow = ({ label, value }: DetailRowProps) => (
   </div>
 );
 
-export function TransactionDetailsModal({ 
-  isOpen, 
-  onClose, 
-  transaction 
+export function TransactionDetailsModal({
+  isOpen,
+  onClose,
+  transaction,
 }: TransactionDetailsModalProps) {
+  // If there's no transaction, don't render modal contents at all
   if (!transaction) return null;
 
+  // Status badge styles
   const getStatusBadge = (status: string) => {
     const styles = {
       PENDING: "bg-yellow-100 text-yellow-800",
@@ -48,10 +52,19 @@ export function TransactionDetailsModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      // If the dialog tries to close (overlay click/Escape), onOpenChange
+      // passes false. We call onClose() to update parent state.
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Transaction Details</DialogTitle>
+          {/* Optional short description if desired */}
+          {/* <DialogDescription>View detailed info about the transaction.</DialogDescription> */}
         </DialogHeader>
 
         <div className="mt-4 space-y-6">
@@ -61,10 +74,16 @@ export function TransactionDetailsModal({
             <DetailRow label="Name" value={transaction.name} />
             <DetailRow label="Email" value={transaction.email} />
             <DetailRow label="Phone" value={transaction.phone} />
-            <DetailRow 
-              label="Amount" 
+            <DetailRow
+              label="Amount"
               value={
-                <span className={transaction.transactionNature === 'CREDIT' ? 'text-green-600' : 'text-red-600'}>
+                <span
+                  className={
+                    transaction.transactionNature === "CREDIT"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }
+                >
                   {formatCurrency(transaction.amount)}
                 </span>
               }
@@ -77,24 +96,30 @@ export function TransactionDetailsModal({
           {/* Transaction Details */}
           <div>
             <h3 className="text-sm font-semibold mb-2">Transaction Details</h3>
-            <DetailRow 
-              label="Transaction Type" 
-              value={transaction.type.replace('_', ' ')} 
+            <DetailRow
+              label="Transaction Type"
+              value={transaction.type.replace("_", " ")}
             />
-            <DetailRow 
-              label="Nature" 
+            <DetailRow
+              label="Nature"
               value={
-                <Badge variant={transaction.transactionNature === 'CREDIT' ? 'success' : 'destructive'}>
+                <Badge
+                  variant={
+                    transaction.transactionNature === "CREDIT"
+                      ? "success"
+                      : "destructive"
+                  }
+                >
                   {transaction.transactionNature}
                 </Badge>
               }
             />
-            {transaction.type !== 'CASH' && (
+            {transaction.type !== "CASH" && (
               <DetailRow label="Transaction ID" value={transaction.transactionId} />
             )}
             <DetailRow label="User Type" value={transaction.userType} />
-            <DetailRow 
-              label="Status" 
+            <DetailRow
+              label="Status"
               value={
                 <Badge className={getStatusBadge(transaction.status)}>
                   {transaction.status}
@@ -110,21 +135,21 @@ export function TransactionDetailsModal({
             <h3 className="text-sm font-semibold mb-2">Additional Information</h3>
             <DetailRow label="Money For" value={transaction.moneyFor} />
             {transaction.customMoneyFor && (
-              <DetailRow label="Custom Category" value={transaction.customMoneyFor} />
+              <DetailRow
+                label="Custom Category"
+                value={transaction.customMoneyFor}
+              />
             )}
             <DetailRow label="Entry Type" value={transaction.entryType} />
             <DetailRow label="Entry By" value={transaction.entryBy} />
-            <DetailRow 
-              label="Entry At" 
-              value={formatDate(transaction.entryAt)}
-            />
+            <DetailRow label="Entry At" value={formatDate(transaction.entryAt)} />
             {transaction.description && (
               <DetailRow label="Description" value={transaction.description} />
             )}
           </div>
 
           {/* Verification Information - Show only if verified or rejected */}
-          {(transaction.status === 'VERIFIED' || transaction.status === 'REJECTED') && (
+          {(transaction.status === "VERIFIED" || transaction.status === "REJECTED") && (
             <>
               <Separator />
               <div>
@@ -133,21 +158,28 @@ export function TransactionDetailsModal({
                   <DetailRow label="Verified By" value={transaction.verifiedBy} />
                 )}
                 {transaction.verifiedAt && (
-                  <DetailRow 
-                    label="Verified At" 
-                    value={formatDate(transaction.verifiedAt)} 
+                  <DetailRow
+                    label="Verified At"
+                    value={formatDate(transaction.verifiedAt)}
                   />
                 )}
                 {transaction.statusDescription && (
-                  <DetailRow 
-                    label="Status Note" 
-                    value={transaction.statusDescription} 
+                  <DetailRow
+                    label="Status Note"
+                    value={transaction.statusDescription}
                   />
                 )}
               </div>
             </>
           )}
         </div>
+
+        {/* Footer with a close button */}
+        <DialogFooter className="mt-6">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

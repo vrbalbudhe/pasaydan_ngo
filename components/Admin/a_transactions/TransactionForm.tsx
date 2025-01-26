@@ -25,11 +25,13 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { TransactionType, TransactionNature, UserType } from "@prisma/client";
 
+// --- Zod Schema ---
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  amount: z.string().min(1, "Amount is required").transform((val) => parseFloat(val)), // Changed to string
+  // Now a number type:
+  amount: z.number().min(1, "Amount is required"),
   type: z.enum(["UPI", "NET_BANKING", "CARD", "CASH"]),
   transactionNature: z.enum(["CREDIT", "DEBIT"]),
   userType: z.enum(["INDIVIDUAL", "ORGANIZATION"]),
@@ -48,11 +50,13 @@ export default function TransactionForm() {
       name: "",
       email: "",
       phone: "",
-      amount: "", // Initialize as empty string
+      // 'amount' defaults to 0 or some numeric placeholder
+      amount: 0,
       type: "CASH",
       transactionNature: "CREDIT",
       userType: "INDIVIDUAL",
-      date: new Date().toISOString().split('T')[0],
+      // e.g., "2025-01-28"
+      date: new Date().toISOString().split("T")[0],
       transactionId: "",
     },
   });
@@ -61,10 +65,9 @@ export default function TransactionForm() {
     try {
       setIsSubmitting(true);
 
-      // If type is CASH, remove transactionId
+      // If type is CASH, remove transactionId from the payload
       const submitData = {
         ...data,
-        amount: parseFloat(data.amount.toString()), // Convert to number for API
         transactionId: data.type === "CASH" ? undefined : data.transactionId,
       };
 
@@ -117,10 +120,10 @@ export default function TransactionForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="email" 
-                    placeholder="Enter email" 
-                    {...field} 
+                  <Input
+                    type="email"
+                    placeholder="Enter email"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -136,10 +139,10 @@ export default function TransactionForm() {
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="tel" 
-                    placeholder="Enter phone number" 
-                    {...field} 
+                  <Input
+                    type="tel"
+                    placeholder="Enter phone number"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -155,11 +158,14 @@ export default function TransactionForm() {
               <FormItem>
                 <FormLabel>Amount (₹)</FormLabel>
                 <FormControl>
-                  <Input 
+                  <Input
                     type="number"
                     placeholder="Enter amount"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    // IMPORTANT:
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e.target.valueAsNumber);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -183,7 +189,7 @@ export default function TransactionForm() {
                   <SelectContent>
                     {Object.values(TransactionType).map((type) => (
                       <SelectItem key={type} value={type}>
-                        {type.replace('_', ' ')}
+                        {type.replace("_", " ")}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -269,9 +275,9 @@ export default function TransactionForm() {
                 <FormItem>
                   <FormLabel>Transaction ID</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter transaction ID" 
-                      {...field} 
+                    <Input
+                      placeholder="Enter transaction ID"
+                      {...field}
                       required={form.watch("type") !== "CASH"}
                     />
                   </FormControl>

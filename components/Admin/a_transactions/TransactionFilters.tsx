@@ -21,24 +21,41 @@ import { TransactionStatus } from "@prisma/client";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useTransactions } from "@/contexts/TransactionContext";
 
+interface PaginationState {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export default function TransactionFilters() {
   const [isOpen, setIsOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | null>(null);
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TransactionStatus | "">("");
+  /**
+   * Instead of `TransactionStatus | ""`, let's store `TransactionStatus | "ALL"`.
+   * "ALL" means "no specific status filter".
+   */
+  const [statusFilter, setStatusFilter] = useState<TransactionStatus | "ALL">(
+    "ALL"
+  );
 
   const { setPagination } = useTransactions();
 
   const handleApplyFilters = () => {
-    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
+    // Reset page to 1
+    setPagination((prev: PaginationState) => ({ ...prev, page: 1 }));
     setIsOpen(false);
   };
 
   const handleReset = () => {
     setDateRange(null);
     setSearchTerm("");
-    setStatusFilter("");
-    setPagination(prev => ({ ...prev, page: 1 }));
+    // Reset to "ALL"
+    setStatusFilter("ALL");
+    setPagination((prev: PaginationState) => ({ ...prev, page: 1 }));
     setIsOpen(false);
   };
 
@@ -52,6 +69,7 @@ export default function TransactionFilters() {
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
         <div className="space-y-4">
+          {/* Search Field */}
           <div className="space-y-2">
             <h4 className="font-medium text-sm">Search</h4>
             <Input
@@ -62,14 +80,26 @@ export default function TransactionFilters() {
             />
           </div>
 
+          {/* Status Filter */}
           <div className="space-y-2">
             <h4 className="font-medium text-sm">Status</h4>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            {/**
+             * 1) 'value' is either "ALL" or a TransactionStatus.
+             * 2) We map "ALL" to show "All" but never an empty string for <SelectItem>.
+             */}
+            <Select
+              value={statusFilter}
+              // If user picks "ALL", we set statusFilter to "ALL"
+              // If user picks a real status, we set that.
+              onValueChange={(val) =>
+                setStatusFilter(val as TransactionStatus | "ALL")
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All</SelectItem>
+                <SelectItem value="ALL">All</SelectItem>
                 {Object.values(TransactionStatus).map((status) => (
                   <SelectItem key={status} value={status}>
                     {status}
@@ -79,15 +109,16 @@ export default function TransactionFilters() {
             </Select>
           </div>
 
+          {/* Date Range */}
           <div className="space-y-2">
             <h4 className="font-medium text-sm">Date Range</h4>
             <div className="grid gap-2">
               <div className="flex items-center gap-2">
                 <Calendar
                   mode="range"
-                  selected={{ 
+                  selected={{
                     from: dateRange?.from || undefined,
-                    to: dateRange?.to || undefined
+                    to: dateRange?.to || undefined,
                   }}
                   onSelect={(range: any) => setDateRange(range)}
                   numberOfMonths={2}
@@ -96,9 +127,10 @@ export default function TransactionFilters() {
             </div>
           </div>
 
+          {/* Bottom Buttons */}
           <div className="flex items-center justify-between pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={handleReset}
               className="flex items-center gap-2"
@@ -106,10 +138,7 @@ export default function TransactionFilters() {
               <X className="h-4 w-4" />
               Reset
             </Button>
-            <Button 
-              size="sm"
-              onClick={handleApplyFilters}
-            >
+            <Button size="sm" onClick={handleApplyFilters}>
               Apply Filters
             </Button>
           </div>

@@ -21,27 +21,24 @@ function TransactionContent() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Transactions</h1>
           <div className="flex items-center gap-3">
-            { 
             <ExportButton />
-            }
           </div>
         </div>
 
-        {
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <TransactionStats />
         </div>
-        }
 
         {/* Main Content */}
         <div className="grid gap-6">
-          {/* Transaction Form Section */}
+          {/* Transaction Form */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-lg font-semibold mb-4">Add New Transaction</h2>
             <TransactionForm />
           </div>
 
-          {/* Transaction Table Section */}
+          {/* Transaction Table */}
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b">
               <div className="flex items-center justify-between mb-4">
@@ -52,10 +49,6 @@ function TransactionContent() {
             <TransactionTable />
           </div>
         </div>
-
-        {/* Transaction Details Modal - Will implement later
-        <TransactionDetailsModal />
-        */}
       </div>
     </TransactionProvider>
   );

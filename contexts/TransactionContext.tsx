@@ -1,9 +1,8 @@
 // contexts/TransactionContext.tsx
 "use client";
-
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Transaction, TransactionStatus } from '@prisma/client';
-import { toast } from 'sonner';
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { Transaction, TransactionStatus } from "@prisma/client";
+import { toast } from "sonner";
 
 interface TransactionContextType {
   transactions: Transaction[];
@@ -32,6 +31,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     totalPages: 0,
   });
 
+  // Fetch logic
   const fetchTransactions = async () => {
     try {
       setIsLoading(true);
@@ -39,72 +39,74 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
       });
-
       const response = await fetch(`/api/admin/transactions?${queryParams}`);
       const data = await response.json();
 
       if (data.success) {
         setTransactions(data.data);
-        setPagination(prev => ({
+        setPagination((prev) => ({
           ...prev,
           total: data.pagination.total,
           totalPages: data.pagination.totalPages,
         }));
       }
     } catch (error) {
-      console.error('Error fetching transactions:', error);
-      toast.error('Failed to fetch transactions');
+      console.error("Error fetching transactions:", error);
+      toast.error("Failed to fetch transactions");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Update transaction status
   const updateTransactionStatus = async (id: string, status: TransactionStatus) => {
     try {
       const response = await fetch(`/api/admin/transactions/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-
-      if (!response.ok) throw new Error('Failed to update status');
+      if (!response.ok) throw new Error("Failed to update status");
       await fetchTransactions();
       return true;
     } catch (error) {
-      console.error('Error updating transaction status:', error);
+      console.error("Error updating transaction status:", error);
       return false;
     }
   };
 
+  // Delete transaction
   const deleteTransaction = async (id: string) => {
     try {
       const response = await fetch(`/api/admin/transactions/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-
-      if (!response.ok) throw new Error('Failed to delete transaction');
+      if (!response.ok) throw new Error("Failed to delete transaction");
       await fetchTransactions();
       return true;
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      console.error("Error deleting transaction:", error);
       return false;
     }
   };
 
+  // Automatically fetch on page change
   useEffect(() => {
     fetchTransactions();
   }, [pagination.page]);
 
   return (
-    <TransactionContext.Provider value={{
-      transactions,
-      isLoading,
-      pagination,
-      refetchTransactions: fetchTransactions,
-      updateTransactionStatus,
-      deleteTransaction,
-      setPagination,
-    }}>
+    <TransactionContext.Provider
+      value={{
+        transactions,
+        isLoading,
+        pagination,
+        refetchTransactions: fetchTransactions,
+        updateTransactionStatus,
+        deleteTransaction,
+        setPagination,
+      }}
+    >
       {children}
     </TransactionContext.Provider>
   );
@@ -113,7 +115,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 export function useTransactions() {
   const context = useContext(TransactionContext);
   if (context === undefined) {
-    throw new Error('useTransactions must be used within a TransactionProvider');
+    throw new Error("useTransactions must be used within a TransactionProvider");
   }
   return context;
 }

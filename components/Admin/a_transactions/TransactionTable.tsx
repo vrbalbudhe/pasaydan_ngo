@@ -1,8 +1,6 @@
-// components/Admin/a_transactions/TransactionTable.tsx
+// TransactionTable.tsx
 "use client";
-
-import { useEffect, useState } from "react";
-import { TransactionDetailsModal } from "./TransactionDetailsModal";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -28,48 +26,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { 
   MoreHorizontal, 
-  Eye,
-  Edit,
-  Trash2,
-  CheckCircle,
+  Eye, 
+  Trash2, 
+  CheckCircle, 
   XCircle 
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"; // Now includes success variant
 import { formatCurrency, formatDate } from "@/utils/format";
-import { useTransactions } from "@/hooks/useTransactions";
+import { useTransactions } from "@/contexts/TransactionContext";
 import { Transaction, TransactionStatus } from "@prisma/client";
 import { toast } from "sonner";
+import { TransactionDetailsModal } from "./TransactionDetailsModal";
+
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
 export default function TransactionTable() {
   const {
     transactions,
     isLoading,
-    pagination,
+    pagination, 
     setPagination,
-    fetchTransactions,
     updateTransactionStatus,
-    deleteTransaction
+    deleteTransaction,
   } = useTransactions();
 
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [statusAction, setStatusAction] = useState<'VERIFY' | 'REJECT' | null>(null);
+  const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(null);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [pagination.page]);
-
-  // Status management
+  // Update status
   const handleStatusUpdate = async (status: TransactionStatus) => {
     if (!selectedTransaction) return;
-
-    const success = await updateTransactionStatus(
-      selectedTransaction.id,
-      status
-    );
-
+    const success = await updateTransactionStatus(selectedTransaction.id, status);
     if (success) {
       toast.success(`Transaction ${status.toLowerCase()}`);
       setShowStatusDialog(false);
@@ -79,12 +74,10 @@ export default function TransactionTable() {
     }
   };
 
-  // Delete management
+  // Delete
   const handleDelete = async () => {
     if (!selectedTransaction) return;
-
     const success = await deleteTransaction(selectedTransaction.id);
-
     if (success) {
       toast.success("Transaction deleted");
       setShowDeleteDialog(false);
@@ -94,14 +87,18 @@ export default function TransactionTable() {
     }
   };
 
-  // Status badge styling
+  // For the status badge, we can keep using 'success' or rename it if you prefer:
   const getStatusBadge = (status: TransactionStatus) => {
-    const styles = {
-      PENDING: "bg-yellow-100 text-yellow-800",
-      VERIFIED: "bg-green-100 text-green-800",
-      REJECTED: "bg-red-100 text-red-800",
-    };
-    return styles[status] || "";
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800"; 
+      case "VERIFIED":
+        return "bg-green-100 text-green-800";
+      case "REJECTED":
+        return "bg-red-100 text-red-800";
+      default:
+        return "";
+    }
   };
 
   const handleCloseModal = () => {
@@ -142,9 +139,10 @@ export default function TransactionTable() {
                 <TableRow key={transaction.id}>
                   <TableCell>{formatDate(transaction.date)}</TableCell>
                   <TableCell>{transaction.name}</TableCell>
-                  <TableCell>{transaction.type.replace('_', ' ')}</TableCell>
+                  <TableCell>{transaction.type.replace("_", " ")}</TableCell>
                   <TableCell>
-                    <Badge variant={transaction.transactionNature === 'CREDIT' ? 'success' : 'destructive'}>
+                    {/* If you added a 'success' variant to badge.tsx, you can do this: */}
+                    <Badge variant={transaction.transactionNature === "CREDIT" ? "success" : "destructive"}>
                       {transaction.transactionNature}
                     </Badge>
                   </TableCell>
@@ -164,7 +162,7 @@ export default function TransactionTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowDetailsModal(true);
@@ -173,12 +171,12 @@ export default function TransactionTable() {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        {transaction.status === 'PENDING' && (
+                        {transaction.status === "PENDING" && (
                           <>
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedTransaction(transaction);
-                                setStatusAction('VERIFY');
+                                setStatusAction("VERIFY");
                                 setShowStatusDialog(true);
                               }}
                               className="text-green-600"
@@ -189,7 +187,7 @@ export default function TransactionTable() {
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedTransaction(transaction);
-                                setStatusAction('REJECT');
+                                setStatusAction("REJECT");
                                 setShowStatusDialog(true);
                               }}
                               className="text-red-600"
@@ -224,7 +222,12 @@ export default function TransactionTable() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+          onClick={() =>
+            setPagination((prev: Pagination) => ({
+              ...prev,
+              page: prev.page - 1,
+            }))
+          }
           disabled={pagination.page === 1 || isLoading}
         >
           Previous
@@ -232,7 +235,12 @@ export default function TransactionTable() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+          onClick={() =>
+            setPagination((prev: Pagination) => ({
+              ...prev,
+              page: prev.page + 1,
+            }))
+          }
           disabled={pagination.page === pagination.totalPages || isLoading}
         >
           Next
@@ -247,53 +255,56 @@ export default function TransactionTable() {
       />
 
       {/* Status Update Dialog */}
-      <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+      <Dialog
+        open={showStatusDialog}
+        onOpenChange={(open) => setShowStatusDialog(open)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {statusAction === 'VERIFY' ? 'Verify Transaction' : 'Reject Transaction'}
+              {statusAction === "VERIFY" ? "Verify Transaction" : "Reject Transaction"}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to {statusAction === 'VERIFY' ? 'verify' : 'reject'} this transaction?
+              Are you sure you want to{" "}
+              {statusAction === "VERIFY" ? "verify" : "reject"} this transaction?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowStatusDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
               Cancel
             </Button>
             <Button
-              variant={statusAction === 'VERIFY' ? 'default' : 'destructive'}
-              onClick={() => handleStatusUpdate(statusAction === 'VERIFY' ? 'VERIFIED' : 'REJECTED')}
+              variant={statusAction === "VERIFY" ? "default" : "destructive"}
+              onClick={() =>
+                handleStatusUpdate(
+                  statusAction === "VERIFY" ? "VERIFIED" : "REJECTED"
+                )
+              }
             >
-              {statusAction === 'VERIFY' ? 'Verify' : 'Reject'}
+              {statusAction === "VERIFY" ? "Verify" : "Reject"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <Dialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => setShowDeleteDialog(open)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Transaction</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this transaction? This action cannot be undone.
+              Are you sure you want to delete this transaction? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-            >
+            <Button variant="destructive" onClick={handleDelete}>
               Delete
             </Button>
           </DialogFooter>
