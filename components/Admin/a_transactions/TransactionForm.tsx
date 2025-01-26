@@ -68,6 +68,7 @@ export default function TransactionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
 
   // Get default entry name from localStorage
   const [defaultEntryName, setDefaultEntryName] = useState<string>(() => {
@@ -118,8 +119,30 @@ export default function TransactionForm() {
       const file = e.target.files[0];
       setSelectedFile(file);
       form.setValue("screenshot", file);
+      
+      // Create preview URL
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
     }
   };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    form.setValue("screenshot", null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
 
   async function onSubmit(data: FormData) {
     try {
@@ -343,27 +366,70 @@ export default function TransactionForm() {
           )}
 
           {/* Screenshot Upload */}
-          <FormField
-            control={form.control}
-            name="screenshot"
-            render={({ field: { onChange, ...field } }) => (
-              <FormItem>
-                <FormLabel>Transaction Screenshot</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+  <FormField
+    control={form.control}
+    name="screenshot"
+    render={({ field: { onChange, ...field } }) => (
+      <FormItem className="col-span-2">
+        <FormLabel>Transaction Screenshot</FormLabel>
+        <FormControl>
+          <div className="space-y-4">
+            {/* File Input Container */}
+            <div className="flex items-center justify-center w-full">
+              <label
+                htmlFor="screenshot-upload"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Supported formats: JPG, PNG, JPEG, WEBP (Max 5MB)
+                  </p>
+                </div>
+                <input
+                  id="screenshot-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+
+            {/* Preview Container */}
+            {previewUrl && (
+              <div className="relative w-full max-w-md mx-auto">
+                <div className="relative group">
+                  <img
+                    src={previewUrl}
+                    alt="Transaction Screenshot"
+                    className="w-full h-auto rounded-lg shadow-md"
                   />
-                </FormControl>
-                <FormDescription>
-                  Upload transaction screenshot (Max 5MB)
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white opacity-90 hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="mt-2 text-sm text-gray-500 text-center">
+                  {selectedFile?.name}
+                </p>
+              </div>
             )}
-          />
+          </div>
+        </FormControl>
+        <FormDescription>
+          Upload transaction screenshot (Max 5MB)
+        </FormDescription>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
 
           {/* Entry By */}
           <FormField
