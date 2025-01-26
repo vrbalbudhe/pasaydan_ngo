@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Download, Loader2, ArrowUpDown, X, CalendarIcon } from 'lucide-react';
+import { Download, Loader2, ArrowUpDown, X, CalendarIcon, Link as LinkIcon, Image as ImageIcon, MapPin  } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -37,7 +37,50 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+
+
+// Helper function to safely format dates
+const formatDate = (dateStr: string | Date | null | undefined) => {
+  if (!dateStr) return '-';
+  try {
+    const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date:', dateStr);
+      return '-';
+    }
+    return format(date, 'MMM dd, yyyy');
+  } catch (error) {
+    console.error('Date formatting error:', error, 'for date:', dateStr);
+    return '-';
+  }
+};
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+
+// Enums from schema
+const TransactionType = {
+  UPI: 'UPI',
+  NET_BANKING: 'NET_BANKING',
+  CARD: 'CARD',
+  CASH: 'CASH'
+};
+
+const TransactionStatus = {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED'
+};
+
+const MoneyForCategory = {
+  CLOTHES: 'CLOTHES',
+  FOOD: 'FOOD',
+  CYCLE: 'CYCLE',
+  EDUCATION: 'EDUCATION',
+  HEALTHCARE: 'HEALTHCARE',
+  OTHER: 'OTHER'
+};
 
 export default function DownloadData() {
   // State management
@@ -62,14 +105,14 @@ export default function DownloadData() {
   // Status options for different tabs
   const statusOptions = {
     drives: ['pending', 'completed'],
-    donations: ['Pending', 'Approved', 'Completed'],
+    donations: Object.values(TransactionStatus),
     users: []
   };
 
   // Type options for different tabs
   const typeOptions = {
     drives: ['food', 'clothes', 'books', 'medicine'],
-    donations: ['food', 'clothes', 'money', 'other'],
+    donations: Object.values(MoneyForCategory),
     users: []
   };
 
@@ -176,16 +219,6 @@ export default function DownloadData() {
 
   // Render table columns
   const renderColumns = () => {
-    const commonColumns = (
-      <TableRow>
-        <TableHead className="w-[100px]">ID</TableHead>
-        <TableHead className="cursor-pointer" onClick={() => handleSort('createdAt')}>
-          Date
-          <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-        </TableHead>
-      </TableRow>
-    );
-
     switch (activeTab) {
       case 'drives':
         return (
@@ -198,6 +231,9 @@ export default function DownloadData() {
             <TableHead>Status</TableHead>
             <TableHead>Start Date</TableHead>
             <TableHead>End Date</TableHead>
+            <TableHead>Time Interval</TableHead>
+            <TableHead>Place Link</TableHead>
+            <TableHead>Resources</TableHead>
             <TableHead className="cursor-pointer" onClick={() => handleSort('createdAt')}>
               Created At <ArrowUpDown className="ml-2 h-4 w-4 inline" />
             </TableHead>
@@ -210,11 +246,15 @@ export default function DownloadData() {
             <TableHead className="cursor-pointer" onClick={() => handleSort('fullname')}>
               Name <ArrowUpDown className="ml-2 h-4 w-4 inline" />
             </TableHead>
+            <TableHead>User Type</TableHead>
             <TableHead className="cursor-pointer" onClick={() => handleSort('email')}>
               Email <ArrowUpDown className="ml-2 h-4 w-4 inline" />
             </TableHead>
             <TableHead>Mobile</TableHead>
             <TableHead>Address</TableHead>
+            <TableHead>Avatar</TableHead>
+            <TableHead>Organization ID</TableHead>
+            <TableHead>Transactions</TableHead>
             <TableHead className="cursor-pointer" onClick={() => handleSort('createdAt')}>
               Joined Date <ArrowUpDown className="ml-2 h-4 w-4 inline" />
             </TableHead>
@@ -224,16 +264,21 @@ export default function DownloadData() {
       case 'donations':
         return (
           <TableRow>
-            <TableHead className="cursor-pointer" onClick={() => handleSort('fullname')}>
+            <TableHead className="cursor-pointer" onClick={() => handleSort('name')}>
               Name <ArrowUpDown className="ml-2 h-4 w-4 inline" />
             </TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Mobile</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>User Type</TableHead>
+            <TableHead>Amount</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Quantity</TableHead>
+            <TableHead>Transaction ID</TableHead>
+            <TableHead>Transaction Nature</TableHead>
+            <TableHead>Entry Type</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="cursor-pointer" onClick={() => handleSort('createdAt')}>
-              Created At <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+            <TableHead>Money For</TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSort('date')}>
+              Date <ArrowUpDown className="ml-2 h-4 w-4 inline" />
             </TableHead>
           </TableRow>
         );
@@ -249,7 +294,7 @@ export default function DownloadData() {
       return (
         <TableRow>
           <TableCell
-            colSpan={7}
+            colSpan={10}
             className="text-center py-10"
           >
             No data available
@@ -273,6 +318,39 @@ export default function DownloadData() {
               </TableCell>
               <TableCell>{item.startDate || '-'}</TableCell>
               <TableCell>{item.EndDate || '-'}</TableCell>
+              <TableCell>{item.timeInterval || '-'}</TableCell>
+              <TableCell>
+                {item.placeLink ? (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <LinkIcon className="h-4 w-4 text-blue-500 cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent>{item.placeLink}</TooltipContent>
+                  </Tooltip>
+                ) : '-'}
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  {item.photos?.length > 0 && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <ImageIcon className="h-4 w-4 text-blue-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>{`${item.photos.length} photos`}</TooltipContent>
+                    </Tooltip>
+                  )}
+                  {item.geoLocation && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <MapPin className="h-4 w-4 text-blue-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {JSON.stringify(item.geoLocation)}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+              </TableCell>
               <TableCell>{item.createdAt || '-'}</TableCell>
             </TableRow>
           );
@@ -281,9 +359,26 @@ export default function DownloadData() {
           return (
             <TableRow key={item.id}>
               <TableCell>{item.fullname || '-'}</TableCell>
+              <TableCell>
+                <Badge>{item.userType || 'individual'}</Badge>
+              </TableCell>
               <TableCell>{item.email || '-'}</TableCell>
               <TableCell>{item.mobile || '-'}</TableCell>
               <TableCell>{item.address || '-'}</TableCell>
+              <TableCell>
+                {item.avatar ? (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <ImageIcon className="h-4 w-4 text-blue-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>{item.avatar}</TooltipContent>
+                  </Tooltip>
+                ) : '-'}
+              </TableCell>
+              <TableCell>{item.organizationId || '-'}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{item.transactions || 0}</Badge>
+              </TableCell>
               <TableCell>{item.createdAt || '-'}</TableCell>
             </TableRow>
           );
@@ -291,17 +386,37 @@ export default function DownloadData() {
         case 'donations':
           return (
             <TableRow key={item.id}>
-              <TableCell>{item.fullname || '-'}</TableCell>
+              <TableCell>{item.name || '-'}</TableCell>
               <TableCell>{item.email || '-'}</TableCell>
-              <TableCell>{item.mobile || '-'}</TableCell>
-              <TableCell>{item.type || '-'}</TableCell>
-              <TableCell>{item.quantity || '-'}</TableCell>
+              <TableCell>{item.phone || '-'}</TableCell>
               <TableCell>
-                <Badge variant={item.status === 'Completed' ? 'success' : 'secondary'}>
+                <Badge>{item.userType || '-'}</Badge>
+              </TableCell>
+              <TableCell>₹{typeof item.amount === 'number' ? item.amount.toFixed(2) : '-'}</TableCell>
+              <TableCell>{item.type || '-'}</TableCell>
+              <TableCell>{item.transactionId || '-'}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{item.transactionNature || '-'}</Badge>
+              </TableCell>
+              <TableCell>{item.entryType || '-'}</TableCell>
+              <TableCell>
+                <Badge variant={
+                  item.status === 'VERIFIED' ? 'success' : 
+                  item.status === 'REJECTED' ? 'destructive' : 
+                  'secondary'
+                }>
                   {item.status || '-'}
                 </Badge>
               </TableCell>
-              <TableCell>{item.createdAt || '-'}</TableCell>
+              <TableCell>
+                {item.moneyFor || '-'}
+                {item.customMoneyFor && 
+                  <span className="text-muted-foreground ml-1">({item.customMoneyFor})</span>
+                }
+              </TableCell>
+              <TableCell>
+                {item.date ? formatDate(item.date) : '-'}
+              </TableCell>
             </TableRow>
           );
 
@@ -310,6 +425,7 @@ export default function DownloadData() {
       }
     });
   };
+
 
   return (
     <div className="container mx-auto py-6 space-y-6">
