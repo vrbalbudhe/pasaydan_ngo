@@ -67,14 +67,55 @@ export default function UsersCertificateDetails() {
         );
         setUserData((prev) => prev.filter((user) => user.id !== id));
       } else {
-        const error = await response.json();
         alert(
-          `Error while deleting User Certification Details: ${error.message}`
+          `Error while deleting User Certification Details: ${data.message}`
         );
       }
     } catch (error) {
       console.error("Error deleting user:", error);
       alert("An error occurred while deleting the user.");
+    }
+  };
+
+  const [loadingStates, setLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const handleCertificateDownload = async (
+    userName: string,
+    userEmail: string,
+    donationId: string,
+    id: string
+  ) => {
+    const confirmed = confirm(
+      "Are you sure you want to download the certificate for the user?"
+    );
+    if (!confirmed) return;
+
+    // Set loading state for the specific user
+    setLoadingStates((prev) => ({ ...prev, [id]: true }));
+
+    try {
+      const response = await fetch("/api/certificate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userName, userEmail, donationId }),
+      });
+
+      if (response.ok) {
+        alert(`User Certification Generated Successfully.`);
+      } else {
+        const error = await response.json();
+        alert(`Error while generating certificate: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      alert("An error occurred while generating the certificate.");
+    } finally {
+      // Reset loading state for the specific user
+      setLoadingStates((prev) => ({ ...prev, [id]: false }));
     }
   };
 
@@ -178,6 +219,9 @@ export default function UsersCertificateDetails() {
                   <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Actions
                   </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                    Download
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -213,6 +257,21 @@ export default function UsersCertificateDetails() {
                         className="text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full hover:bg-red-50 transition-colors"
                       >
                         <RiDeleteBin7Line size={20} />
+                      </button>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-sm">
+                      <button
+                        onClick={() =>
+                          handleCertificateDownload(
+                            user.fullname,
+                            user.email,
+                            user.donationId,
+                            user.id
+                          )
+                        }
+                        className="text-white bg-slate-900 hover:text-red-700 focus:outline-none px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+                      >
+                        {loadingStates[user.id] ? "Loading..." : "Download"}
                       </button>
                     </TableCell>
                   </TableRow>
