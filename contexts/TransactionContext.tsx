@@ -19,17 +19,19 @@ interface TransactionContextType {
   setPagination: (pagination: any) => void;
 }
 
+const defaultPagination = {
+  page: 1,
+  limit: 10,
+  total: 0,
+  totalPages: 0,
+};
+
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  });
+  const [pagination, setPagination] = useState(defaultPagination);
 
   // Fetch logic
   const fetchTransactions = async () => {
@@ -39,20 +41,29 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
       });
+
       const response = await fetch(`/api/admin/transactions?${queryParams}`);
       const data = await response.json();
 
       if (data.success) {
-        setTransactions(data.data);
-        setPagination((prev) => ({
-          ...prev,
-          total: data.pagination.total,
-          totalPages: data.pagination.totalPages,
-        }));
+        setTransactions(data.data || []);
+        // Ensure pagination data exists before updating
+        if (data.pagination) {
+          setPagination((prev) => ({
+            ...prev,
+            total: data.pagination.total || 0,
+            totalPages: data.pagination.totalPages || 1,
+          }));
+        }
+      } else {
+        throw new Error(data.error || "Failed to fetch transactions");
       }
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast.error("Failed to fetch transactions");
+      // Reset to default state on error
+      setTransactions([]);
+      setPagination(defaultPagination);
     } finally {
       setIsLoading(false);
     }
@@ -66,11 +77,15 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+
       if (!response.ok) throw new Error("Failed to update status");
+      
       await fetchTransactions();
+      toast.success("Transaction status updated successfully");
       return true;
     } catch (error) {
       console.error("Error updating transaction status:", error);
+      toast.error("Failed to update transaction status");
       return false;
     }
   };
@@ -81,11 +96,15 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`/api/admin/transactions/${id}`, {
         method: "DELETE",
       });
+
       if (!response.ok) throw new Error("Failed to delete transaction");
+      
       await fetchTransactions();
+      toast.success("Transaction deleted successfully");
       return true;
     } catch (error) {
       console.error("Error deleting transaction:", error);
+      toast.error("Failed to delete transaction");
       return false;
     }
   };

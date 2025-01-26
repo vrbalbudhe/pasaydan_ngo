@@ -3,32 +3,71 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
 import { TransactionType, EntryType } from "@prisma/client";
 import { nanoid } from 'nanoid';
+import { writeFile } from 'fs/promises';
+import path from 'path';
+
+// Helper function to ensure consistent response structure
+const createResponse = (success: boolean, data: any = null, error: string | null = null, pagination: any = null) => {
+  return NextResponse.json({
+    success,
+    data,
+    error,
+    pagination: pagination || {
+      total: 0,
+      page: 1,
+      totalPages: 1,
+      limit: 10,
+    },
+  }, { status: success ? 200 : 500 });
+};
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const formData = await req.formData();
+    const screenshot = formData.get('screenshot') as File | null;
     
-    const generatedTransactionId = nanoid(10).toUpperCase();
+    // Process screenshot if present
+    let screenshotPath: string | undefined;
+    if (screenshot) {
+      try {
+        const bytes = await screenshot.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        const uniqueId = nanoid(10);
+        const filename = `${uniqueId}-${screenshot.name}`;
+        const filepath = path.join(process.cwd(), 'public', 'transactions', filename);
+        
+        await writeFile(filepath, buffer);
+        screenshotPath = `/transactions/${filename}`;
+      } catch (error) {
+        console.error("Error saving screenshot:", error);
+        // Continue without screenshot if upload fails
+      }
+    }
 
-    // Prepare the data object with required fields
-    const data = {
-      ...body,
-      transactionId: body.type === TransactionType.CASH 
-        ? generatedTransactionId 
-        : body.transactionId,
-      date: new Date(body.date),
-      entryType: body.entryType || EntryType.MANUAL,
-      entryBy: body.name, // Using name as entryBy
-      status: "PENDING", // Default status
-      // Add moneyFor if not provided
-      moneyFor: body.moneyFor || "OTHER",
-      // Ensure email and phone are present
-      email: body.email || "",
-      phone: body.phone || "",
+    // Extract and prepare transaction data
+    const data = Object.fromEntries(formData.entries());
+    const transactionData = {
+      name: data.name as string,
+      email: data.email as string,
+      phone: data.phone as string,
+      amount: parseFloat(data.amount as string),
+      type: data.type as TransactionType,
+      transactionNature: data.transactionNature as string,
+      userType: data.userType as string,
+      date: new Date(data.date as string),
+      transactionId: data.type === "CASH" ? nanoid(10).toUpperCase() : data.transactionId as string,
+      screenshotPath,
+      entryType: EntryType.MANUAL,
+      entryBy: data.entryBy as string,
+      description: data.description as string || null,
+      status: data.status || "PENDING",
+      moneyFor: data.moneyFor as string,
+      customMoneyFor: data.moneyFor === "OTHER" ? data.customMoneyFor as string : null,
     };
 
     const transaction = await prisma.transaction.create({
-      data,
+      data: transactionData,
       include: {
         User: {
           select: {
@@ -47,16 +86,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: transaction,
-    });
+    return createResponse(true, transaction);
   } catch (error) {
     console.error("Transaction creation error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to create transaction" },
-      { status: 500 }
-    );
+    return createResponse(false, null, "Failed to create transaction");
   }
 }
 
@@ -72,8 +105,8 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
+    // Build where clause
     let where: any = {};
-    
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -81,11 +114,7 @@ export async function GET(req: NextRequest) {
         { transactionId: { contains: search, mode: 'insensitive' } },
       ];
     }
-
-    if (status) {
-      where.status = status;
-    }
-
+    if (status) where.status = status;
     if (startDate && endDate) {
       where.date = {
         gte: new Date(startDate),
@@ -93,46 +122,41 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const total = await prisma.transaction.count({ where });
-
-    const transactions = await prisma.transaction.findMany({
-      where,
-      orderBy: { date: 'desc' },
-      skip,
-      take: limit,
-      include: {
-        User: {
-          select: {
-            id: true,
-            fullname: true,
-            email: true,
+    // Execute queries in parallel
+    const [total, transactions] = await Promise.all([
+      prisma.transaction.count({ where }),
+      prisma.transaction.findMany({
+        where,
+        orderBy: { date: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          User: {
+            select: {
+              id: true,
+              fullname: true,
+              email: true,
+            },
+          },
+          Organization: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-        Organization: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+      })
+    ]);
 
-    return NextResponse.json({
-      success: true,
-      data: transactions,
-      pagination: {
-        total,
-        page,
-        totalPages: Math.ceil(total / limit),
-        hasMore: skip + transactions.length < total,
-      },
+    return createResponse(true, transactions, null, {
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      limit,
     });
   } catch (error) {
     console.error("Transaction fetch error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch transactions" },
-      { status: 500 }
-    );
+    return createResponse(false, [], "Failed to fetch transactions");
   }
 }
