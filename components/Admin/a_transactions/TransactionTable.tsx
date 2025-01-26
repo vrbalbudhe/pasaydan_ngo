@@ -1,5 +1,5 @@
-// TransactionTable.tsx
 "use client";
+
 import { useState } from "react";
 import {
   Table,
@@ -10,12 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -24,14 +18,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Eye, 
-  Trash2, 
-  CheckCircle, 
-  XCircle 
+import {
+  Eye,
+  Trash2,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge"; // Now includes success variant
+import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { useTransactions } from "@/contexts/TransactionContext";
 import { Transaction, TransactionStatus } from "@prisma/client";
@@ -49,16 +42,19 @@ export default function TransactionTable() {
   const {
     transactions,
     isLoading,
-    pagination, 
+    pagination,
     setPagination,
     updateTransactionStatus,
     deleteTransaction,
   } = useTransactions();
 
+  // Modals
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
   const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(null);
 
   // Update status
@@ -87,11 +83,11 @@ export default function TransactionTable() {
     }
   };
 
-  // For the status badge, we can keep using 'success' or rename it if you prefer:
+  // Status badge styling
   const getStatusBadge = (status: TransactionStatus) => {
     switch (status) {
       case "PENDING":
-        return "bg-yellow-100 text-yellow-800"; 
+        return "bg-yellow-100 text-yellow-800";
       case "VERIFIED":
         return "bg-green-100 text-green-800";
       case "REJECTED":
@@ -101,6 +97,7 @@ export default function TransactionTable() {
     }
   };
 
+  // Close details
   const handleCloseModal = () => {
     setShowDetailsModal(false);
     setSelectedTransaction(null);
@@ -108,6 +105,7 @@ export default function TransactionTable() {
 
   return (
     <div className="space-y-4">
+      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -121,6 +119,7 @@ export default function TransactionTable() {
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {isLoading ? (
               <TableRow>
@@ -141,8 +140,13 @@ export default function TransactionTable() {
                   <TableCell>{transaction.name}</TableCell>
                   <TableCell>{transaction.type.replace("_", " ")}</TableCell>
                   <TableCell>
-                    {/* If you added a 'success' variant to badge.tsx, you can do this: */}
-                    <Badge variant={transaction.transactionNature === "CREDIT" ? "success" : "destructive"}>
+                    <Badge
+                      variant={
+                        transaction.transactionNature === "CREDIT"
+                          ? "success"
+                          : "destructive"
+                      }
+                    >
                       {transaction.transactionNature}
                     </Badge>
                   </TableCell>
@@ -154,61 +158,70 @@ export default function TransactionTable() {
                       {transaction.status}
                     </Badge>
                   </TableCell>
+
+                  {/* ACTIONS CELL */}
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedTransaction(transaction);
-                            setShowDetailsModal(true);
-                          }}
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        {transaction.status === "PENDING" && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedTransaction(transaction);
-                                setStatusAction("VERIFY");
-                                setShowStatusDialog(true);
-                              }}
-                              className="text-green-600"
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Verify
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedTransaction(transaction);
-                                setStatusAction("REJECT");
-                                setShowStatusDialog(true);
-                              }}
-                              className="text-red-600"
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Reject
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedTransaction(transaction);
-                            setShowDeleteDialog(true);
-                          }}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {/* Inline Buttons Instead of Dropdown */}
+                    <div className="flex items-center justify-end gap-2">
+                      {/* View */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setShowDetailsModal(true);
+                        }}
+                      >
+                        <Eye className="mr-1 h-4 w-4" />
+                        View
+                      </Button>
+
+                      {/* Verify / Reject if Pending */}
+                      {transaction.status === "PENDING" && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-green-600"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setStatusAction("VERIFY");
+                              setShowStatusDialog(true);
+                            }}
+                          >
+                            <CheckCircle className="mr-1 h-4 w-4" />
+                            Verify
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setStatusAction("REJECT");
+                              setShowStatusDialog(true);
+                            }}
+                          >
+                            <XCircle className="mr-1 h-4 w-4" />
+                            Reject
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Delete */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600"
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setShowDeleteDialog(true);
+                        }}
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

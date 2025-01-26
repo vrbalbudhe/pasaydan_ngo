@@ -38,7 +38,6 @@ export function TransactionDetailsModal({
   onClose,
   transaction,
 }: TransactionDetailsModalProps) {
-  // If there's no transaction, don't render modal contents at all
   if (!transaction) return null;
 
   // Status badge styles
@@ -54,19 +53,21 @@ export function TransactionDetailsModal({
   return (
     <Dialog
       open={isOpen}
-      // If the dialog tries to close (overlay click/Escape), onOpenChange
-      // passes false. We call onClose() to update parent state.
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-w-md">
+      {/*
+        Give the DialogContent a max height and overflow auto.
+        This ensures the content is scrollable if it's too tall.
+      */}
+      <DialogContent className="max-w-md max-h-[calc(100vh-8rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Transaction Details</DialogTitle>
-          {/* Optional short description if desired */}
-          {/* <DialogDescription>View detailed info about the transaction.</DialogDescription> */}
+          {/* <DialogDescription>Optional subtext here</DialogDescription> */}
         </DialogHeader>
 
+        {/* MAIN CONTENT */}
         <div className="mt-4 space-y-6">
           {/* Basic Information */}
           <div>
@@ -148,7 +149,7 @@ export function TransactionDetailsModal({
             )}
           </div>
 
-          {/* Verification Information - Show only if verified or rejected */}
+          {/* Verification Information */}
           {(transaction.status === "VERIFIED" || transaction.status === "REJECTED") && (
             <>
               <Separator />
@@ -174,7 +175,7 @@ export function TransactionDetailsModal({
           )}
         </div>
 
-        {/* Footer with a close button */}
+        {/* FOOTER */}
         <DialogFooter className="mt-6">
           <Button variant="outline" onClick={onClose}>
             Close
