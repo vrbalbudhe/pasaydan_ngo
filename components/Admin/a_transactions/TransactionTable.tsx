@@ -24,7 +24,6 @@ import {
   CheckCircle,
   XCircle,
   Search,
-  Filter,
   ArrowUpDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -63,8 +62,8 @@ interface Pagination {
 interface FilterOptions {
   status: TransactionStatus | "ALL";
   type: TransactionType | "ALL";
-  startDate: Date | null;
-  endDate: Date | null;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
 }
 
 export default function TransactionTable() {
@@ -84,11 +83,11 @@ export default function TransactionTable() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Handle search input with debounce
   const handleSearch = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
   }, 300);
 
   useEffect(() => {
@@ -96,20 +95,19 @@ export default function TransactionTable() {
       handleSearch.cancel();
     };
   }, [handleSearch]);
-  
 
   // Filter state
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
-    startDate: null,
-    endDate: null,
+    startDate: undefined,
+    endDate: undefined,
   });
 
   // Handle filter changes
-  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
+  const handleFilterChange = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
     refetchTransactions();
   };
 
@@ -192,13 +190,15 @@ export default function TransactionTable() {
         {/* Search and Filters */}
         <div className="mb-6 space-y-4">
           {/* Search Bar */}
-          <div className="flex w-full max-w-sm items-center space-x-2">
-            <Input
-              placeholder="Search transactions..."
-              onChange={(e) => handleSearch(e)}
-              className="w-full"
-              leftIcon={<Search className="h-4 w-4" />}
-            />
+          <div className="flex w-full max-w-sm items-center gap-2">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions..."
+                onChange={handleSearch}
+                className="w-full pl-9"
+              />
+            </div>
           </div>
 
           {/* Filters */}
@@ -207,7 +207,7 @@ export default function TransactionTable() {
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.status}
-                onValueChange={(value) => handleFilterChange("status", value)}
+                onValueChange={(value: TransactionStatus | "ALL") => handleFilterChange("status", value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by status" />
@@ -230,7 +230,7 @@ export default function TransactionTable() {
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.type}
-                onValueChange={(value) => handleFilterChange("type", value)}
+                onValueChange={(value: TransactionType | "ALL") => handleFilterChange("type", value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by type" />
@@ -289,8 +289,8 @@ export default function TransactionTable() {
                   setFilters({
                     status: "ALL",
                     type: "ALL",
-                    startDate: null,
-                    endDate: null,
+                    startDate: undefined,
+                    endDate: undefined,
                   });
                 }}
               >
@@ -299,8 +299,7 @@ export default function TransactionTable() {
             )}
           </div>
         </div>
-
-        {/* Table */}
+             {/* Table */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -343,8 +342,8 @@ export default function TransactionTable() {
                           setFilters({
                             status: "ALL",
                             type: "ALL",
-                            startDate: null,
-                            endDate: null,
+                            startDate: undefined,
+                            endDate: undefined,
                           });
                           refetchTransactions();
                         }}
@@ -553,6 +552,8 @@ export default function TransactionTable() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Rest of the code remains the same... */}
       </CardContent>
     </Card>
   );
