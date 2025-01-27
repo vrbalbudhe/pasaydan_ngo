@@ -48,7 +48,10 @@ import { useTransactions } from "@/contexts/TransactionContext";
 import { Transaction, TransactionStatus, TransactionType } from "@prisma/client";
 import { toast } from "sonner";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
-import debounce from "lodash/debounce";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { debounce } from "lodash";
 
 interface Pagination {
   page: number;
@@ -60,7 +63,8 @@ interface Pagination {
 interface FilterOptions {
   status: TransactionStatus | "ALL";
   type: TransactionType | "ALL";
-  dateRange: "today" | "week" | "month" | "all";
+  startDate: Date | null;
+  endDate: Date | null;
 }
 
 export default function TransactionTable() {
@@ -74,7 +78,6 @@ export default function TransactionTable() {
     refetchTransactions,
   } = useTransactions();
 
-  // States
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
@@ -82,82 +85,60 @@ export default function TransactionTable() {
   const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   
-// Handle search input
-const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setSearchTerm(e.target.value);
-  setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page on search
-};
+  // Handle search input with debounce
+  const handleSearch = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, 300);
 
+  useEffect(() => {
+    return () => {
+      handleSearch.cancel();
+    };
+  }, [handleSearch]);
+  
 
-  // Filter handlers
+  // Filter state
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
-    dateRange: "all",
+    startDate: null,
+    endDate: null,
   });
 
-  // Get date range based on selected filter
-  const getDateRange = (range: string): { start: Date; end: Date } => {
-    const end = new Date();
-    const start = new Date();
-    
-    switch (range) {
-      case "today":
-        start.setHours(0, 0, 0, 0);
-        break;
-      case "week":
-        start.setDate(start.getDate() - 7);
-        break;
-      case "month":
-        start.setMonth(start.getMonth() - 1);
-        break;
-      default:
-        start.setFullYear(2000); // Set a past date for "all"
-    }
-    
-    return { start, end };
-  };
-
-  // Apply all filters (search, status, type, date)
-  const getFilteredTransactions = () => {
-    return transactions.filter((transaction) => {
-      // Search filter
-      const searchMatch = searchTerm.length === 0 || [
-        transaction.name,
-        transaction.email,
-        transaction.transactionId,
-        transaction.phone,
-        transaction.amount.toString()
-      ].some(field => 
-        field?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-
-      // Status filter
-      const statusMatch = filters.status === "ALL" || 
-        transaction.status === filters.status;
-
-      // Type filter
-      const typeMatch = filters.type === "ALL" || 
-        transaction.type === filters.type;
-
-      // Date filter
-      const { start, end } = getDateRange(filters.dateRange);
-      const transactionDate = new Date(transaction.date);
-      const dateMatch = transactionDate >= start && transactionDate <= end;
-
-      return searchMatch && statusMatch && typeMatch && dateMatch;
-    });
-  };
-
-  const filteredTransactions = getFilteredTransactions();
-
-  
   // Handle filter changes
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPagination(prev => ({ ...prev, page: 1 }));
     refetchTransactions();
   };
+
+  // Filter transactions
+  const filteredTransactions = transactions.filter((transaction) => {
+    const searchMatch = searchTerm.length === 0 || [
+      transaction.name,
+      transaction.email,
+      transaction.transactionId,
+      transaction.phone,
+      transaction.amount.toString()
+    ].some(field => 
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const statusMatch = filters.status === "ALL" || 
+      transaction.status === filters.status;
+
+    const typeMatch = filters.type === "ALL" || 
+      transaction.type === filters.type;
+
+    const transactionDate = new Date(transaction.date);
+    const startDate = filters.startDate || new Date(2000, 0, 1);
+    const endDate = filters.endDate || new Date();
+    
+    const dateMatch = transactionDate >= startDate && transactionDate <= endDate;
+
+    return searchMatch && statusMatch && typeMatch && dateMatch;
+  });
 
   // Status badge styling
   const getStatusBadge = (status: TransactionStatus) => {
@@ -214,8 +195,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
           <div className="flex w-full max-w-sm items-center space-x-2">
             <Input
               placeholder="Search transactions..."
-              value={searchTerm}
-              onChange={handleSearch}
+              onChange={(e) => handleSearch(e)}
               className="w-full"
               leftIcon={<Search className="h-4 w-4" />}
             />
@@ -223,6 +203,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Filters */}
           <div className="flex flex-wrap gap-4">
+            {/* Status Filter */}
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.status}
@@ -245,6 +226,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
             </div>
 
+            {/* Type Filter */}
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.type}
@@ -268,38 +250,47 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
             </div>
 
+            {/* Date Range Filter */}
             <div className="flex flex-col gap-2">
-              <Select
-                value={filters.dateRange}
-                onValueChange={(value) => handleFilterChange("dateRange", value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by date" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                </SelectContent>
-              </Select>
-              {filters.dateRange !== "all" && (
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <Label className="text-sm text-muted-foreground mb-1">From</Label>
+                  <DatePicker
+                    selected={filters.startDate}
+                    onSelect={(date) => handleFilterChange("startDate", date)}
+                    className="w-[150px]"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <Label className="text-sm text-muted-foreground mb-1">To</Label>
+                  <DatePicker
+                    selected={filters.endDate}
+                    onSelect={(date) => handleFilterChange("endDate", date)}
+                    className="w-[150px]"
+                  />
+                </div>
+              </div>
+              {(filters.startDate || filters.endDate) && (
                 <Badge variant="secondary" className="w-fit">
-                  Date: {filters.dateRange.charAt(0).toUpperCase() + filters.dateRange.slice(1)}
+                  Date:{" "}
+                  {filters.startDate?.toLocaleDateString() || "Start"} -{" "}
+                  {filters.endDate?.toLocaleDateString() || "End"}
                 </Badge>
               )}
             </div>
 
-            {(filters.status !== "ALL" || filters.type !== "ALL" || filters.dateRange !== "all") && (
+            {/* Clear Filters */}
+            {(filters.status !== "ALL" || filters.type !== "ALL" || filters.startDate || filters.endDate) && (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-10"
+                className="h-10 self-end"
                 onClick={() => {
                   setFilters({
                     status: "ALL",
                     type: "ALL",
-                    dateRange: "all",
+                    startDate: null,
+                    endDate: null,
                   });
                 }}
               >
@@ -314,7 +305,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">
+                <TableHead className="w-[120px]">
                   <div className="flex items-center space-x-1">
                     <span>Date</span>
                     <ArrowUpDown className="h-4 w-4" />
@@ -335,7 +326,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                   <TableCell colSpan={7} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="text-sm text-gray-500">Loading transactions...</p>
+                      <p className="text-sm text-muted-foreground">Loading transactions...</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -343,7 +334,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center space-y-2">
-                      <p className="text-sm text-gray-500">No transactions found</p>
+                      <p className="text-sm text-muted-foreground">No transactions found</p>
                       <Button
                         variant="outline"
                         size="sm"
@@ -352,7 +343,8 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                           setFilters({
                             status: "ALL",
                             type: "ALL",
-                            dateRange: "all",
+                            startDate: null,
+                            endDate: null,
                           });
                           refetchTransactions();
                         }}
@@ -383,8 +375,8 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusBadge(transaction.status)}>
-                        {transaction.status}
+                      <Badge className={cn("capitalize", getStatusBadge(transaction.status))}>
+                        {transaction.status.toLowerCase()}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -455,7 +447,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
         {/* Pagination */}
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Showing {filteredTransactions.length} of {pagination.total} transactions
             {searchTerm && ` (Filtered from ${transactions.length} total)`}
           </p>
@@ -473,7 +465,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             >
               Previous
             </Button>
-            <span className="text-sm">
+            <span className="text-sm text-muted-foreground">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <Button
