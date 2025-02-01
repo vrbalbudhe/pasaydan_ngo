@@ -24,7 +24,6 @@ import {
   CheckCircle,
   XCircle,
   Search,
-  Filter,
   ArrowUpDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -52,8 +51,15 @@ import {
 } from "@prisma/client";
 import { toast } from "sonner";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
+<<<<<<< HEAD
 import debounce from "lodash/debounce";
 import { DatePicker } from "@/components/ui/date-picker"; // Assuming you have a DatePicker component
+=======
+import { DatePicker } from "@/components/ui/date-picker";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { debounce } from "lodash";
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 
 interface Pagination {
   page: number;
@@ -65,8 +71,13 @@ interface Pagination {
 interface FilterOptions {
   status: TransactionStatus | "ALL";
   type: TransactionType | "ALL";
+<<<<<<< HEAD
   dateRange: "today" | "week" | "month" | "all" | "custom";
   selectedDate: Date | null; // To store the selected specific date
+=======
+  startDate: Date | undefined;
+  endDate: Date | undefined;
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 }
 
 export default function TransactionTable() {
@@ -80,9 +91,13 @@ export default function TransactionTable() {
     refetchTransactions,
   } = useTransactions();
 
+<<<<<<< HEAD
   // States
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+=======
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -91,16 +106,31 @@ export default function TransactionTable() {
   );
   const [searchTerm, setSearchTerm] = useState("");
 
+<<<<<<< HEAD
   // Handle search input
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page on search
   };
+=======
+  // Handle search input with debounce
+  const handleSearch = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
+  }, 300);
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 
-  // Filter handlers
+  useEffect(() => {
+    return () => {
+      handleSearch.cancel();
+    };
+  }, [handleSearch]);
+
+  // Filter state
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
+<<<<<<< HEAD
     dateRange: "all",
     selectedDate: null, // Initially no specific date selected
   });
@@ -173,8 +203,45 @@ export default function TransactionTable() {
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPagination((prev) => ({ ...prev, page: 1 }));
+=======
+    startDate: undefined,
+    endDate: undefined,
+  });
+
+  // Handle filter changes
+  const handleFilterChange = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
     refetchTransactions();
   };
+
+  // Filter transactions
+  const filteredTransactions = transactions.filter((transaction) => {
+    const searchMatch = searchTerm.length === 0 || [
+      transaction.name,
+      transaction.email,
+      transaction.transactionId,
+      transaction.phone,
+      transaction.amount.toString()
+    ].some(field => 
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const statusMatch = filters.status === "ALL" || 
+      transaction.status === filters.status;
+
+    const typeMatch = filters.type === "ALL" || 
+      transaction.type === filters.type;
+
+    const transactionDate = new Date(transaction.date);
+    const startDate = filters.startDate || new Date(2000, 0, 1);
+    const endDate = filters.endDate || new Date();
+    
+    const dateMatch = transactionDate >= startDate && transactionDate <= endDate;
+
+    return searchMatch && statusMatch && typeMatch && dateMatch;
+  });
 
   // Status badge styling
   const getStatusBadge = (status: TransactionStatus) => {
@@ -231,22 +298,24 @@ export default function TransactionTable() {
         {/* Search and Filters */}
         <div className="mb-6 space-y-4">
           {/* Search Bar */}
-          <div className="flex w-full max-w-sm items-center space-x-2">
-            <Input
-              placeholder="Search transactions..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full"
-              leftIcon={<Search className="h-4 w-4" />}
-            />
+          <div className="flex w-full max-w-sm items-center gap-2">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions..."
+                onChange={handleSearch}
+                className="w-full pl-9"
+              />
+            </div>
           </div>
 
           {/* Filters */}
           <div className="flex flex-wrap gap-4">
+            {/* Status Filter */}
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.status}
-                onValueChange={(value) => handleFilterChange("status", value)}
+                onValueChange={(value: TransactionStatus | "ALL") => handleFilterChange("status", value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by status" />
@@ -265,10 +334,11 @@ export default function TransactionTable() {
               )}
             </div>
 
+            {/* Type Filter */}
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.type}
-                onValueChange={(value) => handleFilterChange("type", value)}
+                onValueChange={(value: TransactionType | "ALL") => handleFilterChange("type", value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by type" />
@@ -288,7 +358,9 @@ export default function TransactionTable() {
               )}
             </div>
 
+            {/* Date Range Filter */}
             <div className="flex flex-col gap-2">
+<<<<<<< HEAD
               <Select
                 value={filters.dateRange}
                 onValueChange={(value) =>
@@ -311,6 +383,31 @@ export default function TransactionTable() {
                   Date:{" "}
                   {filters.dateRange.charAt(0).toUpperCase() +
                     filters.dateRange.slice(1)}
+=======
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <Label className="text-sm text-muted-foreground mb-1">From</Label>
+                  <DatePicker
+                    selected={filters.startDate}
+                    onSelect={(date) => handleFilterChange("startDate", date)}
+                    className="w-[150px]"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <Label className="text-sm text-muted-foreground mb-1">To</Label>
+                  <DatePicker
+                    selected={filters.endDate}
+                    onSelect={(date) => handleFilterChange("endDate", date)}
+                    className="w-[150px]"
+                  />
+                </div>
+              </div>
+              {(filters.startDate || filters.endDate) && (
+                <Badge variant="secondary" className="w-fit">
+                  Date:{" "}
+                  {filters.startDate?.toLocaleDateString() || "Start"} -{" "}
+                  {filters.endDate?.toLocaleDateString() || "End"}
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                 </Badge>
               )}
 
@@ -324,20 +421,30 @@ export default function TransactionTable() {
               )}
             </div>
 
+<<<<<<< HEAD
             {(filters.status !== "ALL" ||
               filters.type !== "ALL" ||
               filters.dateRange !== "all" ||
               filters.selectedDate) && (
+=======
+            {/* Clear Filters */}
+            {(filters.status !== "ALL" || filters.type !== "ALL" || filters.startDate || filters.endDate) && (
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
               <Button
                 variant="outline"
                 size="sm"
-                className="h-10"
+                className="h-10 self-end"
                 onClick={() => {
                   setFilters({
                     status: "ALL",
                     type: "ALL",
+<<<<<<< HEAD
                     dateRange: "all",
                     selectedDate: null,
+=======
+                    startDate: undefined,
+                    endDate: undefined,
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   });
                 }}
               >
@@ -346,13 +453,12 @@ export default function TransactionTable() {
             )}
           </div>
         </div>
-
-        {/* Table */}
+             {/* Table */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">
+                <TableHead className="w-[120px]">
                   <div className="flex items-center space-x-1">
                     <span>Date</span>
                     <ArrowUpDown className="h-4 w-4" />
@@ -370,14 +476,45 @@ export default function TransactionTable() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
+<<<<<<< HEAD
                   <TableCell colSpan={7} className="text-center">
                     Loading...
+=======
+                  <TableCell colSpan={7} className="text-center py-10">
+                    <div className="flex flex-col items-center justify-center space-y-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="text-sm text-muted-foreground">Loading transactions...</p>
+                    </div>
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   </TableCell>
                 </TableRow>
               ) : filteredTransactions.length === 0 ? (
                 <TableRow>
+<<<<<<< HEAD
                   <TableCell colSpan={7} className="text-center">
                     No transactions found.
+=======
+                  <TableCell colSpan={7} className="text-center py-10">
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                      <p className="text-sm text-muted-foreground">No transactions found</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setFilters({
+                            status: "ALL",
+                            type: "ALL",
+                            startDate: undefined,
+                            endDate: undefined,
+                          });
+                          refetchTransactions();
+                        }}
+                      >
+                        Reset Filters
+                      </Button>
+                    </div>
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   </TableCell>
                 </TableRow>
               ) : (
@@ -391,8 +528,8 @@ export default function TransactionTable() {
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusBadge(transaction.status)}>
-                        {transaction.status}
+                      <Badge className={cn("capitalize", getStatusBadge(transaction.status))}>
+                        {transaction.status.toLowerCase()}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -434,11 +571,20 @@ export default function TransactionTable() {
         </div>
 
         {/* Pagination */}
+<<<<<<< HEAD
         <div className="flex items-center justify-between py-4">
           <div>
             Showing {pagination.page} of {pagination.totalPages} pages
           </div>
           <div>
+=======
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {filteredTransactions.length} of {pagination.total} transactions
+            {searchTerm && ` (Filtered from ${transactions.length} total)`}
+          </p>
+          <div className="flex items-center space-x-2">
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
             <Button
               variant="outline"
               onClick={() =>
@@ -448,6 +594,12 @@ export default function TransactionTable() {
             >
               Previous
             </Button>
+<<<<<<< HEAD
+=======
+            <span className="text-sm text-muted-foreground">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
             <Button
               variant="outline"
               onClick={() =>
@@ -459,6 +611,81 @@ export default function TransactionTable() {
             </Button>
           </div>
         </div>
+<<<<<<< HEAD
+=======
+
+        {/* Modals */}
+        <TransactionDetailsModal
+          isOpen={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedTransaction(null);
+          }}
+          transaction={selectedTransaction}
+        />
+
+        {/* Status Update Dialog */}
+        <Dialog
+          open={showStatusDialog}
+          onOpenChange={(open) => setShowStatusDialog(open)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {statusAction === "VERIFY" ? "Verify Transaction" : "Reject Transaction"}
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to{" "}
+                {statusAction === "VERIFY" ? "verify" : "reject"} this transaction?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant={statusAction === "VERIFY" ? "default" : "destructive"}
+                onClick={() =>
+                  handleStatusUpdate(
+                    statusAction === "VERIFY" ? "VERIFIED" : "REJECTED"
+                  )
+                }
+              >
+                {statusAction === "VERIFY" ? "Verify" : "Reject"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={showDeleteDialog}
+          onOpenChange={(open) => setShowDeleteDialog(open)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Transaction</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this transaction? This action
+                cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Rest of the code remains the same... */}
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
       </CardContent>
     </Card>
   );
