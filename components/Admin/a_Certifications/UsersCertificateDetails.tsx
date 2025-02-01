@@ -85,7 +85,8 @@ export default function UsersCertificateDetails() {
     userName: string,
     userEmail: string,
     donationId: string,
-    id: string
+    id: string,
+    type: string
   ) => {
     const confirmed = confirm(
       "Are you sure you want to download the certificate for the user?"
@@ -101,7 +102,7 @@ export default function UsersCertificateDetails() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userName, userEmail, donationId }),
+        body: JSON.stringify({ userName, userEmail, donationId, type }),
       });
 
       if (response.ok) {
@@ -266,7 +267,8 @@ export default function UsersCertificateDetails() {
                             user.fullname,
                             user.email,
                             user.donationId,
-                            user.id
+                            user.id,
+                            user.type
                           )
                         }
                         className="text-white bg-slate-900 hover:text-red-700 focus:outline-none px-2 py-1 rounded-md hover:bg-red-50 transition-colors"

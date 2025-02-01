@@ -45,10 +45,15 @@ import {
 } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { useTransactions } from "@/contexts/TransactionContext";
-import { Transaction, TransactionStatus, TransactionType } from "@prisma/client";
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "@prisma/client";
 import { toast } from "sonner";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
 import debounce from "lodash/debounce";
+import { DatePicker } from "@/components/ui/date-picker"; // Assuming you have a DatePicker component
 
 interface Pagination {
   page: number;
@@ -60,7 +65,8 @@ interface Pagination {
 interface FilterOptions {
   status: TransactionStatus | "ALL";
   type: TransactionType | "ALL";
-  dateRange: "today" | "week" | "month" | "all";
+  dateRange: "today" | "week" | "month" | "all" | "custom";
+  selectedDate: Date | null; // To store the selected specific date
 }
 
 export default function TransactionTable() {
@@ -75,32 +81,35 @@ export default function TransactionTable() {
   } = useTransactions();
 
   // States
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(null);
+  const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
-  
-// Handle search input
-const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setSearchTerm(e.target.value);
-  setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page on search
-};
 
+  // Handle search input
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page on search
+  };
 
   // Filter handlers
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
     dateRange: "all",
+    selectedDate: null, // Initially no specific date selected
   });
 
   // Get date range based on selected filter
   const getDateRange = (range: string): { start: Date; end: Date } => {
     const end = new Date();
     const start = new Date();
-    
+
     switch (range) {
       case "today":
         start.setHours(0, 0, 0, 0);
@@ -111,10 +120,17 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       case "month":
         start.setMonth(start.getMonth() - 1);
         break;
+      case "custom":
+        if (filters.selectedDate) {
+          start.setDate(filters.selectedDate.getDate());
+          start.setMonth(filters.selectedDate.getMonth());
+          start.setFullYear(filters.selectedDate.getFullYear());
+        }
+        break;
       default:
         start.setFullYear(2000); // Set a past date for "all"
     }
-    
+
     return { start, end };
   };
 
@@ -122,23 +138,25 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
   const getFilteredTransactions = () => {
     return transactions.filter((transaction) => {
       // Search filter
-      const searchMatch = searchTerm.length === 0 || [
-        transaction.name,
-        transaction.email,
-        transaction.transactionId,
-        transaction.phone,
-        transaction.amount.toString()
-      ].some(field => 
-        field?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const searchMatch =
+        searchTerm.length === 0 ||
+        [
+          transaction.name,
+          transaction.email,
+          transaction.transactionId,
+          transaction.phone,
+          transaction.amount.toString(),
+        ].some((field) =>
+          field?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
       // Status filter
-      const statusMatch = filters.status === "ALL" || 
-        transaction.status === filters.status;
+      const statusMatch =
+        filters.status === "ALL" || transaction.status === filters.status;
 
       // Type filter
-      const typeMatch = filters.type === "ALL" || 
-        transaction.type === filters.type;
+      const typeMatch =
+        filters.type === "ALL" || transaction.type === filters.type;
 
       // Date filter
       const { start, end } = getDateRange(filters.dateRange);
@@ -151,11 +169,10 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const filteredTransactions = getFilteredTransactions();
 
-  
   // Handle filter changes
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
     refetchTransactions();
   };
 
@@ -176,7 +193,10 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
   // Status update handler
   const handleStatusUpdate = async (status: TransactionStatus) => {
     if (!selectedTransaction) return;
-    const success = await updateTransactionStatus(selectedTransaction.id, status);
+    const success = await updateTransactionStatus(
+      selectedTransaction.id,
+      status
+    );
     if (success) {
       toast.success(`Transaction ${status.toLowerCase()}`);
       setShowStatusDialog(false);
@@ -271,7 +291,9 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.dateRange}
-                onValueChange={(value) => handleFilterChange("dateRange", value)}
+                onValueChange={(value) =>
+                  handleFilterChange("dateRange", value)
+                }
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by date" />
@@ -281,16 +303,31 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                   <SelectItem value="today">Today</SelectItem>
                   <SelectItem value="week">This Week</SelectItem>
                   <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="custom">Custom Date</SelectItem>
                 </SelectContent>
               </Select>
               {filters.dateRange !== "all" && (
                 <Badge variant="secondary" className="w-fit">
-                  Date: {filters.dateRange.charAt(0).toUpperCase() + filters.dateRange.slice(1)}
+                  Date:{" "}
+                  {filters.dateRange.charAt(0).toUpperCase() +
+                    filters.dateRange.slice(1)}
                 </Badge>
+              )}
+
+              {filters.dateRange === "custom" && (
+                <DatePicker
+                  selectedDate={filters.selectedDate}
+                  onDateChange={(date) =>
+                    handleFilterChange("selectedDate", date)
+                  }
+                />
               )}
             </div>
 
-            {(filters.status !== "ALL" || filters.type !== "ALL" || filters.dateRange !== "all") && (
+            {(filters.status !== "ALL" ||
+              filters.type !== "ALL" ||
+              filters.dateRange !== "all" ||
+              filters.selectedDate) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -300,6 +337,7 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                     status: "ALL",
                     type: "ALL",
                     dateRange: "all",
+                    selectedDate: null,
                   });
                 }}
               >
@@ -332,54 +370,24 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10">
-                    <div className="flex flex-col items-center justify-center space-y-4">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="text-sm text-gray-500">Loading transactions...</p>
-                    </div>
+                  <TableCell colSpan={7} className="text-center">
+                    Loading...
                   </TableCell>
                 </TableRow>
               ) : filteredTransactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <p className="text-sm text-gray-500">No transactions found</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSearchTerm("");
-                          setFilters({
-                            status: "ALL",
-                            type: "ALL",
-                            dateRange: "all",
-                          });
-                          refetchTransactions();
-                        }}
-                      >
-                        Reset Filters
-                      </Button>
-                    </div>
+                  <TableCell colSpan={7} className="text-center">
+                    No transactions found.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell>{formatDate(transaction.date)}</TableCell>
-                    <TableCell className="font-medium">{transaction.name}</TableCell>
-                    <TableCell>{transaction.type.replace("_", " ")}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          transaction.transactionNature === "CREDIT"
-                            ? "success"
-                            : "destructive"
-                        }
-                      >
-                        {transaction.transactionNature}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell>{transaction.name}</TableCell>
+                    <TableCell>{transaction.type}</TableCell>
+                    <TableCell>{transaction.nature}</TableCell>
+                    <TableCell className="text-right">
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell>
@@ -388,61 +396,33 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowDetailsModal(true);
                           }}
                         >
-                          <Eye className="mr-1 h-4 w-4" />
-                          View
+                          <Eye className="h-5 w-5" />
                         </Button>
-
-                        {transaction.status === "PENDING" && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-green-600 hover:text-green-700"
-                              onClick={() => {
-                                setSelectedTransaction(transaction);
-                                setStatusAction("VERIFY");
-                                setShowStatusDialog(true);
-                              }}
-                            >
-                              <CheckCircle className="mr-1 h-4 w-4" />
-                              Verify
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700"
-                              onClick={() => {
-                                setSelectedTransaction(transaction);
-                                setStatusAction("REJECT");
-                                setShowStatusDialog(true);
-                              }}
-                            >
-                              <XCircle className="mr-1 h-4 w-4" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedTransaction(transaction);
+                            setShowStatusDialog(true);
+                          }}
+                        >
+                          <CheckCircle className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowDeleteDialog(true);
                           }}
                         >
-                          <Trash2 className="mr-1 h-4 w-4" />
-                          Delete
+                          <Trash2 className="h-5 w-5" />
                         </Button>
                       </div>
                     </TableCell>
@@ -454,113 +434,31 @@ const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
 
         {/* Pagination */}
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            Showing {filteredTransactions.length} of {pagination.total} transactions
-            {searchTerm && ` (Filtered from ${transactions.length} total)`}
-          </p>
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between py-4">
+          <div>
+            Showing {pagination.page} of {pagination.totalPages} pages
+          </div>
+          <div>
             <Button
               variant="outline"
-              size="sm"
               onClick={() =>
-                setPagination((prev: Pagination) => ({
-                  ...prev,
-                  page: prev.page - 1,
-                }))
+                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
               }
-              disabled={pagination.page === 1 || isLoading}
+              disabled={pagination.page <= 1}
             >
               Previous
             </Button>
-            <span className="text-sm">
-              Page {pagination.page} of {pagination.totalPages}
-            </span>
             <Button
               variant="outline"
-              size="sm"
               onClick={() =>
-                setPagination((prev: Pagination) => ({
-                  ...prev,
-                  page: prev.page + 1,
-                }))
+                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
               }
-              disabled={pagination.page === pagination.totalPages || isLoading}
+              disabled={pagination.page >= pagination.totalPages}
             >
               Next
             </Button>
           </div>
         </div>
-
-        {/* Modals */}
-        <TransactionDetailsModal
-          isOpen={showDetailsModal}
-          onClose={() => {
-            setShowDetailsModal(false);
-            setSelectedTransaction(null);
-          }}
-          transaction={selectedTransaction}
-        />
-
-        {/* Status Update Dialog */}
-        <Dialog
-          open={showStatusDialog}
-          onOpenChange={(open) => setShowStatusDialog(open)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {statusAction === "VERIFY" ? "Verify Transaction" : "Reject Transaction"}
-              </DialogTitle>
-              <DialogDescription>
-                Are you sure you want to{" "}
-                {statusAction === "VERIFY" ? "verify" : "reject"} this transaction?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant={statusAction === "VERIFY" ? "default" : "destructive"}
-                onClick={() =>
-                  handleStatusUpdate(
-                    statusAction === "VERIFY" ? "VERIFIED" : "REJECTED"
-                  )
-                }
-              >
-                {statusAction === "VERIFY" ? "Verify" : "Reject"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={showDeleteDialog}
-          onOpenChange={(open) => setShowDeleteDialog(open)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Transaction</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this transaction? This action
-                cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </CardContent>
     </Card>
   );
