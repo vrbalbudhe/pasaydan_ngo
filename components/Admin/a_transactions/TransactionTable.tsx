@@ -74,6 +74,32 @@ interface FilterOptions {
   selectedDates?: string[];
 }
 
+interface Transaction {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  // userType: UserType;
+  amount: number;
+  type: TransactionType;
+  transactionId: string;
+  date: Date;
+  // transactionNature: TransactionNature;
+  screenshotPath?: string | null;
+  // entryType: EntryType;
+  entryBy: string;
+  entryAt: Date;
+  description?: string;
+  status: TransactionStatus;
+  statusDescription?: string;
+  verifiedBy?: string;
+  verifiedAt?: Date;
+  // moneyFor: MoneyForCategory;
+  customMoneyFor?: string;
+  userId?: string;
+  organizationId?: string | null;
+}
+
 export default function TransactionTable() {
   const {
     transactions,
@@ -89,6 +115,7 @@ export default function TransactionTable() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showScreenshot, setShowScreenshot] = useState(false);
@@ -110,14 +137,14 @@ export default function TransactionTable() {
   }, [handleSearch]);
 
   const handleUpdateTransaction = async (updatedTransaction: Transaction) => {
-    const updatedTransactionData = {
-      ...updatedTransaction,
-      id: updatedTransaction.id,
-      phone: updatedTransaction.phone,
-      userType: updatedTransaction.userType,
-    };
-
     try {
+      const updatedTransactionData: Transaction = {
+        ...updatedTransaction,
+        screenshotPath: updatedTransaction.screenshotPath ?? null,
+      };
+
+      console.log("Sending Updated Transaction:", updatedTransactionData);
+
       const response = await fetch("/api/transactions/update", {
         method: "PUT",
         headers: {
@@ -126,14 +153,15 @@ export default function TransactionTable() {
         body: JSON.stringify(updatedTransactionData),
       });
 
-      if (response.ok) {
-        console.log("Updated Transaction:", updatedTransactionData);
-        setSelectedTransaction(null);
-      } else {
-        console.error("Error updating transaction");
+      if (!response.ok) {
+        throw new Error(`Error updating transaction: ${response.statusText}`);
       }
+
+      const responseData = await response.json();
+      console.log("Transaction updated successfully!", responseData);
+      setSelectedTransaction(null);
     } catch (error) {
-      console.error("Error updating transaction:", error);
+      console.error("Network error updating transaction:", error);
     }
   };
 
@@ -560,11 +588,34 @@ export default function TransactionTable() {
                       <div className="flex space-x-2">
                         <div key={transaction.transactionId} className="mb-4">
                           <Button
-                            onClick={() => setSelectedTransaction(transaction)}
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowEditForm(true);
+                            }}
                           >
                             Edit Transaction
                           </Button>
                         </div>
+                        {showEditForm && (
+                          <div className="fixed inset-0 bg-opacity-50 bg-slate-600 backdrop-blur-lg flex justify-center items-start pt-10 z-50">
+                            <div className="bg-white overflow-auto p-8 rounded-lg w-full max-w-xl max-h-[90vh]">
+                              <TransactionUpdateForm
+                                transaction={
+                                  selectedTransaction
+                                    ? {
+                                        ...selectedTransaction,
+                                        screenshotPath:
+                                          selectedTransaction.screenshotPath ??
+                                          null,
+                                      }
+                                    : null
+                                }
+                                onUpdate={handleUpdateTransaction}
+                                onCancel={handleCancelUpdate}
+                              />
+                            </div>
+                          </div>
+                        )}
 
                         <Button
                           variant="ghost"
