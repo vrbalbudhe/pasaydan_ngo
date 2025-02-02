@@ -44,50 +44,84 @@ interface TransactionRequest {
 // Function to clean and convert date format
 const convertToYYYYMMDD = (dateStr: string): string => {
   try {
-    const cleanDateStr = dateStr.replace(/ \(DD-MM-YYYY\)\*?/, '').trim()
-    
-    if (/^\d{4}-\d{2}-\d{2}$/.test(cleanDateStr)) {
-      return cleanDateStr
-    }
+    // Remove format hints and extra spaces
+    const cleanDateStr = dateStr
+      .replace(/ \(DD-MM-YYYY\)\*?/, '')
+      .replace(/\s+/g, '')
+      .trim()
 
+    // Split the date parts
     const parts = cleanDateStr.split('-')
-    if (parts.length !== 3) return dateStr
+    if (parts.length !== 3) {
+      throw new Error('Date must be in DD-MM-YY or DD-MM-YYYY format')
+    }
 
     const day = parts[0].padStart(2, '0')
     const month = parts[1].padStart(2, '0')
-    const year = parts[2]
+    let year = parts[2]
+
+    // Handle 2-digit year
+    if (year.length === 2) {
+      year = `20${year}`
+    }
 
     return `${year}-${month}-${day}`
   } catch (error) {
     console.error('Error converting date:', error)
-    return dateStr
+    throw error
   }
 }
 
 // Function to validate date format and value
 const isValidDate = (dateStr: string): boolean => {
   try {
-    const cleanDateStr = dateStr.replace(/ \(DD-MM-YYYY\)\*?/, '').trim()
+    // Clean the date string
+    const cleanDateStr = dateStr
+      .replace(/ \(DD-MM-YYYY\)\*?/, '')
+      .replace(/\s+/g, '')
+      .trim()
     
-    const ddmmyyyyRegex = /^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-\d{4}$/
-    const yyyymmddRegex = /^\d{4}-\d{2}-\d{2}$/
-
-    if (!ddmmyyyyRegex.test(cleanDateStr) && !yyyymmddRegex.test(cleanDateStr)) {
+    // Match both DD-MM-YY and DD-MM-YYYY formats
+    const dateRegex = /^(\d{1,2})-(\d{1,2})-(\d{2}|\d{4})$/
+    const match = cleanDateStr.match(dateRegex)
+    
+    if (!match) {
+      console.error('Date format does not match DD-MM-YY or DD-MM-YYYY pattern')
       return false
     }
 
-    let year: number, month: number, day: number
+    const day = parseInt(match[1], 10)
+    const month = parseInt(match[2], 10)
+    let year = parseInt(match[3], 10)
 
-    if (ddmmyyyyRegex.test(cleanDateStr)) {
-      [day, month, year] = cleanDateStr.split('-').map(Number)
-    } else {
-      [year, month, day] = cleanDateStr.split('-').map(Number)
+    // Convert 2-digit year to 4-digit
+    if (year < 100) {
+      year += 2000
     }
 
-    const date = new Date(year, month - 1, day)
-    return date.getDate() === day && 
-           date.getMonth() === month - 1 && 
-           date.getFullYear() === year
+    // Basic range checks
+    if (month < 1 || month > 12) {
+      console.error('Invalid month:', month)
+      return false
+    }
+    if (day < 1 || day > 31) {
+      console.error('Invalid day:', day)
+      return false
+    }
+
+    // Check specific month lengths
+    const monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    // Adjust February for leap years
+    if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)) {
+      monthLengths[1] = 29
+    }
+    
+    if (day > monthLengths[month - 1]) {
+      console.error('Day exceeds maximum for month:', day)
+      return false
+    }
+
+    return true
   } catch (error) {
     console.error('Error validating date:', error)
     return false
@@ -139,7 +173,7 @@ const validateTransaction = (transaction: TransactionRequest['transactions'][0])
     if (!transaction.date?.toString().trim()) {
       errors.push("Date is required")
     } else if (!isValidDate(transaction.date)) {
-      errors.push("Date must be in DD-MM-YYYY format")
+      errors.push("Date must be in DD-MM-YY or DD-MM-YYYY format (e.g., 25-11-22 or 25-11-2022)")
     }
 
     // Enum validations
@@ -244,8 +278,11 @@ export async function POST(request: NextRequest) {
             moneyFor: transaction.moneyFor,
             customMoneyFor: transaction.customMoneyFor?.trim() || null,
             userId: transaction.userId || null,
-            organizationId: transaction.organizationId || null
+            organizationId: transaction.organizationId || null,
+            entryAt: new Date() // Adding creation timestamp
           }
+          
+          console.log('Inserting transaction:', transactionData)
           
           return prisma.transaction.create({
             data: transactionData

@@ -178,11 +178,25 @@ const TransactionEntryForm = () => {
           if (!value) {
             errors.push(`Row ${index + 1}: ${field} is required`)
           }
+
+          // Additional validation for specific fields
+          if (field === 'transactionNature' && value && !VALID_TRANSACTION_NATURES.includes(value as TransactionNature)) {
+            errors.push(`Row ${index + 1}: Transaction nature must be one of: ${VALID_TRANSACTION_NATURES.join(', ')}`)
+          }
+          if (field === 'type' && value && !VALID_TRANSACTION_TYPES.includes(value as TransactionType)) {
+            errors.push(`Row ${index + 1}: Transaction type must be one of: ${VALID_TRANSACTION_TYPES.join(', ')}`)
+          }
+          if (field === 'userType' && value && !VALID_USER_TYPES.includes(value as UserType)) {
+            errors.push(`Row ${index + 1}: User type must be one of: ${VALID_USER_TYPES.join(', ')}`)
+          }
+          if (field === 'moneyFor' && value && !VALID_MONEY_CATEGORIES.includes(value as MoneyForCategory)) {
+            errors.push(`Row ${index + 1}: Money for category must be one of: ${VALID_MONEY_CATEGORIES.join(', ')}`)
+          }
         }
       })
 
       // Date validation
-      const dateRegex = /^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-\d{4}$/
+      const dateRegex = /^(\d{1,2})-(\d{1,2})-(\d{2}|\d{4})$/
       const dateKey = Object.keys(row).find(k => k.startsWith('date'))
       
       if (dateKey && row[dateKey] && !dateRegex.test(row[dateKey])) {
@@ -279,10 +293,17 @@ const TransactionEntryForm = () => {
     setIsParsingFile(true)
     setErrors([])
     
+    console.log('Starting file upload')
+    
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: (header) => {
+        // Remove asterisks and format hints from headers
+        return header.replace(/\*$/, '').replace(/ \([^)]+\)/, '')
+      },
       complete: (results) => {
+        console.log('Parsed CSV data:', results.data)
         const validationErrors = validateData(results.data)
         
         if (validationErrors.length > 0) {
