@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Home,
   Inbox,
@@ -21,7 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import { MdLogout } from "react-icons/md";
 
@@ -80,6 +81,7 @@ const items = [
 
 export function AppSidebar() {
   const router = useRouter();
+  const pathname = usePathname(); // usePathname returns the current URL path
 
   const handleLogout = async () => {
     try {
@@ -113,8 +115,8 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => {
-                  const isActive = window.location.pathname === item.url;
-
+                  // Use the pathname from the hook instead of window.location.pathname
+                  const isActive = pathname === item.url;
                   return (
                     <SidebarMenuItem
                       key={item.title}
@@ -147,7 +149,7 @@ export function AppSidebar() {
                   <Button onClick={handleLogout}>
                     <MdLogout className="h-4 w-4 mr-2" />
                     Logout
-                  </Button>{" "}
+                  </Button>
                 </div>
               </SidebarMenu>
             </SidebarGroupContent>
