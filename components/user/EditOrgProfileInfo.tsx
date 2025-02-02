@@ -9,27 +9,27 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Address = {
-  streetAddress: string | null;
-  addressLine2: string | null;
-  city: string | null;
-  state: string | null;
-  postalCode: string | null;
-  country: string | null;
+  streetAddress: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
 };
 
 type ContactPerson = {
   id: string;
   name: string;
   email: string;
-  mobile: string | null;
+  mobile: string;
 };
 
 type OrganizationProfile = {
   id: string;
-  name: string | null;
+  name: string;
   email: string;
-  mobile: string | null;
-  avatar: string | null;
+  mobile: string;
+  avatar: string;
   contactPerson: ContactPerson[];
   address: Address;
 };
@@ -39,45 +39,73 @@ const UpdateOrgProfileForm = ({
 }: {
   initialProfile: OrganizationProfile;
 }) => {
-  const [formData, setFormData] = useState<OrganizationProfile>({
-    ...initialProfile,
-    address: { ...initialProfile.address },
-    contactPerson: initialProfile.contactPerson.length
-      ? [...initialProfile.contactPerson]
-      : [{ id: "", name: "", email: "", mobile: "" }],
+  // Separate state for organization, address, and contact persons
+  const [orgData, setOrgData] = useState({
+    name: initialProfile.name || "",
+    email: initialProfile.email || "",
+    mobile: initialProfile.mobile || "",
+    avatar: initialProfile.avatar || "",
   });
+
+  const [addressData, setAddressData] = useState({
+    streetAddress: initialProfile.address?.streetAddress || "",
+    addressLine2: initialProfile.address?.addressLine2 || "",
+    city: initialProfile.address?.city || "",
+    state: initialProfile.address?.state || "",
+    postalCode: initialProfile.address?.postalCode || "",
+    country: initialProfile.address?.country || "",
+  });
+
+  const [contactPersons, setContactPersons] = useState<ContactPerson[]>(
+    initialProfile.contactPerson.length > 0
+      ? initialProfile.contactPerson.map((contact) => ({
+          id: contact.id,
+          name: contact.name || "",
+          email: contact.email || "",
+          mobile: contact.mobile || "",
+        }))
+      : [{ id: "", name: "", email: "", mobile: "" }]
+  );
+
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
-  const handleChange = (
+  // Update organization fields
+  const handleOrgChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-
-    if (name in formData.address) {
-      setFormData((prev) => ({
-        ...prev,
-        address: { ...prev.address, [name]: value },
-      }));
-    } else if (name.startsWith("contactPerson")) {
-      const [field, index] = name.split("_");
-      const idx = parseInt(index, 10);
-      const updatedContactPerson = [...formData.contactPerson];
-      updatedContactPerson[idx] = {
-        ...updatedContactPerson[idx],
-        [field]: value,
-      };
-      setFormData((prev) => ({
-        ...prev,
-        contactPerson: updatedContactPerson,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setOrgData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // Update address fields
+  const handleAddressChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setAddressData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Update individual contact person fields using index and field name
+  const handleContactChange = (
+    index: number,
+    field: keyof ContactPerson,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { value } = e.target;
+    setContactPersons((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  // Handle avatar file changes
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
@@ -89,20 +117,20 @@ const UpdateOrgProfileForm = ({
     e.preventDefault();
 
     const formPayload = new FormData();
-    formPayload.append("name", formData.name || "");
-    formPayload.append("email", formData.email);
-    formPayload.append("mobile", formData.mobile || "");
-    formPayload.append("streetAddress", formData.address.streetAddress || "");
-    formPayload.append("addressLine2", formData.address.addressLine2 || "");
-    formPayload.append("city", formData.address.city || "");
-    formPayload.append("state", formData.address.state || "");
-    formPayload.append("postalCode", formData.address.postalCode || "");
-    formPayload.append("country", formData.address.country || "");
+    formPayload.append("name", orgData.name);
+    formPayload.append("email", orgData.email);
+    formPayload.append("mobile", orgData.mobile);
+    formPayload.append("streetAddress", addressData.streetAddress);
+    formPayload.append("addressLine2", addressData.addressLine2);
+    formPayload.append("city", addressData.city);
+    formPayload.append("state", addressData.state);
+    formPayload.append("postalCode", addressData.postalCode);
+    formPayload.append("country", addressData.country);
 
-    formData.contactPerson.forEach((contact, index) => {
+    contactPersons.forEach((contact, index) => {
       formPayload.append(`contactPersonName_${index}`, contact.name);
       formPayload.append(`contactPersonEmail_${index}`, contact.email);
-      formPayload.append(`contactPersonMobile_${index}`, contact.mobile || "");
+      formPayload.append(`contactPersonMobile_${index}`, contact.mobile);
     });
 
     if (avatarFile) formPayload.append("avatar", avatarFile);
@@ -116,7 +144,7 @@ const UpdateOrgProfileForm = ({
 
       if (res.ok) {
         toast.success("Profile updated successfully!");
-        setFormData((prev) => ({
+        setOrgData((prev) => ({
           ...prev,
           avatar: data.avatar || prev.avatar,
         }));
@@ -129,33 +157,6 @@ const UpdateOrgProfileForm = ({
     }
   };
 
-  const organizationFields = [
-    { id: "name", label: "Organization Name", value: formData.name },
-    { id: "email", label: "Organization Email", value: formData.email },
-    { id: "mobile", label: "Mobile", value: formData.mobile },
-  ];
-
-  const addressFields = [
-    {
-      id: "streetAddress",
-      label: "Street Address",
-      value: formData.address.streetAddress,
-    },
-    {
-      id: "addressLine2",
-      label: "Address Line 2",
-      value: formData.address.addressLine2,
-    },
-    { id: "city", label: "City", value: formData.address.city },
-    { id: "state", label: "State", value: formData.address.state },
-    {
-      id: "postalCode",
-      label: "Postal Code",
-      value: formData.address.postalCode,
-    },
-    { id: "country", label: "Country", value: formData.address.country },
-  ];
-
   return (
     <div className="flex items-start justify-center w-full">
       <form
@@ -164,18 +165,14 @@ const UpdateOrgProfileForm = ({
       >
         <div className="flex h-full md:w-1/3 flex-col gap-6 items-center">
           <Avatar className="h-32 w-32 border border-slate-200">
-            {formData.avatar ? (
-              <AvatarImage
-                src={formData.avatar || ""}
-                alt={formData.name || "Organization"}
-              />
+            {orgData.avatar ? (
+              <AvatarImage src={orgData.avatar} alt={orgData.name || "Organization"} />
             ) : (
               <AvatarFallback className="bg-primary/10">
-                {formData.name ? formData.name[0] : "O"}
+                {orgData.name ? orgData.name[0] : "O"}
               </AvatarFallback>
             )}
           </Avatar>
-
           <div className="flex flex-col">
             <Label htmlFor="avatar" className="text-slate-800 p-2">
               Choose Avatar
@@ -198,30 +195,52 @@ const UpdateOrgProfileForm = ({
         </div>
 
         <div className="mt-10 md:mt-0 md:w-2/3 space-y-4 text-slate-800 text-sm">
-          {organizationFields.map(({ id, label, value, ...props }) => (
-            <div key={id}>
-              <Label htmlFor={id}>{label}</Label>
-              <Input
-                id={id}
-                name={id}
-                value={value || ""}
-                onChange={handleChange}
-                {...props}
-              />
-            </div>
-          ))}
+          {/* Organization fields */}
+          <div>
+            <Label htmlFor="name">Organization Name</Label>
+            <Input
+              id="name"
+              name="name"
+              value={orgData.name}
+              onChange={handleOrgChange}
+              placeholder="Enter organization name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="email">Organization Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={orgData.email}
+              onChange={handleOrgChange}
+              placeholder="Enter organization email"
+            />
+          </div>
+          <div>
+            <Label htmlFor="mobile">Mobile</Label>
+            <Input
+              id="mobile"
+              name="mobile"
+              type="tel"
+              value={orgData.mobile}
+              onChange={handleOrgChange}
+              placeholder="Enter mobile number"
+            />
+          </div>
 
-          {formData.contactPerson.map((contact, index) => (
-            <div key={`contactPerson_${index}`}>
+          {/* Contact Person fields */}
+          {contactPersons.map((contact, index) => (
+            <div key={index} className="border p-4 rounded-lg">
               <div>
                 <Label htmlFor={`contactPersonName_${index}`}>
                   Contact Person Name
                 </Label>
                 <Input
                   id={`contactPersonName_${index}`}
-                  name={`name_${index}`}
-                  value={contact.name || ""}
-                  onChange={handleChange}
+                  value={contact.name}
+                  onChange={(e) => handleContactChange(index, "name", e)}
+                  placeholder="Enter contact person name"
                 />
               </div>
               <div>
@@ -230,9 +249,9 @@ const UpdateOrgProfileForm = ({
                 </Label>
                 <Input
                   id={`contactPersonEmail_${index}`}
-                  name={`email_${index}`}
-                  value={contact.email || ""}
-                  onChange={handleChange}
+                  value={contact.email}
+                  onChange={(e) => handleContactChange(index, "email", e)}
+                  placeholder="Enter contact person email"
                 />
               </div>
               <div>
@@ -241,26 +260,75 @@ const UpdateOrgProfileForm = ({
                 </Label>
                 <Input
                   id={`contactPersonMobile_${index}`}
-                  name={`mobile_${index}`}
-                  value={contact.mobile || ""}
-                  onChange={handleChange}
+                  value={contact.mobile}
+                  onChange={(e) => handleContactChange(index, "mobile", e)}
+                  placeholder="Enter contact person mobile"
                 />
               </div>
             </div>
           ))}
 
-          {addressFields.map(({ id, label, value, ...props }) => (
-            <div key={id}>
-              <Label htmlFor={id}>{label}</Label>
-              <Input
-                id={id}
-                name={id}
-                value={value || ""}
-                onChange={handleChange}
-                {...props}
-              />
-            </div>
-          ))}
+          {/* Address fields */}
+          <div>
+            <Label htmlFor="streetAddress">Street Address</Label>
+            <Input
+              id="streetAddress"
+              name="streetAddress"
+              value={addressData.streetAddress}
+              onChange={handleAddressChange}
+              placeholder="Enter street address"
+            />
+          </div>
+          <div>
+            <Label htmlFor="addressLine2">Address Line 2</Label>
+            <Input
+              id="addressLine2"
+              name="addressLine2"
+              value={addressData.addressLine2}
+              onChange={handleAddressChange}
+              placeholder="Enter address line 2"
+            />
+          </div>
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              value={addressData.city}
+              onChange={handleAddressChange}
+              placeholder="Enter city"
+            />
+          </div>
+          <div>
+            <Label htmlFor="state">State</Label>
+            <Input
+              id="state"
+              name="state"
+              value={addressData.state}
+              onChange={handleAddressChange}
+              placeholder="Enter state"
+            />
+          </div>
+          <div>
+            <Label htmlFor="postalCode">Postal Code</Label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={addressData.postalCode}
+              onChange={handleAddressChange}
+              placeholder="Enter postal code"
+            />
+          </div>
+          <div>
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              name="country"
+              value={addressData.country}
+              onChange={handleAddressChange}
+              placeholder="Enter country"
+            />
+          </div>
         </div>
       </form>
     </div>

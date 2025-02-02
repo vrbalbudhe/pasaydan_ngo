@@ -9,20 +9,20 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Address = {
-  streetAddress: string | null;
-  addressLine2: string | null;
-  city: string | null;
-  state: string | null;
-  postalCode: string | null;
-  country: string | null;
+  streetAddress: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
 };
 
 type UserProfile = {
   id: string;
-  fullname: string | null;
+  fullname: string;
   email: string;
-  mobile: string | null;
-  avatar: string | null;
+  mobile: string;
+  avatar: string;
   userType: string;
   address: Address;
 };
@@ -32,28 +32,43 @@ const UpdateProfileForm = ({
 }: {
   initialProfile: UserProfile;
 }) => {
-  const [formData, setFormData] = useState<UserProfile>({
-    ...initialProfile,
-    address: { ...initialProfile.address },
+  // Separate state for non-address and address fields for clarity and easier updates.
+  const [profileData, setProfileData] = useState({
+    fullname: initialProfile.fullname || "",
+    email: initialProfile.email,
+    mobile: initialProfile.mobile || "",
+    avatar: initialProfile.avatar || "",
   });
+
+  const [addressData, setAddressData] = useState({
+    streetAddress: initialProfile.address?.streetAddress || "",
+    addressLine2: initialProfile.address?.addressLine2 || "",
+    city: initialProfile.address?.city || "",
+    state: initialProfile.address?.state || "",
+    postalCode: initialProfile.address?.postalCode || "",
+    country: initialProfile.address?.country || "",
+  });
+
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
-  const handleChange = (
+  const handleProfileChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    setProfileData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-    if (name in formData.address) {
-      setFormData((prev) => ({
-        ...prev,
-        address: { ...prev.address, [name]: value },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+  const handleAddressChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setAddressData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,16 +82,18 @@ const UpdateProfileForm = ({
     e.preventDefault();
 
     const formPayload = new FormData();
-    formPayload.append("fullname", formData.fullname || "");
-    formPayload.append("email", formData.email);
-    formPayload.append("mobile", formData.mobile || "");
-    formPayload.append("streetAddress", formData.address.streetAddress || "");
-    formPayload.append("addressLine2", formData.address.addressLine2 || "");
-    formPayload.append("city", formData.address.city || "");
-    formPayload.append("state", formData.address.state || "");
-    formPayload.append("postalCode", formData.address.postalCode || "");
-    formPayload.append("country", formData.address.country || "");
-    if (avatarFile) formPayload.append("avatar", avatarFile);
+    formPayload.append("fullname", profileData.fullname);
+    formPayload.append("email", profileData.email);
+    formPayload.append("mobile", profileData.mobile);
+    formPayload.append("streetAddress", addressData.streetAddress);
+    formPayload.append("addressLine2", addressData.addressLine2);
+    formPayload.append("city", addressData.city);
+    formPayload.append("state", addressData.state);
+    formPayload.append("postalCode", addressData.postalCode);
+    formPayload.append("country", addressData.country);
+    if (avatarFile) {
+      formPayload.append("avatar", avatarFile);
+    }
 
     try {
       const res = await fetch("/api/user/update", {
@@ -88,7 +105,7 @@ const UpdateProfileForm = ({
       if (res.ok) {
         toast.success("Profile updated successfully!");
         alert("Profile updated successfully");
-        setFormData((prev) => ({
+        setProfileData((prev) => ({
           ...prev,
           avatar: data.avatar || prev.avatar,
         }));
@@ -109,18 +126,17 @@ const UpdateProfileForm = ({
       >
         <div className="flex h-full md:w-1/3 flex-col gap-6 items-center">
           <Avatar className="h-32 w-32 border border-slate-200">
-            {formData.avatar ? (
+            {profileData.avatar ? (
               <AvatarImage
-                src={formData.avatar || ""}
-                alt={formData.fullname || "User"}
+                src={profileData.avatar}
+                alt={profileData.fullname || "User"}
               />
             ) : (
               <AvatarFallback className="bg-primary/10">
-                {formData.fullname ? formData.fullname[0] : "U"}
+                {profileData.fullname ? profileData.fullname[0] : "U"}
               </AvatarFallback>
             )}
           </Avatar>
-
           <div className="flex flex-col">
             <Label htmlFor="avatar" className="text-slate-800 p-2">
               Choose Avatar
@@ -144,92 +160,102 @@ const UpdateProfileForm = ({
 
         <div className="mt-10 md:mt-0 md:w-2/3 space-y-4 text-slate-800 text-sm">
           {/* Non-address fields */}
-          {[
-            {
-              id: "fullname",
-              label: "Full Name",
-              placeholder: "Enter your full name",
-              required: true,
-              value: formData.fullname,
-            },
-            {
-              id: "email",
-              label: "Email",
-              type: "email",
-              required: true,
-              disabled: true,
-              value: formData.email,
-            },
-            {
-              id: "mobile",
-              label: "Mobile",
-              type: "tel",
-              placeholder: "Enter your mobile number",
-              value: formData.mobile,
-            },
-          ].map(({ id, label, value, ...props }) => (
-            <div key={id}>
-              <Label htmlFor={id}>{label}</Label>
-              <Input
-                id={id}
-                name={id}
-                value={value || ""}
-                onChange={handleChange}
-                {...props}
-              />
-            </div>
-          ))}
+          <div>
+            <Label htmlFor="fullname">Full Name</Label>
+            <Input
+              id="fullname"
+              name="fullname"
+              value={profileData.fullname}
+              onChange={handleProfileChange}
+              placeholder="Enter your full name"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={profileData.email}
+              onChange={handleProfileChange}
+              disabled
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="mobile">Mobile</Label>
+            <Input
+              id="mobile"
+              name="mobile"
+              type="tel"
+              value={profileData.mobile}
+              onChange={handleProfileChange}
+              placeholder="Enter your mobile number"
+            />
+          </div>
 
           {/* Address fields */}
-          {[
-            {
-              id: "streetAddress",
-              label: "Street Address",
-              placeholder: "Enter your street address",
-              value: formData.address.streetAddress,
-            },
-            {
-              id: "addressLine2",
-              label: "Address Line 2",
-              placeholder: "Enter additional address details",
-              value: formData.address.addressLine2,
-            },
-            {
-              id: "city",
-              label: "City",
-              placeholder: "Enter your city",
-              value: formData.address.city,
-            },
-            {
-              id: "state",
-              label: "State",
-              placeholder: "Enter your state",
-              value: formData.address.state,
-            },
-            {
-              id: "postalCode",
-              label: "Postal Code",
-              placeholder: "Enter your postal code",
-              value: formData.address.postalCode,
-            },
-            {
-              id: "country",
-              label: "Country",
-              placeholder: "Enter your country",
-              value: formData.address.country,
-            },
-          ].map(({ id, label, value, ...props }) => (
-            <div key={id}>
-              <Label htmlFor={id}>{label}</Label>
-              <Input
-                id={id}
-                name={id}
-                value={value || ""}
-                onChange={handleChange}
-                {...props}
-              />
-            </div>
-          ))}
+          <div>
+            <Label htmlFor="streetAddress">Street Address</Label>
+            <Input
+              id="streetAddress"
+              name="streetAddress"
+              value={addressData.streetAddress}
+              onChange={handleAddressChange}
+              placeholder="Enter your street address"
+            />
+          </div>
+          <div>
+            <Label htmlFor="addressLine2">Address Line 2</Label>
+            <Input
+              id="addressLine2"
+              name="addressLine2"
+              value={addressData.addressLine2}
+              onChange={handleAddressChange}
+              placeholder="Enter additional address details"
+            />
+          </div>
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              name="city"
+              value={addressData.city}
+              onChange={handleAddressChange}
+              placeholder="Enter your city"
+            />
+          </div>
+          <div>
+            <Label htmlFor="state">State</Label>
+            <Input
+              id="state"
+              name="state"
+              value={addressData.state}
+              onChange={handleAddressChange}
+              placeholder="Enter your state"
+            />
+          </div>
+          <div>
+            <Label htmlFor="postalCode">Postal Code</Label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={addressData.postalCode}
+              onChange={handleAddressChange}
+              placeholder="Enter your postal code"
+            />
+          </div>
+          <div>
+            <Label htmlFor="country">Country</Label>
+            <Input
+              id="country"
+              name="country"
+              value={addressData.country}
+              onChange={handleAddressChange}
+              placeholder="Enter your country"
+            />
+          </div>
         </div>
       </form>
     </div>
