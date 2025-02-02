@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +26,7 @@ interface DetailRowProps {
 }
 
 const DetailRow = ({ label, value }: DetailRowProps) => (
-  <div className="flex flex-row justify-between py-2">
+  <div className="flex justify-between py-2">
     <span className="text-sm text-muted-foreground">{label}</span>
     <span className="text-sm font-medium">{value}</span>
   </div>
@@ -47,7 +46,7 @@ export function TransactionDetailsModal({
       VERIFIED: "bg-green-100 text-green-800",
       REJECTED: "bg-red-100 text-red-800",
     };
-    return styles[status as keyof typeof styles] || "";
+    return styles[status as keyof typeof styles] || "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -57,14 +56,9 @@ export function TransactionDetailsModal({
         if (!open) onClose();
       }}
     >
-      {/*
-        Give the DialogContent a max height and overflow auto.
-        This ensures the content is scrollable if it's too tall.
-      */}
       <DialogContent className="max-w-md max-h-[calc(100vh-8rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Transaction Details</DialogTitle>
-          {/* <DialogDescription>Optional subtext here</DialogDescription> */}
         </DialogHeader>
 
         {/* MAIN CONTENT */}
@@ -116,7 +110,10 @@ export function TransactionDetailsModal({
               }
             />
             {transaction.type !== "CASH" && (
-              <DetailRow label="Transaction ID" value={transaction.transactionId} />
+              <DetailRow
+                label="Transaction ID"
+                value={transaction.transactionId}
+              />
             )}
             <DetailRow label="User Type" value={transaction.userType} />
             <DetailRow
@@ -133,7 +130,9 @@ export function TransactionDetailsModal({
 
           {/* Additional Information */}
           <div>
-            <h3 className="text-sm font-semibold mb-2">Additional Information</h3>
+            <h3 className="text-sm font-semibold mb-2">
+              Additional Information
+            </h3>
             <DetailRow label="Money For" value={transaction.moneyFor} />
             {transaction.customMoneyFor && (
               <DetailRow
@@ -143,20 +142,29 @@ export function TransactionDetailsModal({
             )}
             <DetailRow label="Entry Type" value={transaction.entryType} />
             <DetailRow label="Entry By" value={transaction.entryBy} />
-            <DetailRow label="Entry At" value={formatDate(transaction.entryAt)} />
+            <DetailRow
+              label="Entry At"
+              value={formatDate(transaction.entryAt)}
+            />
             {transaction.description && (
               <DetailRow label="Description" value={transaction.description} />
             )}
           </div>
 
           {/* Verification Information */}
-          {(transaction.status === "VERIFIED" || transaction.status === "REJECTED") && (
+          {(transaction.status === "VERIFIED" ||
+            transaction.status === "REJECTED") && (
             <>
               <Separator />
               <div>
-                <h3 className="text-sm font-semibold mb-2">Verification Details</h3>
+                <h3 className="text-sm font-semibold mb-2">
+                  Verification Details
+                </h3>
                 {transaction.verifiedBy && (
-                  <DetailRow label="Verified By" value={transaction.verifiedBy} />
+                  <DetailRow
+                    label="Verified By"
+                    value={transaction.verifiedBy}
+                  />
                 )}
                 {transaction.verifiedAt && (
                   <DetailRow

@@ -2,46 +2,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
 import { TransactionType, EntryType } from "@prisma/client";
-import { nanoid } from 'nanoid';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { nanoid } from "nanoid";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 // Helper function to ensure consistent response structure
-const createResponse = (success: boolean, data: any = null, error: string | null = null, pagination: any = null) => {
-  return NextResponse.json({
-    success,
-    data,
-    error,
-    pagination: pagination || {
-      total: 0,
-      page: 1,
-      totalPages: 1,
-      limit: 10,
+const createResponse = (
+  success: boolean,
+  data: any = null,
+  error: string | null = null,
+  pagination: any = null
+) => {
+  return NextResponse.json(
+    {
+      success,
+      data,
+      error,
+      pagination: pagination || {
+        total: 0,
+        page: 1,
+        totalPages: 1,
+        limit: 10,
+      },
     },
-  }, { status: success ? 200 : 500 });
+    { status: success ? 200 : 500 }
+  );
 };
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const screenshot = formData.get('screenshot') as File | null;
-    
+    const screenshot = formData.get("screenshot") as File | null;
+
     // Process screenshot if present
     let screenshotPath: string | undefined;
     if (screenshot) {
       try {
         const bytes = await screenshot.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        
+
         const uniqueId = nanoid(10);
         const filename = `${uniqueId}-${screenshot.name}`;
-        const filepath = path.join(process.cwd(), 'public', 'transactions', filename);
-        
+        const transactionDir = path.join(
+          process.cwd(),
+          "public",
+          "transactions"
+        );
+        await mkdir(transactionDir, { recursive: true });
+
+        const filepath = path.join(transactionDir, filename); // Use the defined directory path
         await writeFile(filepath, buffer);
         screenshotPath = `/transactions/${filename}`;
       } catch (error) {
         console.error("Error saving screenshot:", error);
-        // Continue without screenshot if upload fails
       }
     }
 
@@ -56,14 +69,18 @@ export async function POST(req: NextRequest) {
       transactionNature: data.transactionNature as string,
       userType: data.userType as string,
       date: new Date(data.date as string),
-      transactionId: data.type === "CASH" ? nanoid(10).toUpperCase() : data.transactionId as string,
+      transactionId:
+        data.type === "CASH"
+          ? nanoid(10).toUpperCase()
+          : (data.transactionId as string),
       screenshotPath,
       entryType: EntryType.MANUAL,
       entryBy: data.entryBy as string,
-      description: data.description as string || null,
+      description: (data.description as string) || null,
       status: data.status || "PENDING",
       moneyFor: data.moneyFor as string,
-      customMoneyFor: data.moneyFor === "OTHER" ? data.customMoneyFor as string : null,
+      customMoneyFor:
+        data.moneyFor === "OTHER" ? (data.customMoneyFor as string) : null,
     };
 
     const transaction = await prisma.transaction.create({
@@ -109,9 +126,9 @@ export async function GET(req: NextRequest) {
     let where: any = {};
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { transactionId: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { transactionId: { contains: search, mode: "insensitive" } },
       ];
     }
     if (status) where.status = status;
@@ -127,7 +144,7 @@ export async function GET(req: NextRequest) {
       prisma.transaction.count({ where }),
       prisma.transaction.findMany({
         where,
-        orderBy: { date: 'desc' },
+        orderBy: { date: "desc" },
         skip,
         take: limit,
         include: {
@@ -146,7 +163,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-      })
+      }),
     ]);
 
     return createResponse(true, transactions, null, {

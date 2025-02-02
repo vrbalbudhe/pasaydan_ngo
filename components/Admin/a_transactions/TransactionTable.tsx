@@ -51,15 +51,11 @@ import {
 } from "@prisma/client";
 import { toast } from "sonner";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
-<<<<<<< HEAD
-import debounce from "lodash/debounce";
 import { DatePicker } from "@/components/ui/date-picker"; // Assuming you have a DatePicker component
-=======
-import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
+import TransactionUpdateForm from "./TransactionUpdateForm";
 
 interface Pagination {
   page: number;
@@ -71,13 +67,11 @@ interface Pagination {
 interface FilterOptions {
   status: TransactionStatus | "ALL";
   type: TransactionType | "ALL";
-<<<<<<< HEAD
   dateRange: "today" | "week" | "month" | "all" | "custom";
   selectedDate: Date | null; // To store the selected specific date
-=======
   startDate: Date | undefined;
   endDate: Date | undefined;
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
+  selectedDates?: string[];
 }
 
 export default function TransactionTable() {
@@ -91,34 +85,23 @@ export default function TransactionTable() {
     refetchTransactions,
   } = useTransactions();
 
-<<<<<<< HEAD
   // States
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
-=======
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showScreenshot, setShowScreenshot] = useState(false);
   const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
 
-<<<<<<< HEAD
-  // Handle search input
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page on search
-  };
-=======
   // Handle search input with debounce
   const handleSearch = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
   }, 300);
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 
   useEffect(() => {
     return () => {
@@ -126,15 +109,46 @@ export default function TransactionTable() {
     };
   }, [handleSearch]);
 
+  const handleUpdateTransaction = async (updatedTransaction: Transaction) => {
+    const updatedTransactionData = {
+      ...updatedTransaction,
+      id: updatedTransaction.id,
+      phone: updatedTransaction.phone,
+      userType: updatedTransaction.userType,
+    };
+
+    try {
+      const response = await fetch("/api/transactions/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTransactionData),
+      });
+
+      if (response.ok) {
+        console.log("Updated Transaction:", updatedTransactionData);
+        setSelectedTransaction(null);
+      } else {
+        console.error("Error updating transaction");
+      }
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setSelectedTransaction(null); // Close the form on cancel
+  };
   // Filter state
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
-<<<<<<< HEAD
     dateRange: "all",
-    selectedDate: null, // Initially no specific date selected
+    selectedDate: null,
+    startDate: undefined,
+    endDate: undefined,
   });
-
   // Get date range based on selected filter
   const getDateRange = (range: string): { start: Date; end: Date } => {
     const end = new Date();
@@ -163,6 +177,30 @@ export default function TransactionTable() {
 
     return { start, end };
   };
+
+  const handleShowScreenshot = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setShowScreenshot(true);
+  };
+
+  // Inside your TableRow
+  <Button variant="ghost" onClick={() => handleShowScreenshot(transactions)}>
+    <Eye className="h-5 w-5" />
+  </Button>;
+
+  // Screenshot section, conditionally rendered
+  {
+    showScreenshot && selectedTransaction?.screenshotPath && (
+      <div className="mt-4">
+        <h3 className="text-xl font-semibold">Screenshot:</h3>
+        <img
+          src={selectedTransaction.screenshotPath}
+          alt="Transaction Screenshot"
+          className="mt-2 max-w-full h-auto rounded-lg border"
+        />
+      </div>
+    );
+  }
 
   // Apply all filters (search, status, type, date)
   const getFilteredTransactions = () => {
@@ -201,46 +239,30 @@ export default function TransactionTable() {
 
   // Handle filter changes
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
-=======
-    startDate: undefined,
-    endDate: undefined,
-  });
-
-  // Handle filter changes
-  const handleFilterChange = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
-    refetchTransactions();
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+      startDate: undefined, // Ensure these are included in the object
+      endDate: undefined,
+    }));
+    setPagination((prev: any) => ({ ...prev, page: 1 }));
   };
 
   // Filter transactions
-  const filteredTransactions = transactions.filter((transaction) => {
-    const searchMatch = searchTerm.length === 0 || [
-      transaction.name,
-      transaction.email,
-      transaction.transactionId,
-      transaction.phone,
-      transaction.amount.toString()
-    ].some(field => 
-      field?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const filteredTransactionsList = transactions.filter((transaction) => {
+    const searchMatch =
+      searchTerm.length === 0 ||
+      [
+        transaction.name,
+        transaction.email,
+        transaction.transactionId,
+        transaction.phone,
+        transaction.amount.toString(),
+      ].some((field) =>
+        field?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
-    const statusMatch = filters.status === "ALL" || 
-      transaction.status === filters.status;
-
-    const typeMatch = filters.type === "ALL" || 
-      transaction.type === filters.type;
-
-    const transactionDate = new Date(transaction.date);
-    const startDate = filters.startDate || new Date(2000, 0, 1);
-    const endDate = filters.endDate || new Date();
-    
-    const dateMatch = transactionDate >= startDate && transactionDate <= endDate;
-
-    return searchMatch && statusMatch && typeMatch && dateMatch;
+    return searchMatch;
   });
 
   // Status badge styling
@@ -288,6 +310,31 @@ export default function TransactionTable() {
 
   return (
     <Card className="w-full">
+      {showScreenshot && selectedTransaction?.screenshotPath && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+          <div className="relative p-4 bg-white rounded-lg shadow-lg max-w-3xl w-full">
+            <h3 className="text-xl font-semibold">Screenshot:</h3>
+            {selectedTransaction?.screenshotPath ? (
+              <img
+                src={selectedTransaction.screenshotPath}
+                alt="Transaction Screenshot"
+                className="mt-2 max-w-full h-auto rounded-lg border"
+              />
+            ) : (
+              <p>No Screenshots Available!</p>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={() => setShowScreenshot(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Transactions</CardTitle>
         <CardDescription>
@@ -315,7 +362,9 @@ export default function TransactionTable() {
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.status}
-                onValueChange={(value: TransactionStatus | "ALL") => handleFilterChange("status", value)}
+                onValueChange={(value: TransactionStatus | "ALL") =>
+                  handleFilterChange("status", value)
+                }
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by status" />
@@ -338,7 +387,9 @@ export default function TransactionTable() {
             <div className="flex flex-col gap-2">
               <Select
                 value={filters.type}
-                onValueChange={(value: TransactionType | "ALL") => handleFilterChange("type", value)}
+                onValueChange={(value: TransactionType | "ALL") =>
+                  handleFilterChange("type", value)
+                }
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by type" />
@@ -360,33 +411,11 @@ export default function TransactionTable() {
 
             {/* Date Range Filter */}
             <div className="flex flex-col gap-2">
-<<<<<<< HEAD
-              <Select
-                value={filters.dateRange}
-                onValueChange={(value) =>
-                  handleFilterChange("dateRange", value)
-                }
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by date" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                  <SelectItem value="custom">Custom Date</SelectItem>
-                </SelectContent>
-              </Select>
-              {filters.dateRange !== "all" && (
-                <Badge variant="secondary" className="w-fit">
-                  Date:{" "}
-                  {filters.dateRange.charAt(0).toUpperCase() +
-                    filters.dateRange.slice(1)}
-=======
               <div className="flex items-center gap-2">
                 <div className="flex flex-col">
-                  <Label className="text-sm text-muted-foreground mb-1">From</Label>
+                  <Label className="text-sm text-muted-foreground mb-1">
+                    From
+                  </Label>
                   <DatePicker
                     selected={filters.startDate}
                     onSelect={(date) => handleFilterChange("startDate", date)}
@@ -394,7 +423,9 @@ export default function TransactionTable() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <Label className="text-sm text-muted-foreground mb-1">To</Label>
+                  <Label className="text-sm text-muted-foreground mb-1">
+                    To
+                  </Label>
                   <DatePicker
                     selected={filters.endDate}
                     onSelect={(date) => handleFilterChange("endDate", date)}
@@ -404,32 +435,27 @@ export default function TransactionTable() {
               </div>
               {(filters.startDate || filters.endDate) && (
                 <Badge variant="secondary" className="w-fit">
-                  Date:{" "}
-                  {filters.startDate?.toLocaleDateString() || "Start"} -{" "}
+                  Date: {filters.startDate?.toLocaleDateString() || "Start"} -{" "}
                   {filters.endDate?.toLocaleDateString() || "End"}
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                 </Badge>
               )}
 
               {filters.dateRange === "custom" && (
                 <DatePicker
-                  selectedDate={filters.selectedDate}
-                  onDateChange={(date) =>
-                    handleFilterChange("selectedDate", date)
+                  selected={filters.selectedDate} // Use selected instead of selectedDate
+                  onSelect={
+                    (date: Date | null) =>
+                      handleFilterChange("selectedDate", date) // Adjust the handler function if needed
                   }
                 />
               )}
             </div>
 
-<<<<<<< HEAD
+            {/* Clear Filters */}
             {(filters.status !== "ALL" ||
               filters.type !== "ALL" ||
-              filters.dateRange !== "all" ||
-              filters.selectedDate) && (
-=======
-            {/* Clear Filters */}
-            {(filters.status !== "ALL" || filters.type !== "ALL" || filters.startDate || filters.endDate) && (
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
+              filters.startDate ||
+              filters.endDate) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -438,13 +464,10 @@ export default function TransactionTable() {
                   setFilters({
                     status: "ALL",
                     type: "ALL",
-<<<<<<< HEAD
-                    dateRange: "all",
-                    selectedDate: null,
-=======
                     startDate: undefined,
                     endDate: undefined,
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
+                    dateRange: undefined,
+                    selectedDates: undefined,
                   });
                 }}
               >
@@ -453,7 +476,7 @@ export default function TransactionTable() {
             )}
           </div>
         </div>
-             {/* Table */}
+        {/* Table */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -476,45 +499,41 @@ export default function TransactionTable() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-<<<<<<< HEAD
-                  <TableCell colSpan={7} className="text-center">
-                    Loading...
-=======
                   <TableCell colSpan={7} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="text-sm text-muted-foreground">Loading transactions...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Loading transactions...
+                      </p>
                     </div>
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   </TableCell>
                 </TableRow>
               ) : filteredTransactions.length === 0 ? (
                 <TableRow>
-<<<<<<< HEAD
-                  <TableCell colSpan={7} className="text-center">
-                    No transactions found.
-=======
                   <TableCell colSpan={7} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center space-y-2">
-                      <p className="text-sm text-muted-foreground">No transactions found</p>
+                      <p className="text-sm text-muted-foreground">
+                        No transactions found
+                      </p>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setSearchTerm("");
+                          setSearchTerm(""); // Reset search term
                           setFilters({
-                            status: "ALL",
-                            type: "ALL",
-                            startDate: undefined,
-                            endDate: undefined,
+                            status: "ALL", // Reset status
+                            type: "ALL", // Reset type
+                            startDate: undefined, // Reset start date
+                            endDate: undefined, // Reset end date
+                            dateRange: "all", // Reset date range to "all"
+                            selectedDate: null, // Reset selected date to null
                           });
-                          refetchTransactions();
+                          refetchTransactions(); // Refetch transactions with the reset filters
                         }}
                       >
                         Reset Filters
                       </Button>
                     </div>
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   </TableCell>
                 </TableRow>
               ) : (
@@ -523,17 +542,30 @@ export default function TransactionTable() {
                     <TableCell>{formatDate(transaction.date)}</TableCell>
                     <TableCell>{transaction.name}</TableCell>
                     <TableCell>{transaction.type}</TableCell>
-                    <TableCell>{transaction.nature}</TableCell>
+                    {/* <TableCell>{transaction.nature}</TableCell> */}
                     <TableCell className="text-right">
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell>
-                      <Badge className={cn("capitalize", getStatusBadge(transaction.status))}>
+                      <Badge
+                        className={cn(
+                          "capitalize",
+                          getStatusBadge(transaction.status)
+                        )}
+                      >
                         {transaction.status.toLowerCase()}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex space-x-2">
+                        <div key={transaction.transactionId} className="mb-4">
+                          <Button
+                            onClick={() => setSelectedTransaction(transaction)}
+                          >
+                            Edit Transaction
+                          </Button>
+                        </div>
+
                         <Button
                           variant="ghost"
                           onClick={() => {
@@ -561,6 +593,15 @@ export default function TransactionTable() {
                         >
                           <Trash2 className="h-5 w-5" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedTransaction(transaction);
+                            setShowScreenshot(true);
+                          }}
+                        >
+                          <Eye className="h-5 w-5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -571,39 +612,29 @@ export default function TransactionTable() {
         </div>
 
         {/* Pagination */}
-<<<<<<< HEAD
-        <div className="flex items-center justify-between py-4">
-          <div>
-            Showing {pagination.page} of {pagination.totalPages} pages
-          </div>
-          <div>
-=======
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {filteredTransactions.length} of {pagination.total} transactions
+            Showing {filteredTransactions.length} of {pagination.total}{" "}
+            transactions
             {searchTerm && ` (Filtered from ${transactions.length} total)`}
           </p>
           <div className="flex items-center space-x-2">
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
             <Button
               variant="outline"
               onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                setPagination((prev: any) => ({ ...prev, page: prev.page - 1 }))
               }
               disabled={pagination.page <= 1}
             >
               Previous
             </Button>
-<<<<<<< HEAD
-=======
             <span className="text-sm text-muted-foreground">
               Page {pagination.page} of {pagination.totalPages}
             </span>
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
             <Button
               variant="outline"
               onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                setPagination((prev: any) => ({ ...prev, page: prev.page + 1 }))
               }
               disabled={pagination.page >= pagination.totalPages}
             >
@@ -611,8 +642,6 @@ export default function TransactionTable() {
             </Button>
           </div>
         </div>
-<<<<<<< HEAD
-=======
 
         {/* Modals */}
         <TransactionDetailsModal
@@ -632,15 +661,21 @@ export default function TransactionTable() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {statusAction === "VERIFY" ? "Verify Transaction" : "Reject Transaction"}
+                {statusAction === "VERIFY"
+                  ? "Verify Transaction"
+                  : "Reject Transaction"}
               </DialogTitle>
               <DialogDescription>
                 Are you sure you want to{" "}
-                {statusAction === "VERIFY" ? "verify" : "reject"} this transaction?
+                {statusAction === "VERIFY" ? "verify" : "reject"} this
+                transaction?
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowStatusDialog(false)}
+              >
                 Cancel
               </Button>
               <Button
@@ -671,13 +706,13 @@ export default function TransactionTable() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+              >
                 Cancel
               </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDelete}
-              >
+              <Button variant="destructive" onClick={handleDelete}>
                 Delete
               </Button>
             </DialogFooter>
@@ -685,7 +720,6 @@ export default function TransactionTable() {
         </Dialog>
 
         {/* Rest of the code remains the same... */}
->>>>>>> 541a6e0a4721798718678d47d657028aecb70110
       </CardContent>
     </Card>
   );
