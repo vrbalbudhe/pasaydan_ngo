@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/pasaydan/com",
+        permanent: true, // This makes it a permanent 301 redirect
+      },
+    ];
+  },
 };
-
-export default nextConfig;

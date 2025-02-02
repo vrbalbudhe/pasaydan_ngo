@@ -32,7 +32,12 @@ export default function CertificateGenerationForm() {
     }
 
     setLoading(true);
-    const certificateData = { userName: name, userEmail: email, donationId };
+    const certificateData = {
+      userName: name,
+      userEmail: email,
+      donationId,
+      type: type,
+    };
 
     try {
       const response = await fetch("/api/certificate", {

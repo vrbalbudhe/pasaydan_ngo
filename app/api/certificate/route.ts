@@ -8,6 +8,7 @@ interface CertificateRequestBody {
   userName: string;
   userEmail: string;
   donationId?: string;
+  type: string;
 }
 
 const transporter = nodemailer.createTransport({
@@ -25,12 +26,12 @@ const generateRandomDonationId = () => {
 const generateCertificate = async (
   userName: string,
   userEmail: string,
-  donationId: string
+  donationId: string,
+  type: string
 ): Promise<string> => {
   try {
-    console.log(userName);
-    console.log(userEmail);
-    console.log(donationId);
+    console.log(userName, userEmail, donationId);
+
     const certificateImagePath = path.join(
       process.cwd(),
       "public",
@@ -48,6 +49,11 @@ const generateCertificate = async (
             body {
               margin: 0;
               padding: 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              background-color: #f3f3f3;
             }
             .certificate {
               position: relative;
@@ -72,17 +78,37 @@ const generateCertificate = async (
             }
             .name {
               position: absolute;
-              top: 46%;
-              left: 39%;
-              font-size: 50px;
+              top: 45%;
+              left: 20%;
+              font-size: 40px;
               color: black;
               font-family: 'Times New Roman', serif;
               font-weight: bold;
+              width: 60%;
+              text-align: center;
             }
             .donation-id {
               position: absolute;
-              top: 53%;
-              left: 39%;
+              top: 61%;
+              left: 35%;
+              font-size: 25px;
+              color: black;
+              font-family: 'Arial', sans-serif;
+              font-weight: bold;
+            }
+            .type-id {
+              position: absolute;
+              top: 56%;
+              left: 58%;
+              font-size: 25px;
+              color: black;
+              font-family: 'Arial', sans-serif;
+              font-weight: bold;
+            }
+            .date {
+              position: absolute;
+              bottom: 1%;
+              left: 43%;
               font-size: 20px;
               color: black;
               font-family: 'Arial', sans-serif;
@@ -98,7 +124,9 @@ const generateCertificate = async (
             />
             <div class="content">
               <div class="name">${userName}</div>
-              <div class="donation-id">Donation ID: ${donationId}</div>
+              <div class="donation-id">${donationId}</div>
+              <div class="type-id">${type}</div>
+              <div class="date">${new Date().toLocaleDateString()}</div>
             </div>
           </div>
         </body>
@@ -110,7 +138,7 @@ const generateCertificate = async (
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    await page.setViewport({ width: 842, height: 595 }); // A4 size in pixels
+    await page.setViewport({ width: 1200, height: 850 }); // Adjusted for better fit
 
     const certificatesDir = path.join(process.cwd(), "public", "certificates");
     await fs.mkdir(certificatesDir, { recursive: true });
@@ -145,7 +173,6 @@ const generateCertificate = async (
 
     console.log("Certificate sent and ready for download.");
 
-    // Return the path to the certificate for download
     return `/certificates/${userName}-certificate.pdf`;
   } catch (error) {
     console.error("Error generating certificate:", error);
@@ -154,11 +181,9 @@ const generateCertificate = async (
 };
 
 export async function POST(req: Request) {
-  const { userName, userEmail, donationId }: CertificateRequestBody =
+  const { userName, userEmail, donationId, type }: CertificateRequestBody =
     await req.json();
-  console.log(userName);
-  console.log(userEmail);
-  console.log(donationId);
+
   try {
     if (!userName || !userEmail) {
       return NextResponse.json(
@@ -171,7 +196,8 @@ export async function POST(req: Request) {
     const certificateUrl = await generateCertificate(
       userName,
       userEmail,
-      donationIdToUse
+      donationIdToUse,
+      type
     );
 
     return NextResponse.json(

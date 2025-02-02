@@ -1,4 +1,3 @@
-// components/Admin/a_transactions/TransactionFilters.tsx
 "use client";
 
 import { useState } from "react";
@@ -46,7 +45,13 @@ export default function TransactionFilters() {
 
   const handleApplyFilters = () => {
     // Reset page to 1
-    setPagination((prev: PaginationState) => ({ ...prev, page: 1 }));
+    setPagination((prev: PaginationState) => ({
+      ...prev,
+      page: 1,
+      dateRange, // Add the dateRange filter here
+      statusFilter, // Include the status filter in the pagination state
+      searchTerm, // If necessary, include searchTerm
+    }));
     setIsOpen(false);
   };
 
@@ -62,7 +67,11 @@ export default function TransactionFilters() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 flex items-center gap-2"
+        >
           <Filter className="h-4 w-4" />
           Filters
         </Button>
@@ -83,14 +92,8 @@ export default function TransactionFilters() {
           {/* Status Filter */}
           <div className="space-y-2">
             <h4 className="font-medium text-sm">Status</h4>
-            {/**
-             * 1) 'value' is either "ALL" or a TransactionStatus.
-             * 2) We map "ALL" to show "All" but never an empty string for <SelectItem>.
-             */}
             <Select
               value={statusFilter}
-              // If user picks "ALL", we set statusFilter to "ALL"
-              // If user picks a real status, we set that.
               onValueChange={(val) =>
                 setStatusFilter(val as TransactionStatus | "ALL")
               }

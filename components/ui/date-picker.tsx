@@ -1,3 +1,28 @@
+<<<<<<< HEAD
+// components/ui/date-picker.tsx
+import React from 'react';
+import DatePickerComponent from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+interface DatePickerProps {
+  selectedDate: Date | null;
+  onDateChange: (date: Date | null) => void;
+}
+
+const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onDateChange }) => {
+  return (
+    <DatePickerComponent
+      selected={selectedDate}
+      onChange={onDateChange}
+      className="input"
+      dateFormat="yyyy/MM/dd"
+      placeholderText="Select a date"
+    />
+  );
+};
+
+export { DatePicker };
+=======
 "use client";
 
 import * as React from "react";
@@ -43,3 +68,4 @@ export function DatePicker({
     </Popover>
   );
 }
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110

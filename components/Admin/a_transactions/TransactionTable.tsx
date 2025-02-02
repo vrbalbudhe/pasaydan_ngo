@@ -44,13 +44,22 @@ import {
 } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { useTransactions } from "@/contexts/TransactionContext";
-import { Transaction, TransactionStatus, TransactionType } from "@prisma/client";
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "@prisma/client";
 import { toast } from "sonner";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
+<<<<<<< HEAD
+import debounce from "lodash/debounce";
+import { DatePicker } from "@/components/ui/date-picker"; // Assuming you have a DatePicker component
+=======
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 
 interface Pagination {
   page: number;
@@ -62,8 +71,13 @@ interface Pagination {
 interface FilterOptions {
   status: TransactionStatus | "ALL";
   type: TransactionType | "ALL";
+<<<<<<< HEAD
+  dateRange: "today" | "week" | "month" | "all" | "custom";
+  selectedDate: Date | null; // To store the selected specific date
+=======
   startDate: Date | undefined;
   endDate: Date | undefined;
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 }
 
 export default function TransactionTable() {
@@ -77,18 +91,34 @@ export default function TransactionTable() {
     refetchTransactions,
   } = useTransactions();
 
+<<<<<<< HEAD
+  // States
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
+=======
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(null);
+  const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
+<<<<<<< HEAD
+  // Handle search input
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page on search
+  };
+=======
   // Handle search input with debounce
   const handleSearch = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
   }, 300);
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
 
   useEffect(() => {
     return () => {
@@ -100,6 +130,80 @@ export default function TransactionTable() {
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
+<<<<<<< HEAD
+    dateRange: "all",
+    selectedDate: null, // Initially no specific date selected
+  });
+
+  // Get date range based on selected filter
+  const getDateRange = (range: string): { start: Date; end: Date } => {
+    const end = new Date();
+    const start = new Date();
+
+    switch (range) {
+      case "today":
+        start.setHours(0, 0, 0, 0);
+        break;
+      case "week":
+        start.setDate(start.getDate() - 7);
+        break;
+      case "month":
+        start.setMonth(start.getMonth() - 1);
+        break;
+      case "custom":
+        if (filters.selectedDate) {
+          start.setDate(filters.selectedDate.getDate());
+          start.setMonth(filters.selectedDate.getMonth());
+          start.setFullYear(filters.selectedDate.getFullYear());
+        }
+        break;
+      default:
+        start.setFullYear(2000); // Set a past date for "all"
+    }
+
+    return { start, end };
+  };
+
+  // Apply all filters (search, status, type, date)
+  const getFilteredTransactions = () => {
+    return transactions.filter((transaction) => {
+      // Search filter
+      const searchMatch =
+        searchTerm.length === 0 ||
+        [
+          transaction.name,
+          transaction.email,
+          transaction.transactionId,
+          transaction.phone,
+          transaction.amount.toString(),
+        ].some((field) =>
+          field?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+      // Status filter
+      const statusMatch =
+        filters.status === "ALL" || transaction.status === filters.status;
+
+      // Type filter
+      const typeMatch =
+        filters.type === "ALL" || transaction.type === filters.type;
+
+      // Date filter
+      const { start, end } = getDateRange(filters.dateRange);
+      const transactionDate = new Date(transaction.date);
+      const dateMatch = transactionDate >= start && transactionDate <= end;
+
+      return searchMatch && statusMatch && typeMatch && dateMatch;
+    });
+  };
+
+  const filteredTransactions = getFilteredTransactions();
+
+  // Handle filter changes
+  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+=======
     startDate: undefined,
     endDate: undefined,
   });
@@ -108,6 +212,7 @@ export default function TransactionTable() {
   const handleFilterChange = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPagination((prev: Pagination) => ({ ...prev, page: 1 }));
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
     refetchTransactions();
   };
 
@@ -155,7 +260,10 @@ export default function TransactionTable() {
   // Status update handler
   const handleStatusUpdate = async (status: TransactionStatus) => {
     if (!selectedTransaction) return;
-    const success = await updateTransactionStatus(selectedTransaction.id, status);
+    const success = await updateTransactionStatus(
+      selectedTransaction.id,
+      status
+    );
     if (success) {
       toast.success(`Transaction ${status.toLowerCase()}`);
       setShowStatusDialog(false);
@@ -252,6 +360,30 @@ export default function TransactionTable() {
 
             {/* Date Range Filter */}
             <div className="flex flex-col gap-2">
+<<<<<<< HEAD
+              <Select
+                value={filters.dateRange}
+                onValueChange={(value) =>
+                  handleFilterChange("dateRange", value)
+                }
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by date" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="custom">Custom Date</SelectItem>
+                </SelectContent>
+              </Select>
+              {filters.dateRange !== "all" && (
+                <Badge variant="secondary" className="w-fit">
+                  Date:{" "}
+                  {filters.dateRange.charAt(0).toUpperCase() +
+                    filters.dateRange.slice(1)}
+=======
               <div className="flex items-center gap-2">
                 <div className="flex flex-col">
                   <Label className="text-sm text-muted-foreground mb-1">From</Label>
@@ -275,12 +407,29 @@ export default function TransactionTable() {
                   Date:{" "}
                   {filters.startDate?.toLocaleDateString() || "Start"} -{" "}
                   {filters.endDate?.toLocaleDateString() || "End"}
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                 </Badge>
+              )}
+
+              {filters.dateRange === "custom" && (
+                <DatePicker
+                  selectedDate={filters.selectedDate}
+                  onDateChange={(date) =>
+                    handleFilterChange("selectedDate", date)
+                  }
+                />
               )}
             </div>
 
+<<<<<<< HEAD
+            {(filters.status !== "ALL" ||
+              filters.type !== "ALL" ||
+              filters.dateRange !== "all" ||
+              filters.selectedDate) && (
+=======
             {/* Clear Filters */}
             {(filters.status !== "ALL" || filters.type !== "ALL" || filters.startDate || filters.endDate) && (
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
               <Button
                 variant="outline"
                 size="sm"
@@ -289,8 +438,13 @@ export default function TransactionTable() {
                   setFilters({
                     status: "ALL",
                     type: "ALL",
+<<<<<<< HEAD
+                    dateRange: "all",
+                    selectedDate: null,
+=======
                     startDate: undefined,
                     endDate: undefined,
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   });
                 }}
               >
@@ -322,15 +476,24 @@ export default function TransactionTable() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
+<<<<<<< HEAD
+                  <TableCell colSpan={7} className="text-center">
+                    Loading...
+=======
                   <TableCell colSpan={7} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                       <p className="text-sm text-muted-foreground">Loading transactions...</p>
                     </div>
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   </TableCell>
                 </TableRow>
               ) : filteredTransactions.length === 0 ? (
                 <TableRow>
+<<<<<<< HEAD
+                  <TableCell colSpan={7} className="text-center">
+                    No transactions found.
+=======
                   <TableCell colSpan={7} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <p className="text-sm text-muted-foreground">No transactions found</p>
@@ -351,26 +514,17 @@ export default function TransactionTable() {
                         Reset Filters
                       </Button>
                     </div>
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell>{formatDate(transaction.date)}</TableCell>
-                    <TableCell className="font-medium">{transaction.name}</TableCell>
-                    <TableCell>{transaction.type.replace("_", " ")}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          transaction.transactionNature === "CREDIT"
-                            ? "success"
-                            : "destructive"
-                        }
-                      >
-                        {transaction.transactionNature}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell>{transaction.name}</TableCell>
+                    <TableCell>{transaction.type}</TableCell>
+                    <TableCell>{transaction.nature}</TableCell>
+                    <TableCell className="text-right">
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell>
@@ -379,61 +533,33 @@ export default function TransactionTable() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowDetailsModal(true);
                           }}
                         >
-                          <Eye className="mr-1 h-4 w-4" />
-                          View
+                          <Eye className="h-5 w-5" />
                         </Button>
-
-                        {transaction.status === "PENDING" && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-green-600 hover:text-green-700"
-                              onClick={() => {
-                                setSelectedTransaction(transaction);
-                                setStatusAction("VERIFY");
-                                setShowStatusDialog(true);
-                              }}
-                            >
-                              <CheckCircle className="mr-1 h-4 w-4" />
-                              Verify
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700"
-                              onClick={() => {
-                                setSelectedTransaction(transaction);
-                                setStatusAction("REJECT");
-                                setShowStatusDialog(true);
-                              }}
-                            >
-                              <XCircle className="mr-1 h-4 w-4" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedTransaction(transaction);
+                            setShowStatusDialog(true);
+                          }}
+                        >
+                          <CheckCircle className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowDeleteDialog(true);
                           }}
                         >
-                          <Trash2 className="mr-1 h-4 w-4" />
-                          Delete
+                          <Trash2 className="h-5 w-5" />
                         </Button>
                       </div>
                     </TableCell>
@@ -445,43 +571,48 @@ export default function TransactionTable() {
         </div>
 
         {/* Pagination */}
+<<<<<<< HEAD
+        <div className="flex items-center justify-between py-4">
+          <div>
+            Showing {pagination.page} of {pagination.totalPages} pages
+          </div>
+          <div>
+=======
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {filteredTransactions.length} of {pagination.total} transactions
             {searchTerm && ` (Filtered from ${transactions.length} total)`}
           </p>
           <div className="flex items-center space-x-2">
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
             <Button
               variant="outline"
-              size="sm"
               onClick={() =>
-                setPagination((prev: Pagination) => ({
-                  ...prev,
-                  page: prev.page - 1,
-                }))
+                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
               }
-              disabled={pagination.page === 1 || isLoading}
+              disabled={pagination.page <= 1}
             >
               Previous
             </Button>
+<<<<<<< HEAD
+=======
             <span className="text-sm text-muted-foreground">
               Page {pagination.page} of {pagination.totalPages}
             </span>
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
             <Button
               variant="outline"
-              size="sm"
               onClick={() =>
-                setPagination((prev: Pagination) => ({
-                  ...prev,
-                  page: prev.page + 1,
-                }))
+                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
               }
-              disabled={pagination.page === pagination.totalPages || isLoading}
+              disabled={pagination.page >= pagination.totalPages}
             >
               Next
             </Button>
           </div>
         </div>
+<<<<<<< HEAD
+=======
 
         {/* Modals */}
         <TransactionDetailsModal
@@ -554,6 +685,7 @@ export default function TransactionTable() {
         </Dialog>
 
         {/* Rest of the code remains the same... */}
+>>>>>>> 541a6e0a4721798718678d47d657028aecb70110
       </CardContent>
     </Card>
   );
