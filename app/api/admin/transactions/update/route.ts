@@ -1,76 +1,90 @@
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
-import { NextApiRequest, NextApiResponse } from "next";
+import { TransactionStatus, TransactionType, UserType, TransactionNature, MoneyForCategory, EntryType } from "@prisma/client";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log("API Hit"); // Check if API is being hit
-
-  if (req.method !== "PUT") {
-    return res.status(405).json({ message: "Method Not Allowed" });
-  }
-
-  const {
-    id,
-    name,
-    email,
-    phone,
-    userType,
-    amount,
-    type,
-    date,
-    transactionNature,
-    status,
-  } = req.body;
-
-  console.log("Received Data:", req.body.id);
-
-  if (!id) {
-    console.error("Error: Missing transaction ID");
-    return res.status(400).json({ message: "Transaction ID is required" });
-  }
-
+export async function PUT(req: NextRequest) {
   try {
-    // Ensure ID is correct type
-    const transactionId = typeof id === "string" ? parseInt(id, 10) : id;
-    console.log("Formatted Transaction ID:", transactionId);
+    const data = await req.json();
+    const { id } = data;
 
-    // Check if the transaction exists
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-    });
-
-    console.log("Found Transaction:", transaction);
-
-    if (!transaction) {
-      console.error("Error: Transaction not found");
-      return res.status(404).json({ message: "Transaction not found" });
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Transaction ID is required" },
+        { status: 400 }
+      );
     }
 
-    // Ensure date is valid
-    const parsedDate = date ? new Date(date) : transaction.date;
+    // Check if the transaction exists
+    const existingTransaction = await prisma.transaction.findUnique({
+      where: { id },
+    });
+
+    if (!existingTransaction) {
+      return NextResponse.json(
+        { success: false, error: "Transaction not found" },
+        { status: 404 }
+      );
+    }
+
+    // Prepare the update data with proper type casting
+    const updateData = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      userType: data.userType as UserType,
+      amount: parseFloat(data.amount.toString()),
+      type: data.type as TransactionType,
+      transactionId: data.transactionId,
+      transactionNature: data.transactionNature as TransactionNature,
+      entryType: data.entryType as EntryType,
+      entryBy: data.entryBy,
+      description: data.description || null,
+      status: data.status as TransactionStatus,
+      statusDescription: data.statusDescription || null,
+      moneyFor: data.moneyFor as MoneyForCategory,
+      customMoneyFor: data.moneyFor === "OTHER" ? data.customMoneyFor : null,
+      date: new Date(data.date),
+      verifiedBy: data.verifiedBy || null,
+      verifiedAt: data.verifiedAt ? new Date(data.verifiedAt) : null,
+      // Removed updatedAt as Prisma handles this automatically
+    };
 
     // Update the transaction
     const updatedTransaction = await prisma.transaction.update({
-      where: { id: transactionId },
-      data: {
-        name,
-        email,
-        phone,
-        userType,
-        amount,
-        type,
-        date: parsedDate,
-        transactionNature,
-        status,
+      where: { id },
+      data: updateData,
+      include: {
+        User: {
+          select: {
+            id: true,
+            fullname: true,
+            email: true,
+          },
+        },
+        Organization: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
-    console.log("Updated Transaction:", updatedTransaction);
+    return NextResponse.json({
+      success: true,
+      data: updatedTransaction,
+    });
 
-    return res.status(200).json(updatedTransaction);
   } catch (error: any) {
     console.error("Error updating transaction:", error);
-    return res
-      .status(500)
-      .json({ message: "Error updating transaction", error: error?.message });
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to update transaction",
+        details: error.message,
+      },
+      { status: 500 }
+    );
   }
 }
