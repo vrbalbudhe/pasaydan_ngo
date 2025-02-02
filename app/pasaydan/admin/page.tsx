@@ -1,8 +1,8 @@
+// app/pasaydan/admin/page.tsx
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Users, DollarSign, ShoppingCart } from "lucide-react";
-import TotalUsersSlicer from "@/components/Admin/a_Dashboard/TotalUsrOrgSlicer";
-import TotalDonationsSlicer from "@/components/Admin/a_Dashboard/totalDonationsReceived";
+import TransactionOverview from "@/components/Admin/a_Dashboard/TransactionOverview";
+import DriveOverview from "@/components/Admin/a_Dashboard/DriveOverview";
 import TotalUsrOrgSlicer from "@/components/Admin/a_Dashboard/TotalUsrOrgSlicer";
 
 export default function AdminPage() {
@@ -12,10 +12,13 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <p className="text-sm text-gray-500">Welcome back, Admin</p>
       </div>
-
-      <div className="w-full flex flex-col gap-2">
-        <TotalUsrOrgSlicer />
-        <TotalDonationsSlicer />
+      
+      <div className="grid grid-cols-1 gap-6">
+        <TransactionOverview />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DriveOverview />
+          <TotalUsrOrgSlicer />
+        </div>
       </div>
     </div>
   );
