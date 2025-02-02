@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type Address = {
@@ -103,162 +103,173 @@ const UpdateProfileForm = ({
       const data = await res.json();
 
       if (res.ok) {
-        toast.success("Profile updated successfully!");
-        alert("Profile updated successfully");
+        toast.success("Profile updated successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
         setProfileData((prev) => ({
           ...prev,
           avatar: data.avatar || prev.avatar,
         }));
       } else {
-        toast.error("Failed to update profile. Please try again.");
+        toast.error("Failed to update profile. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       console.error("Error updating profile:", error);
     }
   };
 
   return (
-    <div className="flex items-start justify-center w-full">
-      <form
-        onSubmit={handleSubmit}
-        className="border-2 rounded-lg p-6 md:flex gap-10 w-[100%] max-w-4xl"
-      >
-        <div className="flex h-full md:w-1/3 flex-col gap-6 items-center">
-          <Avatar className="h-32 w-32 border border-slate-200">
-            {profileData.avatar ? (
-              <AvatarImage
-                src={profileData.avatar}
-                alt={profileData.fullname || "User"}
+    <>
+      <div className="flex items-start justify-center w-full">
+        <form
+          onSubmit={handleSubmit}
+          className="border-2 rounded-lg p-6 md:flex gap-10 w-[100%] max-w-4xl"
+        >
+          <div className="flex h-full md:w-1/3 flex-col gap-6 items-center">
+            <Avatar className="h-32 w-32 border border-slate-200">
+              {profileData.avatar ? (
+                <AvatarImage
+                  src={profileData.avatar}
+                  alt={profileData.fullname || "User"}
+                />
+              ) : (
+                <AvatarFallback className="bg-primary/10">
+                  {profileData.fullname ? profileData.fullname[0] : "U"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex flex-col">
+              <Label htmlFor="avatar" className="text-slate-800 p-2">
+                Choose Avatar
+              </Label>
+              <Input
+                id="avatar"
+                name="avatar"
+                type="file"
+                accept="image/*"
+                className="text-slate-800"
+                onChange={handleAvatarChange}
               />
-            ) : (
-              <AvatarFallback className="bg-primary/10">
-                {profileData.fullname ? profileData.fullname[0] : "U"}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <div className="flex flex-col">
-            <Label htmlFor="avatar" className="text-slate-800 p-2">
-              Choose Avatar
-            </Label>
-            <Input
-              id="avatar"
-              name="avatar"
-              type="file"
-              accept="image/*"
-              className="text-slate-800"
-              onChange={handleAvatarChange}
-            />
-          </div>
-          <Button
-            type="submit"
-            className="w-full mt-6 bg-white hover:bg-slate-500 text-slate-800"
-          >
-            Update Profile
-          </Button>
-        </div>
-
-        <div className="mt-10 md:mt-0 md:w-2/3 space-y-4 text-slate-800 text-sm">
-          {/* Non-address fields */}
-          <div>
-            <Label htmlFor="fullname">Full Name</Label>
-            <Input
-              id="fullname"
-              name="fullname"
-              value={profileData.fullname}
-              onChange={handleProfileChange}
-              placeholder="Enter your full name"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={profileData.email}
-              onChange={handleProfileChange}
-              disabled
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="mobile">Mobile</Label>
-            <Input
-              id="mobile"
-              name="mobile"
-              type="tel"
-              value={profileData.mobile}
-              onChange={handleProfileChange}
-              placeholder="Enter your mobile number"
-            />
+            </div>
+            <Button
+              type="submit"
+              className="w-full mt-6 bg-white hover:bg-slate-500 text-slate-800"
+            >
+              Update Profile
+            </Button>
           </div>
 
-          {/* Address fields */}
-          <div>
-            <Label htmlFor="streetAddress">Street Address</Label>
-            <Input
-              id="streetAddress"
-              name="streetAddress"
-              value={addressData.streetAddress}
-              onChange={handleAddressChange}
-              placeholder="Enter your street address"
-            />
+          <div className="mt-10 md:mt-0 md:w-2/3 space-y-4 text-slate-800 text-sm">
+            {/* Non-address fields */}
+            <div>
+              <Label htmlFor="fullname">Full Name</Label>
+              <Input
+                id="fullname"
+                name="fullname"
+                value={profileData.fullname}
+                onChange={handleProfileChange}
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={profileData.email}
+                onChange={handleProfileChange}
+                disabled
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="mobile">Mobile</Label>
+              <Input
+                id="mobile"
+                name="mobile"
+                type="tel"
+                value={profileData.mobile}
+                onChange={handleProfileChange}
+                placeholder="Enter your mobile number"
+              />
+            </div>
+
+            {/* Address fields */}
+            <div>
+              <Label htmlFor="streetAddress">Street Address</Label>
+              <Input
+                id="streetAddress"
+                name="streetAddress"
+                value={addressData.streetAddress}
+                onChange={handleAddressChange}
+                placeholder="Enter your street address"
+              />
+            </div>
+            <div>
+              <Label htmlFor="addressLine2">Address Line 2</Label>
+              <Input
+                id="addressLine2"
+                name="addressLine2"
+                value={addressData.addressLine2}
+                onChange={handleAddressChange}
+                placeholder="Enter additional address details"
+              />
+            </div>
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                name="city"
+                value={addressData.city}
+                onChange={handleAddressChange}
+                placeholder="Enter your city"
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                name="state"
+                value={addressData.state}
+                onChange={handleAddressChange}
+                placeholder="Enter your state"
+              />
+            </div>
+            <div>
+              <Label htmlFor="postalCode">Postal Code</Label>
+              <Input
+                id="postalCode"
+                name="postalCode"
+                value={addressData.postalCode}
+                onChange={handleAddressChange}
+                placeholder="Enter your postal code"
+              />
+            </div>
+            <div>
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                name="country"
+                value={addressData.country}
+                onChange={handleAddressChange}
+                placeholder="Enter your country"
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="addressLine2">Address Line 2</Label>
-            <Input
-              id="addressLine2"
-              name="addressLine2"
-              value={addressData.addressLine2}
-              onChange={handleAddressChange}
-              placeholder="Enter additional address details"
-            />
-          </div>
-          <div>
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              name="city"
-              value={addressData.city}
-              onChange={handleAddressChange}
-              placeholder="Enter your city"
-            />
-          </div>
-          <div>
-            <Label htmlFor="state">State</Label>
-            <Input
-              id="state"
-              name="state"
-              value={addressData.state}
-              onChange={handleAddressChange}
-              placeholder="Enter your state"
-            />
-          </div>
-          <div>
-            <Label htmlFor="postalCode">Postal Code</Label>
-            <Input
-              id="postalCode"
-              name="postalCode"
-              value={addressData.postalCode}
-              onChange={handleAddressChange}
-              placeholder="Enter your postal code"
-            />
-          </div>
-          <div>
-            <Label htmlFor="country">Country</Label>
-            <Input
-              id="country"
-              name="country"
-              value={addressData.country}
-              onChange={handleAddressChange}
-              placeholder="Enter your country"
-            />
-          </div>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+      <ToastContainer theme="colored" />
+    </>
   );
 };
 
