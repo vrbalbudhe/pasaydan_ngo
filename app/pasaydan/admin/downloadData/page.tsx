@@ -46,7 +46,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ─────────────────────────────────────────────
@@ -439,13 +439,15 @@ export default function DownloadData() {
               </TableCell>
               <TableCell>{item.entryType || '-'}</TableCell>
               <TableCell>
-                <Badge variant={
-                  item.status === 'VERIFIED'
-                    ? 'success'
-                    : item.status === 'REJECTED'
-                    ? 'destructive'
-                    : 'secondary'
-                }>
+                <Badge
+                  variant={
+                    item.status === 'VERIFIED'
+                      ? 'success'
+                      : item.status === 'REJECTED'
+                      ? 'destructive'
+                      : 'secondary'
+                  }
+                >
                   {item.status || '-'}
                 </Badge>
               </TableCell>
@@ -505,8 +507,7 @@ export default function DownloadData() {
                   className="w-64"
                 />
 
-                {statusOptions[activeTab as keyof typeof statusOptions].length >
-                  0 && (
+                {statusOptions[activeTab as keyof typeof statusOptions].length > 0 && (
                   <Select
                     value={filters.status}
                     onValueChange={(value) =>
@@ -529,8 +530,7 @@ export default function DownloadData() {
                   </Select>
                 )}
 
-                {typeOptions[activeTab as keyof typeof typeOptions].length >
-                  0 && (
+                {typeOptions[activeTab as keyof typeof typeOptions].length > 0 && (
                   <Select
                     value={filters.type}
                     onValueChange={(value) =>
@@ -613,13 +613,9 @@ export default function DownloadData() {
                             initialFocus
                             className="rounded-md border"
                             components={{
-                              Caption: ({
-                                displayMonth,
-                                onMonthChange,
-                              }: {
-                                displayMonth: Date;
-                                onMonthChange: (newMonth: Date) => void;
-                              }) => {
+                              // Using "any" here to bypass the CaptionProps type conflict.
+                              Caption: (props: any) => {
+                                const { displayMonth, onMonthChange } = props;
                                 return (
                                   <div className="flex justify-center gap-1 items-center py-2">
                                     <Select
@@ -675,8 +671,7 @@ export default function DownloadData() {
                                       </SelectTrigger>
                                       <SelectContent>
                                         {Array.from({ length: 10 }, (_, i) => {
-                                          const year =
-                                            new Date().getFullYear() - 5 + i;
+                                          const year = new Date().getFullYear() - 5 + i;
                                           return (
                                             <SelectItem
                                               key={year}
@@ -713,13 +708,9 @@ export default function DownloadData() {
                             initialFocus
                             className="rounded-md border"
                             components={{
-                              Caption: ({
-                                displayMonth,
-                                onMonthChange,
-                              }: {
-                                displayMonth: Date;
-                                onMonthChange: (newMonth: Date) => void;
-                              }) => {
+                              // Also using "any" here to bypass the CaptionProps type conflict.
+                              Caption: (props: any) => {
+                                const { displayMonth, onMonthChange } = props;
                                 return (
                                   <div className="flex justify-center gap-1 items-center py-2">
                                     <Select
@@ -775,8 +766,7 @@ export default function DownloadData() {
                                       </SelectTrigger>
                                       <SelectContent>
                                         {Array.from({ length: 10 }, (_, i) => {
-                                          const year =
-                                            new Date().getFullYear() - 5 + i;
+                                          const year = new Date().getFullYear() - 5 + i;
                                           return (
                                             <SelectItem
                                               key={year}
