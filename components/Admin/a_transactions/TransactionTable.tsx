@@ -117,6 +117,7 @@ export default function TransactionTable() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [showAcceptStatusDialog, setShowAcceptStatusDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showScreenshot, setShowScreenshot] = useState(false);
   const [statusAction, setStatusAction] = useState<"VERIFY" | "REJECT" | null>(
@@ -630,11 +631,25 @@ export default function TransactionTable() {
                           variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
-                            setShowStatusDialog(true);
+                            setStatusAction("VERIFY"); // Set the action to "VERIFY"
+                            setShowStatusDialog(true); // Show the dialog
                           }}
                         >
                           <CheckCircle className="h-5 w-5" />
                         </Button>
+
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedTransaction(transaction);
+                            setStatusAction("REJECT"); // Set the action to "REJECT"
+                            setShowStatusDialog(true); // Show the dialog
+                          }}
+                          className="text-slate-800"
+                        >
+                          X
+                        </Button>
+
                         <Button
                           variant="ghost"
                           onClick={() => {
