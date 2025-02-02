@@ -1,3 +1,4 @@
+// components/Admin/a_Certifications/UsersCertificateDetails.tsx
 "use client";
 import {
   Table,
@@ -10,7 +11,14 @@ import {
 import { useEffect, useState } from "react";
 import { RiDeleteBin7Line } from "react-icons/ri";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Loader2 } from "lucide-react";
+import { Users, Loader2, Download, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Invoice {
   id: string;
@@ -24,10 +32,18 @@ interface Invoice {
   address: string;
 }
 
+interface LoadingState {
+  [key: string]: {
+    download: boolean;
+    email: boolean;
+  };
+}
+
 export default function UsersCertificateDetails() {
   const [userData, setUserData] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState<Boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loadingStates, setLoadingStates] = useState<LoadingState>({});
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -36,10 +52,7 @@ export default function UsersCertificateDetails() {
         const data = await response.json();
         setUserData(data);
       } catch (error) {
-        console.error(
-          "Error fetching Certification details of the users:",
-          error
-        );
+        console.error("Error fetching Certification details:", error);
       } finally {
         setLoading(false);
       }
@@ -48,75 +61,113 @@ export default function UsersCertificateDetails() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    const confirmed = confirm("Are you sure you want to delete this user?");
+    const confirmed = confirm("Are you sure you want to delete this certificate?");
     if (!confirmed) return;
 
     try {
       const response = await fetch("/api/certificate/delete", {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
       const data = await response.json();
 
       if (response.ok) {
-        alert(
-          `User {${data?.deletedUserCertificatesDetails?.fullname}'s} Certification Details Deleted Successfully.`
-        );
+        alert(`Certificate deleted successfully.`);
         setUserData((prev) => prev.filter((user) => user.id !== id));
       } else {
-        alert(
-          `Error while deleting User Certification Details: ${data.message}`
-        );
+        alert(`Error deleting certificate: ${data.message}`);
       }
     } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("An error occurred while deleting the user.");
+      console.error("Error:", error);
+      alert("An error occurred while deleting.");
     }
   };
 
-  const [loadingStates, setLoadingStates] = useState<{
-    [key: string]: boolean;
-  }>({});
-
-  const handleCertificateDownload = async (
+  const handleEmailCertificate = async (
     userName: string,
     userEmail: string,
     donationId: string,
     id: string,
     type: string
   ) => {
-    const confirmed = confirm(
-      "Are you sure you want to download the certificate for the user?"
-    );
-    if (!confirmed) return;
-
-    // Set loading state for the specific user
-    setLoadingStates((prev) => ({ ...prev, [id]: true }));
+    setLoadingStates(prev => ({
+      ...prev,
+      [id]: { ...prev[id], email: true }
+    }));
 
     try {
       const response = await fetch("/api/certificate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userName, userEmail, donationId, type }),
       });
 
       if (response.ok) {
-        alert(`User Certification Generated Successfully.`);
+        alert(`Certificate sent to ${userEmail}`);
       } else {
         const error = await response.json();
-        alert(`Error while generating certificate: ${error.message}`);
+        alert(`Error: ${error.message}`);
       }
     } catch (error) {
-      console.error("Error generating certificate:", error);
-      alert("An error occurred while generating the certificate.");
+      console.error("Error:", error);
+      alert("Failed to send certificate.");
     } finally {
-      // Reset loading state for the specific user
-      setLoadingStates((prev) => ({ ...prev, [id]: false }));
+      setLoadingStates(prev => ({
+        ...prev,
+        [id]: { ...prev[id], email: false }
+      }));
+    }
+  };
+
+  const handleDownloadCertificate = async (
+    userName: string,
+    userEmail: string,
+    donationId: string,
+    id: string,
+    type: string
+  ) => {
+    setLoadingStates(prev => ({
+      ...prev,
+      [id]: { ...prev[id], download: true }
+    }));
+
+    try {
+      const response = await fetch("/api/certificate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userName, 
+          userEmail: 'no-email@example.com', // Dummy email to skip email sending
+          donationId, 
+          type,
+          downloadOnly: true // Add this flag if you want to modify the backend
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Create link to download the file
+        const downloadUrl = data.certificateUrl;
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `${userName}-certificate.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to download certificate');
+      }
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      alert(error.message || "Failed to download certificate");
+    } finally {
+      setLoadingStates(prev => ({
+        ...prev,
+        [id]: { ...prev[id], download: false }
+      }));
     }
   };
 
@@ -134,12 +185,8 @@ export default function UsersCertificateDetails() {
     const parts = text.split(new RegExp(`(${query})`, "gi"));
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
-        <span key={i} className="bg-yellow-200">
-          {part}
-        </span>
-      ) : (
-        part
-      )
+        <span key={i} className="bg-yellow-200">{part}</span>
+      ) : part
     );
   };
 
@@ -157,124 +204,139 @@ export default function UsersCertificateDetails() {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="flex items-center p-6 gap-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">
-                Total Certificated Users
-              </p>
-              <h3 className="text-2xl font-bold text-gray-900">
-                {userData.length}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="flex items-center p-6 gap-4">
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <Users className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Total Certificated Users
+            </p>
+            <h3 className="text-2xl font-bold text-gray-900">
+              {userData.length}
+            </h3>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Table Section */}
       {loading ? (
         <div className="w-full h-[400px] flex flex-col gap-3 justify-center items-center text-gray-600">
           <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-          <p className="text-lg font-medium">Loading Users Information...</p>
+          <p className="text-lg font-medium">Loading...</p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
-              Users Certification List
+              Certificates List
             </h2>
             <p className="text-sm text-gray-500">
-              Manage and monitor all certificates generated for the users
+              Manage all certificates
             </p>
           </div>
 
           <div className="overflow-x-auto">
-            <Table className="min-w-full">
+            <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Index
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    ID
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Name
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Email
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Mobile
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Description
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Donation Type
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Actions
-                  </TableHead>
-                  <TableHead className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                    Download
-                  </TableHead>
+                <TableRow>
+                  <TableHead>Index</TableHead>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Mobile</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user, index) => (
-                  <TableRow
-                    key={user.id}
-                    className="hover:bg-gray-50 transition duration-150"
-                  >
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {index + 1}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {user.donationId}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {highlightText(user.fullname || "NA", searchQuery)}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {highlightText(user.email || "NA", searchQuery)}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {highlightText(user.mobile || "NA", searchQuery)}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {highlightText(user.description || "NA", searchQuery)}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-800">
-                      {user?.type}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm">
-                      <button
-                        onClick={() => handleDelete(user?.id || "NA")}
-                        className="text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full hover:bg-red-50 transition-colors"
-                      >
-                        <RiDeleteBin7Line size={20} />
-                      </button>
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm">
-                      <button
-                        onClick={() =>
-                          handleCertificateDownload(
-                            user.fullname,
-                            user.email,
-                            user.donationId,
-                            user.id,
-                            user.type
-                          )
-                        }
-                        className="text-white bg-slate-900 hover:text-red-700 focus:outline-none px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
-                      >
-                        {loadingStates[user.id] ? "Loading..." : "Download"}
-                      </button>
+                  <TableRow key={user.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{user.donationId}</TableCell>
+                    <TableCell>{highlightText(user.fullname || "NA", searchQuery)}</TableCell>
+                    <TableCell>{highlightText(user.email || "NA", searchQuery)}</TableCell>
+                    <TableCell>{highlightText(user.mobile || "NA", searchQuery)}</TableCell>
+                    <TableCell>{highlightText(user.description || "NA", searchQuery)}</TableCell>
+                    <TableCell>{user.type}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleDownloadCertificate(
+                                  user.fullname,
+                                  user.email,
+                                  user.donationId,
+                                  user.id,
+                                  user.type
+                                )}
+                                disabled={loadingStates[user.id]?.download}
+                              >
+                                {loadingStates[user.id]?.download ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Download Certificate</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEmailCertificate(
+                                  user.fullname,
+                                  user.email,
+                                  user.donationId,
+                                  user.id,
+                                  user.type
+                                )}
+                                disabled={loadingStates[user.id]?.email}
+                              >
+                                {loadingStates[user.id]?.email ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Mail className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Email Certificate</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleDelete(user.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <RiDeleteBin7Line className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete Certificate</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
