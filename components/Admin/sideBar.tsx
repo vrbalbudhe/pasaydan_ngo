@@ -94,20 +94,20 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="w-60 lg:w-64 border-none bg-[#40434e] text-white min-h-screen">
-      <SidebarContent className="bg-[#40434e]">
+    <Sidebar className="w-60 lg:w-64 border-none bg-white text-gray-800 md:bg-[#40434e] md:text-white min-h-screen">
+      <SidebarContent className="md:bg-[#40434e] bg-white text-gray-800 md:text-white">
         <div className="px-4 py-6">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-              <span className="text-lg font-bold text-white">P</span>
+              <span className="text-lg font-bold md:text-white text-gray-800">P</span>
             </div>
-            <h1 className="text-lg font-semibold tracking-tight text-white">
+            <h1 className="text-lg font-semibold tracking-tight md:text-white text-gray-800">
               Pasaydan
             </h1>
           </div>
 
-          <SidebarGroup className="bg-[#40434e]">
-            <SidebarGroupLabel className="text-xs uppercase tracking-wider text-white font-medium px-3 mb-3">
+          <SidebarGroup className="bg-white text-gray-800 md:bg-[#40434e] md:text-white">
+            <SidebarGroupLabel className="text-xs uppercase tracking-wider text-gray-800 md:text-white font-medium px-3 mb-3">
               Administration
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -127,12 +127,12 @@ export function AppSidebar() {
                           className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                             isActive
                               ? "bg-[#565869] text-white font-semibold"
-                              : "text-white hover:bg-[#565869]/50"
+                              : "text-gray-800 md:text-white hover:bg-[#565869]/50"
                           }`}
                         >
                           <item.icon
                             className={`w-5 h-5 ${
-                              isActive ? "text-white" : "text-gray-300"
+                              isActive ? "text-white" : "md:text-gray-300 text-gray-800"
                             }`}
                           />
                           <span className="text-sm font-medium">

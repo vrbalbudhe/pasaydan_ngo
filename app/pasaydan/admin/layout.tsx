@@ -39,7 +39,7 @@ export default function RootAdminLayout({
       >
         <SidebarProvider>
           <AppSidebar />
-          <SidebarTrigger className="w-10 p-5 h-full text-[#323031]" />
+          <SidebarTrigger className="w-10 absolute top-0 p-5 text-[#323031]" />
           <AdminLayout>{children}</AdminLayout>
           <Toaster />
         </SidebarProvider>

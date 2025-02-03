@@ -38,7 +38,7 @@ export default function TitleInfo() {
   };
 
   return (
-    <div className="relative min-h-screen w-4/5 mx-auto py-12 md:py-20">
+    <div className="relative min-h-screen w-[95%] md:w-4/5 mx-auto py-12 md:py-20">
       {/* Background Decorations */}
 
       <div className="relative container mx-auto px-4">

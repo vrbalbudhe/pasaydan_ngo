@@ -109,9 +109,9 @@ export default function CertificateGenerationForm() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-start items-start bg-gray-50 p-6">
+    <div className="min-h-screen md:w-full w-fit flex flex-col justify-start items-start bg-gray-50 md:p-6">
       {/* Header Section */}
-      <div className="w-full mx-auto mb-8">
+      <div className="w-full h-fit md:`mx-auto mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-blue-50 rounded-lg">
             <Award className="h-6 w-6 text-blue-600" />
@@ -120,13 +120,13 @@ export default function CertificateGenerationForm() {
             Manage Certifications
           </h1>
         </div>
-        <p className="text-gray-600 ml-11">
+        {/* <p className="text-gray-600 min-h-fit text-wrap ml-11">
           Generate and manage donation certificates
-        </p>
+        </p> */}
       </div>
 
       {/* Main Content */}
-      <div className="w-full flex justify-start items-start mx-auto">
+      <div className="md:w-full w-[373px] flex justify-center pl-2 md:pl-0 items-start mx-auto">
         <Card className="bg-white shadow-sm">
           <CardHeader className="border-b pb-4">
             <CardTitle className="text-lg font-semibold text-gray-900">

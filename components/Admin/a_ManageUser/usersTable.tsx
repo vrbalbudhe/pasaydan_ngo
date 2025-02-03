@@ -140,8 +140,16 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
     );
   });
 
-  const highlightText = (text: string, query: string) => {
+  const highlightText = (text: any, query: string) => {
+    if (typeof text !== "string") {
+      console.error("text is not a string:", text);
+      return ""; // Return an empty string or handle it accordingly
+    }
+
+    if (!query) return text; // If query is empty, return text as is
+
     const parts = text.split(new RegExp(`(${query})`, "gi"));
+
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
         <span key={i} className="bg-yellow-200">
@@ -154,7 +162,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className=" overflow-x-hidden">
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
@@ -170,7 +178,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="md:w-full">
           <CardContent className="flex items-center p-6 gap-4">
             <div className="bg-blue-50 p-3 rounded-lg">
               <Users className="h-6 w-6 text-blue-600" />

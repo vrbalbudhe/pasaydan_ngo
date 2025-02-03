@@ -204,7 +204,7 @@ export default function Profile() {
         <Card className="border-none shadow-md mb-4 bg-blue-500 rounded-md">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-center gap-8">
-              <Avatar className="h-32 w-32 ring-4 ring-gray-100">
+              <Avatar className="h-32 w-32 ring-4 ring-gray-100 bg-gray-400">
                 {userProfile.avatar ? (
                   <AvatarImage
                     className="text-lg"
@@ -216,7 +216,7 @@ export default function Profile() {
                     }
                   />
                 ) : (
-                  <AvatarFallback>
+                  <AvatarFallback className="text-5xl text-slate-400">
                     {isUserProfile(userProfile)
                       ? getInitials(userProfile.fullname)
                       : getInitials(userProfile.name)}
@@ -224,12 +224,12 @@ export default function Profile() {
                 )}
               </Avatar>
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-bold text-gray-100">
+                <h1 className="text-3xl font-semibold text-blue-600">
                   {isUserProfile(userProfile)
                     ? userProfile.fullname
                     : userProfile.name || "Anonymous User"}
                 </h1>
-                <p className="text-md text-gray-300">{userProfile.email}</p>
+                <p className="text-md text-gray-600">{userProfile.email}</p>
               </div>
               <div className="flex gap-3">
                 <Button

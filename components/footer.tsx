@@ -20,8 +20,7 @@ export default function Footer() {
       <div className="w-[250px]">
         <h1 className="text-white">Address</h1>
         <p className="text-slate-500 text-sm hover:underline cursor-pointer">
-          Near Harshita Beauty Parlor,Mitaoe Acandemy of Engineering, Alandi,
-          Pune 412105
+          Near Vishrantwadi, Pune 412105
         </p>
       </div>
     </div>

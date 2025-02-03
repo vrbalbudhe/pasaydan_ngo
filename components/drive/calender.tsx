@@ -77,7 +77,7 @@ export default function CalendarComponent() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
       {loading ? (
         <div className="text-center text-gray-500 flex flex-wrap justify-start items-center gap-5 mb-10 w-full">
           <SkeletonTab />

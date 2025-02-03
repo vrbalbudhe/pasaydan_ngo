@@ -10,11 +10,11 @@ const renderHeading = () => {
     <div
     // className="max-w-3xl"
     >
-      <h1 className="text-4xl md:text-5xl font-normal text-slate-900 mb-4">
+      <h1 className="text-6xl md:text-5xl font-medium text-slate-900 mb-4">
         Drive
       </h1>
       <Card className=" border-none shadow-none">
-        <CardContent className="p-2">
+        <CardContent className="md:p-2">
           <p className=" text-slate-800 text-sm leading-relaxed">
             Pasaydan Foundation organizes drives to donate blankets, bicycles,
             and food to underprivileged students and communities. These
@@ -31,11 +31,11 @@ const renderHeading = () => {
 
 export default function Drive() {
   return (
-    <div className="container md:w-[90%] mx-auto py-8 px-4">
+    <div className="container w-[95%] md:w-[90%] mx-auto py-8 px-4">
       <div className="flex flex-col-reverse md:flex-row gap-8 lg:gap-5">
         <aside className="w-full md:w-[30%]">
           <div className="sticky top-24 w-full">
-            <Card className="shadow-none border-none bg-white">
+            <Card className="w-full shadow-none border-none bg-white">
               <CardContent className="w-full">
                 <CalendarComponent />
               </CardContent>

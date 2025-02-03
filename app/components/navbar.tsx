@@ -9,7 +9,7 @@ const Navbar = async () => {
     <div className="w-[100%] md:w-[92%] h-[70px] flex justify-between items-center md:p-5 pl-5 pr-5">
       {/* Logo */}
       <Link href="/pasaydan/com" className="flex items-center gap-2">
-        <Image src={logo.src} alt="Pasaydan Logo" width={50} height={50} />
+        <Image className="rounded-full w-10 h-10 object-cover" src={logo.src} alt="Pasaydan Logo" width={40} height={50} />
         <p className="-tracking-tighter text-lg text-slate-500">Pasaydan</p>
       </Link>
 

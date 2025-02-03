@@ -4,7 +4,7 @@ import Navigator from "@/components/navbar/navigator";
 
 const LoginPage = () => {
   return (
-    <div className="w-full h-screen flex justify-center items-center overflow-hidden relative bg-slate-900">
+    <div className="w-full min-h-screen flex justify-center items-center overflow-hidden relative bg-slate-900">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600" />
         <div
@@ -43,7 +43,7 @@ const LoginPage = () => {
             </div>
           </div>
 
-          <div className="md:w-1/2 w-full max-w-md">
+          <div className="md:w-1/2 w-full max-w-full">
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl">
               <LoginSignup />
             </div>

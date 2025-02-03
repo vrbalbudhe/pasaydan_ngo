@@ -115,8 +115,8 @@ export function LoginSignup() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4">
-      <Card className="w-full max-w-xl">
+    <div className="min-h-screen w-full flex items-center justify-center md:p-4">
+      <Card className="w-full md:max-w-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center font-bold">
             {isLogin ? "Welcome back" : "Create an account"}

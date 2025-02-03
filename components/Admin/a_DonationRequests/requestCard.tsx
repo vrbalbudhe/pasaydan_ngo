@@ -111,9 +111,9 @@ export default function DonationRequestCard({
   };
 
   return (
-    <Card className="max-w-lg bg-white border border-gray-200 rounded-lg shadow">
+    <Card className="max-w-lg bg-white p-2 md:p-0 border border-gray-200 rounded-lg shadow">
       <CardContent className="p-6">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-4 mt-4">
           <h5 className="text-xl font-bold tracking-tight text-gray-900">
             Donation Request
           </h5>

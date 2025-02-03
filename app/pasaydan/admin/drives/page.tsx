@@ -21,7 +21,7 @@ export default function ManageDrives() {
             <Inbox className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Drives</h1>
+            <h1 className="text-lg md:text-2xl font-medium md:font-bold text-gray-900">Manage Drives</h1>
             <p className="text-sm text-gray-500 mt-1">
               Create and manage drives{" "}
             </p>

@@ -22,7 +22,7 @@ const QRSection = () => {
 
   return (
     <div className="w-full py-16 ">
-      <div className="w-[80%] mx-auto">
+      <div className="w-[90%] md:w-[80%] mx-auto">
         <Card className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
           {/* Left side - Text Content */}
           <div className="flex-1 space-y-6 text-center md:text-left">

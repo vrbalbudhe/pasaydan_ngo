@@ -42,7 +42,7 @@ export default function UserInformation() {
         <Link href="/pasaydan/auth/logsign">
           <Button
             variant="outline"
-            className="-tracking-tighter bg-[#4361ee] rounded-[10px] border-none text-white shadow-sm shadow-slate-100"
+            className="-tracking-tighter bg-blue-600 hover:bg-blue-500 hover:text-white rounded-[10px] border-none text-white shadow-sm shadow-slate-100"
           >
             Login
           </Button>
@@ -55,9 +55,7 @@ export default function UserInformation() {
     <div className="flex items-center space-x-2 gap-2">
       <Avatar>
         <AvatarFallback className="border-2 bg-slate-100">
-          {user.userType === "Admin" || "MiniAdmin"
-            ? "AD"
-            : user.email?.[0]?.toUpperCase()}
+          {user.email?.[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
       {(user?.userType === "individual" ||
@@ -65,7 +63,7 @@ export default function UserInformation() {
         <Link href="/pasaydan/com/profile">
           <Button
             variant="outline"
-            className="-tracking-tighter bg-[#4361ee] hover:bg-[#2d232e] hover:text-white rounded-[10px] border-none text-white shadow-sm shadow-slate-100"
+            className="-tracking-tighter bg-blue-600 hover:bg-blue-500 hover:text-white rounded-[10px] border-none text-white shadow-sm shadow-slate-100"
           >
             Profile
           </Button>

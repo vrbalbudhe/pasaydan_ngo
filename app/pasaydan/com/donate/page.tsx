@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const CommunityPageHeading = () => {
   return (
-    <div className="w-[90%] pl-2 min-h-[250px] md:flex flex-col justify-center items-center">
+    <div className="md:w-[90%] w-full pl-2 min-h-[250px] md:flex flex-col justify-center items-center">
       <h1 className="text-center md:text-6xl min-h-10 md:fit text-wrap text-5xl text-slate-800">
         Download
         <span className="ml-2 font-bold block md:inline-block text-[#1a237e]">
@@ -24,9 +24,9 @@ const CommunityPageHeading = () => {
 export default function DonatePage() {
   return (
     <div className="w-[100%] flex flex-col justify-start pb-10 items-center min-h-screen bg-gradient-to-tr from-white via-blue-100 to-white/90">
-      <div className="md:w-[80%] w-full">
+      <div className="md:w-[80%] w-full flex flex-col justify-center items-center">
         <DonationForm />
-        <div className="w-[100%] min-h-[500px] flex md:flex-row flex-col-reverse gap-3 justify-between ">
+        <div className="w-[90%] md:w-[100%] min-h-[500px] flex md:flex-row flex-col-reverse gap-3 justify-between ">
           <div className="md:w-[40%]">
             <GenerateCertificateForm />
           </div>

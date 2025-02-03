@@ -45,7 +45,7 @@ export default function Vision() {
   };
 
   return (
-    <div className="relative w-[80%] mx-auto py-16 md:py-24 bg-gradient-to-b from-white to-blue-50">
+    <div className="relative w-[95%] md:w-[80%] mx-auto py-16 md:py-24 bg-gradient-to-b from-white to-blue-50">
       {/* Background Decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div 

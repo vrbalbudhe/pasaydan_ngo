@@ -74,7 +74,7 @@ export function AdminDriveCards() {
   };
 
   return (
-    <div className="w-full p-6">
+    <div className="w-full md:p-6 p-2">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <>
@@ -95,7 +95,7 @@ export function AdminDriveCards() {
           products?.slice(0, noOfDrives)?.map((product, index) => (
             <div
               key={index}
-              className="max-w-sm bg-white border border-gray-200 rounded-lg shadow"
+              className="md:max-w-sm bg-white border border-gray-200 rounded-lg shadow"
             >
               <div className="p-5">
                 <div className="flex justify-between items-start mb-4">
@@ -146,7 +146,7 @@ export function AdminDriveCards() {
 
                 <div className="flex gap-2 mt-4">
                   <Link href={`drives/${product.id}`} className="flex-1">
-                    <Button className="w-full inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-slate-800 bg-gray-200 rounded-lg hover:bg-gray-300 ">
+                    <Button className="w-full inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-slate-200 bg-gray-200 rounded-lg hover:bg-gray-300 ">
                       <FaExternalLinkAlt className="w-4 h-4 mr-2" />
                       Update
                     </Button>

@@ -66,7 +66,7 @@ function ContactUs() {
   };
 
   return (
-    <div className="relative w-4/5 mx-auto min-h-screen bg-gradient-to-b from-white to-blue-50 px-4 py-12 md:py-20">
+    <div className="relative w-[90%] md:w-4/5 mx-auto min-h-screen bg-gradient-to-b from-white to-blue-50 px-4 py-12 md:py-20">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Left Section */}
         <motion.div
