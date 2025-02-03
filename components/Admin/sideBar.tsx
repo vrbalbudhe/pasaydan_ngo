@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Home,
   Inbox,
@@ -18,68 +19,29 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { MdLogout } from "react-icons/md";
 
 const items = [
-  {
-    title: "Dashboard",
-    url: "/pasaydan/admin",
-    icon: Home,
-  },
-  {
-    title: "Manage Drives",
-    url: "/pasaydan/admin/drives",
-    icon: Inbox,
-  },
-  {
-    title: "Users",
-    url: "/pasaydan/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Donations",
-    url: "/pasaydan/admin/donationRequests",
-    icon: Heart,
-  },
-  {
-    title: "Certificates",
-    url: "/pasaydan/admin/certificates",
-    icon: Award,
-  },
-  {
-    title: "Transactions",
-    url: "/pasaydan/admin/transactions",
-    icon: IndianRupeeIcon,
-  },
-  {
-    title: "Downloads",
-    url: "/pasaydan/admin/downloadData",
-    icon: Download,
-  },
-  {
-    title: "EnterData",
-    url: "/pasaydan/admin/enterData",
-    icon: FileText,
-  },
-  {
-    title: "Manage Admins",
-    url: "/pasaydan/admin/logsign",
-    icon: Shield,
-  },
-  {
-    title: "Settings",
-    url: "/pasaydan/admin/settings",
-    icon: Settings,
-  },
+  { title: "Dashboard", url: "/pasaydan/admin", icon: Home },
+  { title: "Manage Drives", url: "/pasaydan/admin/drives", icon: Inbox },
+  { title: "Users", url: "/pasaydan/admin/users", icon: Users },
+  { title: "Donations", url: "/pasaydan/admin/donationRequests", icon: Heart },
+  { title: "Certificates", url: "/pasaydan/admin/certificates", icon: Award },
+  { title: "Transactions", url: "/pasaydan/admin/transactions", icon: IndianRupeeIcon },
+  { title: "Downloads", url: "/pasaydan/admin/downloadData", icon: Download },
+  { title: "EnterData", url: "/pasaydan/admin/enterData", icon: FileText },
+  { title: "Manage Admins", url: "/pasaydan/admin/logsign", icon: Shield },
+  { title: "Settings", url: "/pasaydan/admin/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     try {
@@ -113,33 +75,30 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => {
-                  const isActive = window.location.pathname === item.url;
-
+                  // Use the pathname from the hook instead of window.location.pathname
+                  const isActive = pathname === item.url;
                   return (
                     <SidebarMenuItem
                       key={item.title}
                       className={`mb-1 ${isActive ? "bg-[#565869]" : ""}`}
                     >
-                      <SidebarMenuButton asChild>
-                        <a
-                          href={item.url}
-                          aria-label={item.title}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                            isActive
-                              ? "bg-[#565869] text-white font-semibold"
-                              : "text-gray-800 md:text-white hover:bg-[#565869]/50"
+                      <Link
+                        href={item.url}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? "bg-[#565869] text-white font-semibold"
+                            : "text-white hover:bg-[#565869]/50"
+                        }`}
+                      >
+                        <item.icon
+                          className={`w-5 h-5 ${
+                            isActive ? "text-white" : "text-gray-300"
                           }`}
-                        >
-                          <item.icon
-                            className={`w-5 h-5 ${
-                              isActive ? "text-white" : "md:text-gray-300 text-gray-800"
-                            }`}
-                          />
-                          <span className="text-sm font-medium">
-                            {item.title}
-                          </span>
-                        </a>
-                      </SidebarMenuButton>
+                        />
+                        <span className="text-sm font-medium">
+                          {item.title}
+                        </span>
+                      </Link>
                     </SidebarMenuItem>
                   );
                 })}
@@ -147,7 +106,7 @@ export function AppSidebar() {
                   <Button onClick={handleLogout}>
                     <MdLogout className="h-4 w-4 mr-2" />
                     Logout
-                  </Button>{" "}
+                  </Button>
                 </div>
               </SidebarMenu>
             </SidebarGroupContent>

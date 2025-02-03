@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DriveEntryForm from "@/components/Admin/a_EnterData/DriveEntryForm"
 import DonationRequestForm from "@/components/Admin/a_EnterData/DonationRequestForm"
 import CertificateEntryForm from "@/components/Admin/a_EnterData/CertificateEntryForm"
+import TransactionEntryForm from "@/components/Admin/a_EnterData/TransactionEntryForm"
 
 export default function EnterDataPage() {
   return (
@@ -30,6 +31,9 @@ export default function EnterDataPage() {
           <TabsTrigger value="certificate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             Certificate
           </TabsTrigger>
+          <TabsTrigger value="transaction" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Transaction Entry
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="drive" className="space-y-4">
@@ -45,6 +49,10 @@ export default function EnterDataPage() {
         <TabsContent value="certificate" className="space-y-4">
           {/* CertificateEntryForm component will go here */}
           <CertificateEntryForm/>
+        </TabsContent>
+
+        <TabsContent value="transaction" className="space-y-4">
+          <TransactionEntryForm />
         </TabsContent>
         
         <TabsContent value="subadmin" className="space-y-4">

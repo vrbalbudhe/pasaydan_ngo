@@ -27,7 +27,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Download, Loader2, ArrowUpDown, X, CalendarIcon, Link as LinkIcon, Image as ImageIcon, MapPin  } from 'lucide-react';
+import {
+  Download,
+  Loader2,
+  ArrowUpDown,
+  X,
+  CalendarIcon,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  MapPin,
+} from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -37,15 +46,34 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+// ─────────────────────────────────────────────
+// Define interfaces for our filter state
+// ─────────────────────────────────────────────
+interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
+}
 
+interface Filters {
+  search: string;
+  status: string;
+  dateRange: DateRange;
+  type: string;
+  location: string;
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+// ─────────────────────────────────────────────
 // Helper function to safely format dates
+// ─────────────────────────────────────────────
 const formatDate = (dateStr: string | Date | null | undefined) => {
   if (!dateStr) return '-';
   try {
     const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       console.warn('Invalid date:', dateStr);
       return '-';
@@ -56,10 +84,10 @@ const formatDate = (dateStr: string | Date | null | undefined) => {
     return '-';
   }
 };
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-
+// ─────────────────────────────────────────────
 // Enums from schema
+// ─────────────────────────────────────────────
 const TransactionType = {
   UPI: 'UPI',
   NET_BANKING: 'NET_BANKING',
@@ -83,13 +111,15 @@ const MoneyForCategory = {
 };
 
 export default function DownloadData() {
+  // ─────────────────────────────────────────────
   // State management
+  // ─────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState('drives');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloadFormat, setDownloadFormat] = useState('csv');
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     search: '',
     status: 'all',
     dateRange: {
@@ -99,28 +129,31 @@ export default function DownloadData() {
     type: 'all',
     location: 'all',
     sortField: 'createdAt',
-    sortOrder: 'desc' as 'asc' | 'desc'
+    sortOrder: 'desc'
   });
 
-  // Status options for different tabs
+  // ─────────────────────────────────────────────
+  // Options for tabs
+  // ─────────────────────────────────────────────
   const statusOptions = {
     drives: ['pending', 'completed'],
     donations: Object.values(TransactionStatus),
     users: []
   };
 
-  // Type options for different tabs
   const typeOptions = {
     drives: ['food', 'clothes', 'books', 'medicine'],
     donations: Object.values(MoneyForCategory),
     users: []
   };
 
+  // ─────────────────────────────────────────────
   // Build query string for API calls
+  // ─────────────────────────────────────────────
   const buildQueryString = (includeFormat = false) => {
     const params = new URLSearchParams();
     params.append('type', activeTab);
-    
+
     if (filters.search) params.append('search', filters.search);
     if (filters.status && filters.status !== 'all') params.append('status', filters.status);
     if (filters.type && filters.type !== 'all') params.append('filterType', filters.type);
@@ -129,28 +162,30 @@ export default function DownloadData() {
     if (filters.dateRange.to) params.append('endDate', filters.dateRange.to.toISOString());
     params.append('sortField', filters.sortField);
     params.append('sortOrder', filters.sortOrder);
-    
+
     if (includeFormat) params.append('format', downloadFormat);
-    
+
     return params.toString();
   };
 
-  // Fetch data
+  // ─────────────────────────────────────────────
+  // Fetch data from the API
+  // ─────────────────────────────────────────────
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await fetch(`/api/admin?${buildQueryString()}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       if (!Array.isArray(result)) {
         throw new Error('Invalid data format received');
       }
-      
+
       setData(result);
     } catch (error) {
       console.error('Error:', error);
@@ -161,16 +196,18 @@ export default function DownloadData() {
     }
   };
 
-  // Handle download
+  // ─────────────────────────────────────────────
+  // Handle download action
+  // ─────────────────────────────────────────────
   const handleDownload = async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/admin?${buildQueryString(true)}`);
-      
+
       if (!response.ok) {
         throw new Error(`Download failed: ${response.status}`);
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -187,7 +224,9 @@ export default function DownloadData() {
     }
   };
 
-  // Reset filters
+  // ─────────────────────────────────────────────
+  // Reset filters to initial state
+  // ─────────────────────────────────────────────
   const resetFilters = () => {
     setFilters({
       search: '',
@@ -203,7 +242,9 @@ export default function DownloadData() {
     });
   };
 
-  // Handle sort
+  // ─────────────────────────────────────────────
+  // Handle sorting of table columns
+  // ─────────────────────────────────────────────
   const handleSort = (field: string) => {
     setFilters(prev => ({
       ...prev,
@@ -212,12 +253,16 @@ export default function DownloadData() {
     }));
   };
 
-  // Effect to fetch data when filters or tab changes
+  // ─────────────────────────────────────────────
+  // Fetch data when filters or active tab change
+  // ─────────────────────────────────────────────
   useEffect(() => {
     fetchData();
   }, [activeTab, filters]);
 
-  // Render table columns
+  // ─────────────────────────────────────────────
+  // Render table columns based on active tab
+  // ─────────────────────────────────────────────
   const renderColumns = () => {
     switch (activeTab) {
       case 'drives':
@@ -239,7 +284,6 @@ export default function DownloadData() {
             </TableHead>
           </TableRow>
         );
-
       case 'users':
         return (
           <TableRow>
@@ -260,7 +304,6 @@ export default function DownloadData() {
             </TableHead>
           </TableRow>
         );
-
       case 'donations':
         return (
           <TableRow>
@@ -282,21 +325,19 @@ export default function DownloadData() {
             </TableHead>
           </TableRow>
         );
-
       default:
         return null;
     }
   };
 
-  // Render table rows
+  // ─────────────────────────────────────────────
+  // Render table rows based on active tab
+  // ─────────────────────────────────────────────
   const renderRows = () => {
     if (!Array.isArray(data) || data.length === 0) {
       return (
         <TableRow>
-          <TableCell
-            colSpan={10}
-            className="text-center py-10"
-          >
+          <TableCell colSpan={10} className="text-center py-10">
             No data available
           </TableCell>
         </TableRow>
@@ -344,9 +385,7 @@ export default function DownloadData() {
                       <TooltipTrigger>
                         <MapPin className="h-4 w-4 text-blue-500" />
                       </TooltipTrigger>
-                      <TooltipContent>
-                        {JSON.stringify(item.geoLocation)}
-                      </TooltipContent>
+                      <TooltipContent>{JSON.stringify(item.geoLocation)}</TooltipContent>
                     </Tooltip>
                   )}
                 </div>
@@ -354,7 +393,6 @@ export default function DownloadData() {
               <TableCell>{item.createdAt || '-'}</TableCell>
             </TableRow>
           );
-
         case 'users':
           return (
             <TableRow key={item.id}>
@@ -382,7 +420,6 @@ export default function DownloadData() {
               <TableCell>{item.createdAt || '-'}</TableCell>
             </TableRow>
           );
-
         case 'donations':
           return (
             <TableRow key={item.id}>
@@ -392,7 +429,9 @@ export default function DownloadData() {
               <TableCell>
                 <Badge>{item.userType || '-'}</Badge>
               </TableCell>
-              <TableCell>₹{typeof item.amount === 'number' ? item.amount.toFixed(2) : '-'}</TableCell>
+              <TableCell>
+                ₹{typeof item.amount === 'number' ? item.amount.toFixed(2) : '-'}
+              </TableCell>
               <TableCell>{item.type || '-'}</TableCell>
               <TableCell>{item.transactionId || '-'}</TableCell>
               <TableCell>
@@ -400,33 +439,40 @@ export default function DownloadData() {
               </TableCell>
               <TableCell>{item.entryType || '-'}</TableCell>
               <TableCell>
-                <Badge variant={
-                  item.status === 'VERIFIED' ? 'success' : 
-                  item.status === 'REJECTED' ? 'destructive' : 
-                  'secondary'
-                }>
+                <Badge
+                  variant={
+                    item.status === 'VERIFIED'
+                      ? 'success'
+                      : item.status === 'REJECTED'
+                      ? 'destructive'
+                      : 'secondary'
+                  }
+                >
                   {item.status || '-'}
                 </Badge>
               </TableCell>
               <TableCell>
                 {item.moneyFor || '-'}
-                {item.customMoneyFor && 
-                  <span className="text-muted-foreground ml-1">({item.customMoneyFor})</span>
-                }
+                {item.customMoneyFor && (
+                  <span className="text-muted-foreground ml-1">
+                    ({item.customMoneyFor})
+                  </span>
+                )}
               </TableCell>
               <TableCell>
                 {item.date ? formatDate(item.date) : '-'}
               </TableCell>
             </TableRow>
           );
-
         default:
           return null;
       }
     });
   };
 
-
+  // ─────────────────────────────────────────────
+  // Main Render
+  // ─────────────────────────────────────────────
   return (
     <div className="container mx-auto py-6 space-y-6">
       <Card>
@@ -443,7 +489,7 @@ export default function DownloadData() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="drives">Drives</TabsTrigger>
@@ -455,25 +501,31 @@ export default function DownloadData() {
                 <Input
                   placeholder="Search..."
                   value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, search: e.target.value }))
+                  }
                   className="w-64"
                 />
 
                 {statusOptions[activeTab as keyof typeof statusOptions].length > 0 && (
                   <Select
                     value={filters.status}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+                    onValueChange={(value) =>
+                      setFilters((prev) => ({ ...prev, status: value }))
+                    }
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
-                      {statusOptions[activeTab as keyof typeof statusOptions].map((status) => (
-                        <SelectItem key={status} value={status.toLowerCase()}>
-                          {status}
-                        </SelectItem>
-                      ))}
+                      {statusOptions[activeTab as keyof typeof statusOptions].map(
+                        (status) => (
+                          <SelectItem key={status} value={status.toLowerCase()}>
+                            {status}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                 )}
@@ -481,16 +533,22 @@ export default function DownloadData() {
                 {typeOptions[activeTab as keyof typeof typeOptions].length > 0 && (
                   <Select
                     value={filters.type}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, type: value }))}
+                    onValueChange={(value) =>
+                      setFilters((prev) => ({ ...prev, type: value }))
+                    }
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      {typeOptions[activeTab as keyof typeof typeOptions].map((type) => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
+                      {typeOptions[activeTab as keyof typeof typeOptions].map(
+                        (type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                 )}
@@ -498,7 +556,9 @@ export default function DownloadData() {
                 {activeTab === 'drives' && (
                   <Select
                     value={filters.location}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, location: value }))}
+                    onValueChange={(value) =>
+                      setFilters((prev) => ({ ...prev, location: value }))
+                    }
                   >
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Location" />
@@ -513,7 +573,10 @@ export default function DownloadData() {
 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-[260px] justify-start text-left font-normal">
+                    <Button
+                      variant="outline"
+                      className="w-[260px] justify-start text-left font-normal"
+                    >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {filters.dateRange.from && filters.dateRange.to ? (
                         <span>
@@ -532,26 +595,27 @@ export default function DownloadData() {
                     <div className="p-4">
                       <div className="flex justify-between gap-4 mb-4">
                         <div className="flex flex-col flex-1">
-                          <label className="text-sm font-medium mb-2">From Date</label>
+                          <label className="text-sm font-medium mb-2">
+                            From Date
+                          </label>
                           <Calendar
                             mode="single"
                             selected={filters.dateRange.from}
-                            onSelect={(date) =>
-                              setFilters(prev => ({
+                            onSelect={(date: Date | undefined) =>
+                              setFilters((prev) => ({
                                 ...prev,
-                                dateRange: {
-                                  ...prev.dateRange,
-                                  from: date
-                                },
+                                dateRange: { ...prev.dateRange, from: date },
                               }))
                             }
-                            disabled={(date) =>
+                            disabled={(date: Date) =>
                               filters.dateRange.to ? date > filters.dateRange.to : false
                             }
                             initialFocus
                             className="rounded-md border"
                             components={{
-                              Caption: ({ displayMonth, onMonthChange }) => {
+                              // Using "any" here to bypass the CaptionProps type conflict.
+                              Caption: (props: any) => {
+                                const { displayMonth, onMonthChange } = props;
                                 return (
                                   <div className="flex justify-center gap-1 items-center py-2">
                                     <Select
@@ -559,9 +623,20 @@ export default function DownloadData() {
                                       onValueChange={(value) => {
                                         const newMonth = new Date(displayMonth);
                                         newMonth.setMonth(
-                                          ['January', 'February', 'March', 'April', 'May', 'June',
-                                           'July', 'August', 'September', 'October', 'November', 'December']
-                                          .indexOf(value)
+                                          [
+                                            'January',
+                                            'February',
+                                            'March',
+                                            'April',
+                                            'May',
+                                            'June',
+                                            'July',
+                                            'August',
+                                            'September',
+                                            'October',
+                                            'November',
+                                            'December',
+                                          ].indexOf(value)
                                         );
                                         onMonthChange(newMonth);
                                       }}
@@ -615,26 +690,27 @@ export default function DownloadData() {
                           />
                         </div>
                         <div className="flex flex-col flex-1">
-                          <label className="text-sm font-medium mb-2">To Date</label>
+                          <label className="text-sm font-medium mb-2">
+                            To Date
+                          </label>
                           <Calendar
                             mode="single"
                             selected={filters.dateRange.to}
-                            onSelect={(date) =>
-                              setFilters(prev => ({
+                            onSelect={(date: Date | undefined) =>
+                              setFilters((prev) => ({
                                 ...prev,
-                                dateRange: {
-                                  ...prev.dateRange,
-                                  to: date
-                                },
+                                dateRange: { ...prev.dateRange, to: date },
                               }))
                             }
-                            disabled={(date) =>
+                            disabled={(date: Date) =>
                               filters.dateRange.from ? date < filters.dateRange.from : false
                             }
                             initialFocus
                             className="rounded-md border"
                             components={{
-                              Caption: ({ displayMonth, onMonthChange }) => {
+                              // Also using "any" here to bypass the CaptionProps type conflict.
+                              Caption: (props: any) => {
+                                const { displayMonth, onMonthChange } = props;
                                 return (
                                   <div className="flex justify-center gap-1 items-center py-2">
                                     <Select
@@ -642,9 +718,20 @@ export default function DownloadData() {
                                       onValueChange={(value) => {
                                         const newMonth = new Date(displayMonth);
                                         newMonth.setMonth(
-                                          ['January', 'February', 'March', 'April', 'May', 'June',
-                                           'July', 'August', 'September', 'October', 'November', 'December']
-                                          .indexOf(value)
+                                          [
+                                            'January',
+                                            'February',
+                                            'March',
+                                            'April',
+                                            'May',
+                                            'June',
+                                            'July',
+                                            'August',
+                                            'September',
+                                            'October',
+                                            'November',
+                                            'December',
+                                          ].indexOf(value)
                                         );
                                         onMonthChange(newMonth);
                                       }}
@@ -708,25 +795,24 @@ export default function DownloadData() {
                       </div>
                       <div className="flex justify-end gap-2 mt-4">
                         <DialogTrigger asChild>
-                          <Button 
+                          <Button
                             variant="outline"
-                            onClick={() => {
-                              setFilters(prev => ({
+                            onClick={() =>
+                              setFilters((prev) => ({
                                 ...prev,
-                                dateRange: {
-                                  from: undefined,
-                                  to: undefined,
-                                },
-                              }));
-                            }}
+                                dateRange: { from: undefined, to: undefined },
+                              }))
+                            }
                           >
                             Clear
                           </Button>
                         </DialogTrigger>
                         <DialogTrigger asChild>
-                          <Button 
-                            type="submit" 
-                            disabled={!filters.dateRange.from || !filters.dateRange.to}
+                          <Button
+                            type="submit"
+                            disabled={
+                              !filters.dateRange.from || !filters.dateRange.to
+                            }
                           >
                             Apply Range
                           </Button>
@@ -736,8 +822,8 @@ export default function DownloadData() {
                   </DialogContent>
                 </Dialog>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={resetFilters}
                   className="gap-2"
                 >
@@ -776,16 +862,11 @@ export default function DownloadData() {
 
               <div className="rounded-md border">
                 <Table>
-                  <TableHeader>
-                    {renderColumns()}
-                  </TableHeader>
+                  <TableHeader>{renderColumns()}</TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell
-                          colSpan={7}
-                          className="h-24 text-center"
-                        >
+                        <TableCell colSpan={7} className="h-24 text-center">
                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                         </TableCell>
                       </TableRow>
@@ -801,3 +882,4 @@ export default function DownloadData() {
       </Card>
     </div>
   );
+}

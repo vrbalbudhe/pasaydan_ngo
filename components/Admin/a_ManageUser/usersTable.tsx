@@ -35,7 +35,7 @@ interface UsersTableProps {
 export default function UsersTable({ searchQuery }: UsersTableProps) {
   const [userData, setUserData] = useState<Invoice[]>([]);
   const [orgData, setOrgData] = useState<Invoice1[]>([]);
-  const [loading, setLoading] = useState<Boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -94,9 +94,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
   };
 
   const handleDeleteOrganisation = async (id: string) => {
-    const confirmed = confirm(
-      "Are you sure you want to delete this Oraganisation?"
-    );
+    const confirmed = confirm("Are you sure you want to delete this Organisation?");
     if (!confirmed) return;
 
     try {
@@ -110,7 +108,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
 
       if (response.ok) {
         alert("Organisation deleted successfully.");
-        setUserData((prev) => prev.filter((user) => user.id !== id));
+        setOrgData((prev) => prev.filter((org) => org.id !== id));
       } else {
         const error = await response.json();
         alert(`Error: ${error.message}`);
@@ -140,16 +138,11 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
     );
   });
 
+  // Updated highlightText function to ensure the input is a string
   const highlightText = (text: any, query: string) => {
-    if (typeof text !== "string") {
-      console.error("text is not a string:", text);
-      return ""; // Return an empty string or handle it accordingly
-    }
-
-    if (!query) return text; // If query is empty, return text as is
-
-    const parts = text.split(new RegExp(`(${query})`, "gi"));
-
+    const safeText = text != null ? String(text) : "";
+    if (!query) return safeText;
+    const parts = safeText.split(new RegExp(`(${query})`, "gi"));
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
         <span key={i} className="bg-yellow-200">
@@ -195,7 +188,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
         </Card>
       </div>
 
-      {/* Table Section */}
+      {/* Table Section for Users */}
       {loading ? (
         <div className="w-full h-[400px] flex flex-col gap-3 justify-center items-center text-gray-600">
           <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
@@ -282,10 +275,12 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
           </div>
         </div>
       )}
+
+      {/* Table Section for Organizations */}
       {loading ? (
         <div className="w-full h-[400px] flex flex-col gap-3 justify-center items-center text-gray-600">
           <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-          <p className="text-lg font-medium">Loading Users Information...</p>
+          <p className="text-lg font-medium">Loading Organizations Information...</p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow">

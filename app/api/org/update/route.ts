@@ -9,7 +9,6 @@ export async function POST(request: Request) {
   try {
     // Ensure the upload directory exists
     await mkdir(uploadDir, { recursive: true });
-
     const formData = await request.formData();
 
     // Extract organization details from formData
@@ -26,9 +25,25 @@ export async function POST(request: Request) {
 
     const avatar = formData.get("avatar");
 
-    const contactPersonName = formData.get("contactPersonName")?.toString();
-    const contactPersonEmail = formData.get("contactPersonEmail")?.toString();
-    const contactPersonMobile = formData.get("contactPersonMobile")?.toString();
+    // Extract all contact person details based on indexed keys
+    const contactPersons: Array<{ name: string; email: string; mobile: string }> = [];
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("contactPersonName_")) {
+        // Get the index from the key (e.g., "contactPersonName_0" yields index "0")
+        const index = key.split("_")[1];
+        const cpName = value.toString();
+        const cpEmail = formData.get(`contactPersonEmail_${index}`)?.toString();
+        const cpMobile = formData.get(`contactPersonMobile_${index}`)?.toString() || "";
+        // Only push if both name and email are provided
+        if (cpName && cpEmail) {
+          contactPersons.push({
+            name: cpName,
+            email: cpEmail,
+            mobile: cpMobile,
+          });
+        }
+      }
+    }
 
     // Validate required fields
     if (!email) {
@@ -98,27 +113,29 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update contact person details
-    if (contactPersonName && contactPersonEmail) {
-      const contactPersonData = {
-        name: contactPersonName,
-        email: contactPersonEmail,
-        mobile: contactPersonMobile,
-        organizationId: updatedOrg.id,
-      };
-
-      const existingContactPerson = existingOrg.contactPerson.find(
-        (person) => person.email === contactPersonEmail
+    // Update or create contact person details
+    for (const cp of contactPersons) {
+      const existingCP = existingOrg.contactPerson.find(
+        (person) => person.email === cp.email
       );
-
-      if (existingContactPerson) {
+      if (existingCP) {
         await prisma.contactPerson.update({
-          where: { id: existingContactPerson.id },
-          data: contactPersonData,
+          where: { id: existingCP.id },
+          data: {
+            name: cp.name,
+            email: cp.email,
+            mobile: cp.mobile,
+            organizationId: updatedOrg.id,
+          },
         });
       } else {
         await prisma.contactPerson.create({
-          data: contactPersonData,
+          data: {
+            name: cp.name,
+            email: cp.email,
+            mobile: cp.mobile,
+            organizationId: updatedOrg.id,
+          },
         });
       }
     }

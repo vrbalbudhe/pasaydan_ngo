@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/card";
 import childJson from "@/assets/homepage/child.json";
 import cycleJson from "@/assets/homepage/cycle.json";
+
+// Dynamically import Lottie with SSR disabled
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function TitleInfo() {
   const fadeInUp = {
@@ -114,8 +117,6 @@ export default function TitleInfo() {
                     आपल्या हातात भरपूर चॉकलेट देणार असेल तेव्हा बनवतो) आणि दान
                     (दान) म्हणजे भेट. एकत्रितपणे त्यांचा अर्थ एक भेटवस्तू आहे जी
                     हस्तरेखांमध्ये एकत्र जोडली जाऊ शकते किंवा घेतली जाऊ शकते.
-                    सहसा भारतात, विशेषतः हिंदू पासा (पसा) मध्ये प्रसाद (देवाची
-                    भेट ) स्वीकारतात.
                   </motion.div>
                 </CardDescription>
 

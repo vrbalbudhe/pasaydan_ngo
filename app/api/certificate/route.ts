@@ -1,3 +1,4 @@
+// app/api/certificate/route.ts
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import puppeteer from "puppeteer";
@@ -9,6 +10,7 @@ interface CertificateRequestBody {
   userEmail: string;
   donationId?: string;
   type: string;
+  downloadOnly?: boolean;
 }
 
 const transporter = nodemailer.createTransport({
@@ -30,7 +32,7 @@ const generateCertificate = async (
   type: string
 ): Promise<string> => {
   try {
-    console.log(userName, userEmail, donationId);
+    console.log("Generating certificate for:", userName, userEmail, donationId);
 
     const certificateImagePath = path.join(
       process.cwd(),
@@ -78,14 +80,15 @@ const generateCertificate = async (
             }
             .name {
               position: absolute;
-              top: 45%;
+              top: 43%;
               left: 20%;
-              font-size: 40px;
+              font-size: 60px;
               color: black;
               font-family: 'Times New Roman', serif;
               font-weight: bold;
               width: 60%;
               text-align: center;
+              text-transform: capitalize;
             }
             .donation-id {
               position: absolute;
@@ -138,15 +141,14 @@ const generateCertificate = async (
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    await page.setViewport({ width: 1200, height: 850 }); // Adjusted for better fit
+    await page.setViewport({ width: 1200, height: 850 });
 
     const certificatesDir = path.join(process.cwd(), "public", "certificates");
     await fs.mkdir(certificatesDir, { recursive: true });
 
-    const outputPath = path.join(
-      certificatesDir,
-      `${userName}-certificate.pdf`
-    );
+    const fileName = `${userName}-${donationId}-certificate.pdf`;
+    const outputPath = path.join(certificatesDir, fileName);
+    
     await page.pdf({
       path: outputPath,
       format: "A4",
@@ -156,43 +158,60 @@ const generateCertificate = async (
 
     await browser.close();
 
-    // Send email with the generated certificate
-    await transporter.sendMail({
-      from: process.env.EmailAddress,
-      to: userEmail,
-      subject: "Pasaydan Donation Certificate",
-      text: `Dear ${userName},\n\nThank you for your donation (ID: ${donationId}). Please find your certificate attached.`,
-      html: `<p>Dear ${userName},<br><br>Thank you for your donation (ID: ${donationId}). Please find your certificate attached.</p>`,
-      attachments: [
-        {
-          filename: `${userName}-certificate.pdf`,
-          path: outputPath,
-        },
-      ],
-    });
-
-    console.log("Certificate sent and ready for download.");
-
-    return `/certificates/${userName}-certificate.pdf`;
+    console.log("Certificate generated at:", outputPath);
+    return `/certificates/${fileName}`;
   } catch (error) {
-    console.error("Error generating certificate:", error);
+    console.error("Error in certificate generation:", error);
     throw error;
   }
 };
 
-export async function POST(req: Request) {
-  const { userName, userEmail, donationId, type }: CertificateRequestBody =
-    await req.json();
+const sendCertificateEmail = async (
+  userName: string,
+  userEmail: string,
+  donationId: string,
+  certificatePath: string
+) => {
+  const fullPath = path.join(process.cwd(), "public", certificatePath);
+  
+  await transporter.sendMail({
+    from: process.env.EmailAddress,
+    to: userEmail,
+    subject: "Pasaydan Donation Certificate",
+    text: `Dear ${userName},\n\nThank you for your donation (ID: ${donationId}). Please find your certificate attached.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Thank You for Your Donation</h2>
+        <p>Dear ${userName},</p>
+        <p>Thank you for your generous donation (ID: ${donationId}). Your support means a lot to us.</p>
+        <p>Please find your certificate attached to this email.</p>
+        <p>Best regards,<br>Team Pasaydan</p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: `${userName}-certificate.pdf`,
+        path: fullPath,
+      },
+    ],
+  });
+};
 
+export async function POST(req: Request) {
   try {
-    if (!userName || !userEmail) {
+    const { userName, userEmail, donationId, type, downloadOnly }: CertificateRequestBody =
+      await req.json();
+
+    if (!userName) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { error: "User name is required." },
         { status: 400 }
       );
     }
 
     const donationIdToUse = donationId || generateRandomDonationId();
+    
+    // Generate certificate and get its URL
     const certificateUrl = await generateCertificate(
       userName,
       userEmail,
@@ -200,17 +219,36 @@ export async function POST(req: Request) {
       type
     );
 
+    // Send email if not download-only and email is provided
+    if (!downloadOnly && userEmail) {
+      try {
+        await sendCertificateEmail(
+          userName,
+          userEmail,
+          donationIdToUse,
+          certificateUrl
+        );
+        console.log("Certificate email sent successfully");
+      } catch (emailError) {
+        console.error("Error sending certificate email:", emailError);
+        // Continue execution even if email fails
+      }
+    }
+
     return NextResponse.json(
       {
-        message: "Certificate generated and sent successfully.",
+        message: downloadOnly 
+          ? "Certificate generated successfully." 
+          : "Certificate generated and sent successfully.",
         certificateUrl,
+        donationId: donationIdToUse
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error in API handler:", error);
+    console.error("Error in certificate generation/sending:", error);
     return NextResponse.json(
-      { error: "Failed to generate certificate." },
+      { error: "Failed to process certificate request." },
       { status: 500 }
     );
   }
