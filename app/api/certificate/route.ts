@@ -80,14 +80,15 @@ const generateCertificate = async (
             }
             .name {
               position: absolute;
-              top: 45%;
+              top: 43%;
               left: 20%;
-              font-size: 40px;
+              font-size: 60px;
               color: black;
               font-family: 'Times New Roman', serif;
               font-weight: bold;
               width: 60%;
               text-align: center;
+              text-transform: capitalize;
             }
             .donation-id {
               position: absolute;
