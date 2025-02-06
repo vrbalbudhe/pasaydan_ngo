@@ -86,7 +86,7 @@ export default function SubAdminsTable() {
   return (
     <div className="w-full flex flex-col gap-3">
       {/* Stats Section */}
-      <Card className="w-1/3">
+      <Card className="md:w-1/3 w-full">
         <CardContent className="flex items-center p-6 gap-4">
           <div className="bg-blue-50 p-3 rounded-lg">
             <Users className="h-6 w-6 text-blue-600" />
@@ -138,7 +138,7 @@ export default function SubAdminsTable() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <Table className="min-w-full">
               <TableHeader>
                 <TableRow className="bg-gray-50">
@@ -219,6 +219,67 @@ export default function SubAdminsTable() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+          <div className="md:hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+            {filteredSubAdmins.map((subAdmin, index) => (
+              <Card
+                key={subAdmin.id}
+                className="overflow-hidden transition-shadow duration-300"
+              >
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm text-gray-500">ID: {subAdmin.id}</p>
+                      <p className="text-sm text-gray-500">
+                        Index: {index + 1}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDelete(subAdmin?.id || "NA")}
+                        className="text-slate-800 hover:text-slate-600 focus:outline-none p-1 rounded-full hover:bg-red-50 transition-colors"
+                      >
+                        {!subAdmin.canEdit ? (
+                          <FaRegEdit size={20} />
+                        ) : (
+                          <span className="text-red-500 hover:text-red-600">
+                            <SiAdblock size={20} />
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(subAdmin?.id || "NA")}
+                        className="text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full hover:bg-red-50 transition-colors"
+                      >
+                        <RiDeleteBin7Line size={20} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="font-medium text-gray-900">
+                        {subAdmin.name || "NA"}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {subAdmin.email || "NA"}
+                      </p>
+                    </div>
+
+                    <div className="pt-2">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Mobile: </span>
+                        {subAdmin.mobile || "NA"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Address: </span>
+                        {subAdmin.address || "NA"}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       )}
