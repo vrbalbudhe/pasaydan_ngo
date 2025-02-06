@@ -1,8 +1,7 @@
-"use client";
-
+"use client"
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrency } from "@/utils/format";
+import { IndianRupee, ArrowUpRight, ArrowDownRight, AlertCircle, BarChart3 } from "lucide-react";
 
 interface StatsData {
   totalAmount: number;
@@ -13,6 +12,8 @@ interface StatsData {
   debitAmount: number;
   creditTransactions: number;
   debitTransactions: number;
+  rejectedCount: number;
+  rejectedAmount: number;
 }
 
 export function TransactionStats() {
@@ -39,10 +40,10 @@ export function TransactionStats() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="h-24 bg-gray-100" />
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 w-full">
+        {[...Array(5)].map((_, i) => (
+          <Card key={i} className="animate-pulse rounded-xl bg-white shadow-md">
+            <CardContent className="h-32 bg-gray-100" />
           </Card>
         ))}
       </div>
@@ -50,62 +51,110 @@ export function TransactionStats() {
   }
 
   return (
-    <>
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 w-full">
       {/* Balance Amount Card */}
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-sm font-medium text-gray-600">Balance Amount</h3>
-          <p className="text-2xl font-bold mt-2 text-blue-600">
-            ₹{stats?.totalAmount.toFixed(2) || "0.00"}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            From {stats?.totalTransactions || 0} transactions
-          </p>
+      <Card className="rounded-xl bg-white shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500">Balance Amount</h3>
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <IndianRupee className="w-5 h-5 text-blue-600" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <p className="text-2xl font-bold text-gray-900">
+              ₹{stats?.totalAmount.toFixed(2) || "0.00"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {stats?.totalTransactions || 0} verified transactions
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* Credits Card */}
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-sm font-medium text-gray-600">Credits</h3>
-          <p className="text-2xl font-bold mt-2 text-green-600">
-            ₹{stats?.creditAmount.toFixed(2) || "0.00"}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Total credit transactions: {stats?.creditTransactions || 0}
-          </p>
+      <Card className="rounded-xl bg-white shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500">Total Credits</h3>
+            <div className="p-2 bg-green-50 rounded-lg">
+              <ArrowUpRight className="w-5 h-5 text-green-600" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <p className="text-2xl font-bold text-gray-900">
+              ₹{stats?.creditAmount.toFixed(2) || "0.00"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {stats?.creditTransactions || 0} credit transactions
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* Debits Card */}
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-sm font-medium text-gray-600">Debits</h3>
-          <p className="text-2xl font-bold mt-2 text-red-600">
-            ₹{stats?.debitAmount.toFixed(2) || "0.00"}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Total debit transactions: {stats?.debitTransactions || 0}
-          </p>
+      <Card className="rounded-xl bg-white shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500">Total Debits</h3>
+            <div className="p-2 bg-red-50 rounded-lg">
+              <ArrowDownRight className="w-5 h-5 text-red-600" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <p className="text-2xl font-bold text-gray-900">
+              ₹{stats?.debitAmount.toFixed(2) || "0.00"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {stats?.debitTransactions || 0} debit transactions
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Rejected Card */}
+      <Card className="rounded-xl bg-white shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500">Rejected Transactions</h3>
+            <div className="p-2 bg-orange-50 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-orange-600" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <p className="text-2xl font-bold text-gray-900">
+              ₹{stats?.rejectedAmount.toFixed(2) || "0.00"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {stats?.rejectedCount || 0} rejected transactions
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* Status Overview Card */}
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-sm font-medium text-gray-600">Status Overview</h3>
-          <div className="space-y-2 mt-4">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Pending</span>
-              <span className="font-medium">{stats?.pendingCount || 0}</span>
+      <Card className="rounded-xl bg-white shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500">Status Overview</h3>
+            <div className="p-2 bg-purple-50 rounded-lg">
+              <BarChart3 className="w-5 h-5 text-purple-600" />
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Verified</span>
-              <span className="font-medium">{stats?.verifiedCount || 0}</span>
+          </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">Pending</span>
+                <span className="text-lg font-semibold text-gray-900">{stats?.pendingCount || 0}</span>
+              </div>
+              <div className="flex flex-col text-right">
+                <span className="text-sm text-gray-500">Verified</span>
+                <span className="text-lg font-semibold text-gray-900">{stats?.verifiedCount || 0}</span>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

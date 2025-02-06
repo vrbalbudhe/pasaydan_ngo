@@ -25,9 +25,9 @@ function TransactionContent() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <TransactionStats />
-        </div>
+        <div className="w-full">  {/* Remove the grid here since TransactionStats has its own grid */}
+  <TransactionStats />
+</div>
 
         {/* Main Content */}
         <div className="grid gap-6">
