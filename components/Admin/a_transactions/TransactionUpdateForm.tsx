@@ -1,4 +1,4 @@
-// components/Admin/a_transactions/TransactionUpdateForm.tsx
+"use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,13 +21,20 @@ import {
 import { formatCurrency } from "@/utils/format";
 import { toast } from "sonner";
 
+/**
+ * Export a type alias for the transaction used in the update form.
+ * We force statusDescription to be `string | null` instead of possibly undefined.
+ */
+export type UpdateTransaction = Omit<Transaction, "statusDescription"> & {
+  statusDescription: string | null;
+};
+
 interface TransactionUpdateFormProps {
-  transaction: Transaction | null;
-  onUpdate: (updatedTransaction: Transaction) => void;
+  transaction: UpdateTransaction | null;
+  onUpdate: (updatedTransaction: UpdateTransaction) => void;
   onCancel: () => void;
 }
 
-// Updated Transaction interface so that fields such as description and screenshotPath allow null values.
 interface Transaction {
   id: string;
   name: string;
@@ -38,7 +45,6 @@ interface Transaction {
   type: TransactionType;
   transactionId: string;
   date: Date;
-  // Now TransactionNature only supports CREDIT and DEBIT
   transactionNature: TransactionNature;
   screenshotPath: string | null;
   entryType: EntryType;
@@ -49,7 +55,6 @@ interface Transaction {
   statusDescription?: string;
   verifiedBy?: string;
   verifiedAt?: Date;
-  // Updated MoneyFor options: CLOTHES, FOOD, CYCLE, EDUCATION, HEALTHCARE, OTHER
   moneyFor: MoneyForCategory;
   customMoneyFor?: string;
   userId?: string;
@@ -61,9 +66,9 @@ const TransactionUpdateForm = ({
   onUpdate,
   onCancel,
 }: TransactionUpdateFormProps) => {
-  const [formData, setFormData] = useState<Transaction | null>(null);
+  const [formData, setFormData] = useState<UpdateTransaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof Transaction, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof UpdateTransaction, string>>>({});
 
   useEffect(() => {
     if (transaction) {
@@ -74,7 +79,7 @@ const TransactionUpdateForm = ({
   if (!formData) return null;
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof Transaction, string>> = {};
+    const newErrors: Partial<Record<keyof UpdateTransaction, string>> = {};
 
     if (!formData.name?.trim()) newErrors.name = "Name is required";
     if (!formData.email?.trim()) newErrors.email = "Email is required";
@@ -93,7 +98,7 @@ const TransactionUpdateForm = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (key: keyof Transaction, value: any) => {
+  const handleInputChange = (key: keyof UpdateTransaction, value: any) => {
     setFormData((prev) => {
       if (!prev) return null;
       return { ...prev, [key]: value };
@@ -116,9 +121,7 @@ const TransactionUpdateForm = ({
     try {
       const response = await fetch("/api/admin/transactions/update", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           date: formData.date instanceof Date ? formData.date.toISOString() : formData.date,
@@ -133,8 +136,6 @@ const TransactionUpdateForm = ({
       }
 
       const result = await response.json();
-      console.log("Response data:", result);
-
       if (!response.ok) {
         throw new Error(result.error || "Failed to update transaction");
       }
@@ -154,13 +155,9 @@ const TransactionUpdateForm = ({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Name */}
         <div>
           <Label htmlFor="name">Name</Label>
           <Input
@@ -173,8 +170,6 @@ const TransactionUpdateForm = ({
           />
           {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
         </div>
-
-        {/* Email */}
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
@@ -188,8 +183,6 @@ const TransactionUpdateForm = ({
           />
           {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
         </div>
-
-        {/* Phone */}
         <div>
           <Label htmlFor="phone">Phone</Label>
           <Input
@@ -202,8 +195,6 @@ const TransactionUpdateForm = ({
           />
           {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
         </div>
-
-        {/* User Type */}
         <div>
           <Label htmlFor="userType">User Type</Label>
           <Select
@@ -225,7 +216,6 @@ const TransactionUpdateForm = ({
 
       {/* Transaction Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Amount */}
         <div>
           <Label htmlFor="amount">Amount</Label>
           <Input
@@ -241,8 +231,6 @@ const TransactionUpdateForm = ({
           />
           {errors.amount && <p className="text-sm text-red-500 mt-1">{errors.amount}</p>}
         </div>
-
-        {/* Transaction Type */}
         <div>
           <Label htmlFor="type">Transaction Type</Label>
           <Select
@@ -261,29 +249,22 @@ const TransactionUpdateForm = ({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Transaction Nature */}
         <div>
           <Label htmlFor="transactionNature">Transaction Nature</Label>
           <Select
             value={formData.transactionNature}
-            onValueChange={(value: TransactionNature) =>
-              handleInputChange("transactionNature", value)
-            }
+            onValueChange={(value: TransactionNature) => handleInputChange("transactionNature", value)}
             disabled={isSubmitting}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select nature" />
             </SelectTrigger>
             <SelectContent>
-              {/* Updated options: only CREDIT and DEBIT */}
               <SelectItem value="CREDIT">Credit</SelectItem>
               <SelectItem value="DEBIT">Debit</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        {/* Transaction ID */}
         <div>
           <Label htmlFor="transactionId">Transaction ID</Label>
           <Input
@@ -294,12 +275,8 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting || formData.type === "CASH"}
             className={errors.transactionId ? "border-red-500" : ""}
           />
-          {errors.transactionId && (
-            <p className="text-sm text-red-500 mt-1">{errors.transactionId}</p>
-          )}
+          {errors.transactionId && <p className="text-sm text-red-500 mt-1">{errors.transactionId}</p>}
         </div>
-
-        {/* Date */}
         <div>
           <Label htmlFor="date">Transaction Date</Label>
           <Input
@@ -310,15 +287,11 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
           />
         </div>
-
-        {/* Status */}
         <div>
           <Label htmlFor="status">Status</Label>
           <Select
             value={formData.status}
-            onValueChange={(value: TransactionStatus) =>
-              handleInputChange("status", value)
-            }
+            onValueChange={(value: TransactionStatus) => handleInputChange("status", value)}
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -335,21 +308,17 @@ const TransactionUpdateForm = ({
 
       {/* Additional Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Money For Category */}
         <div>
           <Label htmlFor="moneyFor">Money For</Label>
           <Select
             value={formData.moneyFor}
-            onValueChange={(value: MoneyForCategory) =>
-              handleInputChange("moneyFor", value)
-            }
+            onValueChange={(value: MoneyForCategory) => handleInputChange("moneyFor", value)}
             disabled={isSubmitting}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {/* Updated options per your schema */}
               <SelectItem value="CLOTHES">Clothes</SelectItem>
               <SelectItem value="FOOD">Food</SelectItem>
               <SelectItem value="CYCLE">Cycle</SelectItem>
@@ -359,8 +328,6 @@ const TransactionUpdateForm = ({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Custom Money For (shown only when MoneyFor is OTHER) */}
         {formData.moneyFor === "OTHER" && (
           <div>
             <Label htmlFor="customMoneyFor">Specify Other Category</Label>
@@ -373,8 +340,6 @@ const TransactionUpdateForm = ({
             />
           </div>
         )}
-
-        {/* Description */}
         <div className="md:col-span-2">
           <Label htmlFor="description">Description</Label>
           <Input
@@ -389,7 +354,6 @@ const TransactionUpdateForm = ({
 
       {/* Entry Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Entry By */}
         <div>
           <Label htmlFor="entryBy">Entry By</Label>
           <Input
@@ -399,8 +363,6 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
           />
         </div>
-
-        {/* Verified By */}
         <div>
           <Label htmlFor="verifiedBy">Verified By</Label>
           <Input
@@ -414,21 +376,10 @@ const TransactionUpdateForm = ({
 
       {/* Form Actions */}
       <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          title="Cancel"
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} title="Cancel">
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="bg-primary text-white hover:bg-primary/90"
-          title="Update Transaction"
-        >
+        <Button type="submit" disabled={isSubmitting} className="bg-primary text-white hover:bg-primary/90" title="Update Transaction">
           {isSubmitting ? "Updating..." : "Update Transaction"}
         </Button>
       </div>
