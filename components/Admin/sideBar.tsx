@@ -56,7 +56,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="w-60 lg:w-64 border-none bg-white text-gray-800 md:bg-[#40434e] md:text-white min-h-screen">
+    <Sidebar className="w-60 lg:w-64 border-none overflow-hidden bg-white text-gray-800 md:bg-[#40434e] md:text-white min-h-screen">
       <SidebarContent className="md:bg-[#40434e] bg-white text-gray-800 md:text-white">
         <div className="px-4 py-6">
           <div className="flex items-center gap-2 mb-6">
@@ -86,13 +86,13 @@ export function AppSidebar() {
                         href={item.url}
                         className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                           isActive
-                            ? "bg-[#565869] text-white font-semibold"
-                            : "text-white hover:bg-[#565869]/50"
+                            ? "bg-[#565869] rounded-xl text-white font-semibold"
+                            : "md:text-white text-gray-800 hover:text-white hover:bg-[#565869]/50"
                         }`}
                       >
                         <item.icon
                           className={`w-5 h-5 ${
-                            isActive ? "text-white" : "text-gray-300"
+                            isActive ? "text-white" : "text-gray-700 md:text-white"
                           }`}
                         />
                         <span className="text-sm font-medium">

@@ -196,7 +196,7 @@ export default function UsersCertificateDetails() {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 flex flex-col md:items-center space-y-6">
+    <div className="w-full px-2 sm:px-6 lg:px-8 flex flex-col md:items-start space-y-6">
       {/* Search Bar */}
       <div className="w-full md:max-w-md">
         <input
@@ -204,13 +204,13 @@ export default function UsersCertificateDetails() {
           placeholder="Search users..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 border border-gray-300 min-w-[360px] rounded-md md:w-full"
+          className="p-2 border border-gray-300 w-full rounded-md md:w-full"
         />
       </div>
 
       {/* Stats Section */}
       <Card>
-        <CardContent className="flex items-center p-6 gap-4">
+        <CardContent className="flex items-center md:items-start p-6 gap-4">
           <div className="bg-blue-50 p-3 rounded-lg">
             <Users className="h-6 w-6 text-blue-600" />
           </div>
@@ -232,15 +232,15 @@ export default function UsersCertificateDetails() {
           <p className="text-lg font-medium">Loading...</p>
         </div>
       ) : (
-        <div className="w-full h-full overflow-hidden">
-          <div className="md:w-full rounded-lg shadow p-4 overflow-x-auto">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="w-full h-full overflow-hidden pl-2 pr-2 md:pl-0 md:pr-0">
+          <div className="md:w-full w-full rounded-lg shadow md:p-4 overflow-x-auto">
+            <h2 className="text-2xl mt-10 md:mt-0 md:text-lg font-semibold text-gray-900">
               Certificates List
             </h2>
             <p className="text-sm text-gray-500">Manage all certificates</p>
 
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="overflow-x-auto mt-10 md:mt-0 w-full">
+              <Table className="hidden md:block">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Index</TableHead>
@@ -356,6 +356,145 @@ export default function UsersCertificateDetails() {
                   ))}
                 </TableBody>
               </Table>
+
+              {/* adding the another card section for the smaller screens */}
+              <div className="w-full h-full flex flex-col gap-2">
+                {filteredUsers.map((user) => (
+                  <Card
+                    key={user.id}
+                    className="group md:hidden w-full p-5  bg-white"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex flex-col space-y-2">
+                        {/* Header Section */}
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-1">
+                              {user.fullname}
+                            </h3>
+                            <p className="text-sm font-medium text-blue-600">
+                              {user.email}
+                            </p>
+                          </div>
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-700">
+                            {user.type}
+                          </span>
+                        </div>
+
+                        {/* Details Section */}
+                        <div className="grid grid-cols-2 gap-4 py-2">
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-500">
+                              Mobile
+                            </p>
+                            <p className="text-sm text-gray-900">
+                              {user.mobile}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-500">
+                              Donation ID
+                            </p>
+                            <p className="text-sm text-gray-900">
+                              {user.donationId}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <div className="py-2">
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {user.description}
+                          </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end space-x-2 pt-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="hover:bg-blue-50 transition-colors"
+                                  onClick={() =>
+                                    handleDownloadCertificate(
+                                      user.fullname,
+                                      user.email,
+                                      user.donationId,
+                                      user.id,
+                                      user.type
+                                    )
+                                  }
+                                  disabled={loadingStates[user.id]?.download}
+                                >
+                                  {loadingStates[user.id]?.download ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Download className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Download Certificate</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="hover:bg-blue-50 transition-colors"
+                                  onClick={() =>
+                                    handleEmailCertificate(
+                                      user.fullname,
+                                      user.email,
+                                      user.donationId,
+                                      user.id,
+                                      user.type
+                                    )
+                                  }
+                                  disabled={loadingStates[user.id]?.email}
+                                >
+                                  {loadingStates[user.id]?.email ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Mail className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Email Certificate</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleDelete(user.id)}
+                                  className="hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                                >
+                                  <RiDeleteBin7Line className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete Certificate</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </div>

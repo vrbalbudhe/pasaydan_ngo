@@ -7,9 +7,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { RiDeleteBin7Line } from "react-icons/ri";
+import { RiBuilding2Line, RiDeleteBin7Line, RiUser3Line } from "react-icons/ri";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, UserCheck, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Invoice {
   id: string;
@@ -94,7 +95,9 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
   };
 
   const handleDeleteOrganisation = async (id: string) => {
-    const confirmed = confirm("Are you sure you want to delete this Organisation?");
+    const confirmed = confirm(
+      "Are you sure you want to delete this Organisation?"
+    );
     if (!confirmed) return;
 
     try {
@@ -195,7 +198,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
           <p className="text-lg font-medium">Loading Users Information...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow mt-10 md:mt-0">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Users List</h2>
             <p className="text-sm text-gray-500">
@@ -203,7 +206,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <Table className="min-w-full">
               <TableHeader>
                 <TableRow className="bg-gray-50">
@@ -273,6 +276,91 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
               </TableBody>
             </Table>
           </div>
+          <div className="w-full h-full flex flex-col gap-2 mt-10 md:hidden">
+            {filteredUsers.map((user, index) => (
+              <Card
+                key={user.id}
+                className="group border border-gray-300 overflow-hidden  bg-white"
+              >
+                <CardContent className="p-6">
+                  {/* Header with Avatar */}
+                  <div className="flex items-start justify-between p-5 mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-blue-50 p-2 rounded-full">
+                        <RiUser3Line className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          User #{index + 1}
+                        </p>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {highlightText(user.fullname || "NA", searchQuery)}
+                        </h3>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className={`${
+                        user?.userType === "admin"
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-blue-50 text-blue-700"
+                      }`}
+                    >
+                      {user?.userType || "user"}
+                    </Badge>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div className="space-y-3 ">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 text-sm font-medium text-gray-500">
+                        Email
+                      </div>
+                      <div className="text-sm text-gray-900">
+                        {highlightText(user.email || "NA", searchQuery)}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 text-sm font-medium text-gray-500">
+                        Mobile
+                      </div>
+                      <div className="text-sm text-gray-900">
+                        {highlightText(user.mobile || "NA", searchQuery)}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 text-sm font-medium text-gray-500">
+                        ID
+                      </div>
+                      <div className="text-sm text-gray-900">{user.id}</div>
+                    </div>
+                  </div>
+
+                  {/* Address Section */}
+                  <div className="">
+                    <p className="text-sm font-medium text-gray-500 mb-1">
+                      Address
+                    </p>
+                    <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                      {highlightText(user.address || "NA", searchQuery)}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => handleDelete(user?.id || "NA")}
+                      className="flex items-center space-x-1 px-3 py-2 text-sm text-red-500 hover:text-red-700 
+                         hover:bg-red-50 border border-gray-300 rounded-lg transition-colors duration-200"
+                    >
+                      <RiDeleteBin7Line className="h-4 w-4" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 
@@ -280,11 +368,13 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
       {loading ? (
         <div className="w-full h-[400px] flex flex-col gap-3 justify-center items-center text-gray-600">
           <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-          <p className="text-lg font-medium">Loading Organizations Information...</p>
+          <p className="text-lg font-medium">
+            Loading Organizations Information...
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow">
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b mt-10 mb-10 md:mt-0 md:mb-0 border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
               Organizations List
             </h2>
@@ -293,7 +383,7 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <Table className="min-w-full">
               <TableHeader>
                 <TableRow className="bg-gray-50">
@@ -364,6 +454,89 @@ export default function UsersTable({ searchQuery }: UsersTableProps) {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* adding small scrrens cards here.. */}
+          <div className="md:hidden w-full h-full flex flex-col gap-2">
+            {filteredOrgs.map((org, index) => (
+              <Card
+                key={org.id}
+                className="group p-3 overflow-hidden border-gray-300 bg-white"
+              >
+                <CardContent className="p-6">
+                  {/* Header Section */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-blue-50 p-2 rounded-lg">
+                        <RiBuilding2Line className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          Organization #{index + 1}
+                        </p>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {highlightText(org.name || "NA", searchQuery)}
+                        </h3>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div className="space-y-3">
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-50 text-blue-700"
+                    >
+                      {org.orgId}
+                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-24 text-sm font-medium text-gray-500">
+                        Email
+                      </div>
+                      <div className="text-sm text-gray-900">
+                        {highlightText(org.email || "NA", searchQuery)}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-24 text-sm font-medium text-gray-500">
+                        Mobile
+                      </div>
+                      <div className="text-sm text-gray-900">
+                        {highlightText(org.mobile || "NA", searchQuery)}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-24 text-sm font-medium text-gray-500">
+                        ID
+                      </div>
+                      <div className="text-sm text-gray-900">{org.id}</div>
+                    </div>
+                  </div>
+
+                  {/* Address Section */}
+                  <div className="">
+                    <p className="text-sm font-medium text-gray-500 mb-1">
+                      Address
+                    </p>
+                    <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                      {highlightText(org.address || "NA", searchQuery)}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => handleDeleteOrganisation(org?.id || "NA")}
+                      className="flex items-center space-x-1 px-3 py-2 text-sm text-red-500 border border-gray-300 hover:text-red-700 
+                         hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    >
+                      <RiDeleteBin7Line className="h-4 w-4" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       )}

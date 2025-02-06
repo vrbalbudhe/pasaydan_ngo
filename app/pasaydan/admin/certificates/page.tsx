@@ -15,7 +15,7 @@ const UsersCertificateDetails = dynamic(
 
 export default function Certificates() {
   return (
-    <div className="w-full h-full md:p-4 pr-2 pl-1 flex flex-col gap-5">
+    <div className="w-full h-full md:p-4 flex flex-col justify-start items-center gap-5">
       <CertificateGenerationForm />
       <UsersCertificateDetails />
     </div>
