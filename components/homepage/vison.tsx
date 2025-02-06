@@ -45,9 +45,10 @@ export default function Vision() {
   };
 
   return (
-    <div className="relative w-[95%] md:w-[80%] mx-auto py-16 md:py-24 bg-gradient-to-b from-white to-blue-50">
-      {/* Background Decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    // Wrapper div for full-width background
+    <div className="w-full bg-gradient-to-b from-white to-blue-50 relative">
+      {/* Full-width background decorations */}
+      <div className="absolute inset-0 w-full overflow-hidden pointer-events-none">
         <motion.div 
           className="absolute top-0 left-1/4 w-96 h-96 bg-[#f0f5ff] rounded-full mix-blend-multiply filter blur-xl opacity-50"
           animate={{
@@ -73,14 +74,15 @@ export default function Vision() {
         />
       </div>
 
-      <div className="relative container mx-auto px-4">
+      {/* Content container with 80% width */}
+      <div className="w-[95%] md:w-[80%] mx-auto py-16 md:py-24 relative">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a237e] text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-blue-900 text-center">
             How We Contribute
           </h1>
         </motion.div>
@@ -121,7 +123,7 @@ export default function Vision() {
                       alt={`${card.Header} Icon`}
                     />
                   </motion.div>
-                  <h2 className="text-xl md:text-2xl font-bold text-[#1a237e] text-center">
+                  <h2 className="text-xl md:text-2xl font-bold text-blue-900 text-center">
                     {card.Header}
                   </h2>
                 </CardHeader>
@@ -135,7 +137,7 @@ export default function Vision() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <p className="text-sm md:text-base text-[#334e68] leading-relaxed">
+                    <p className="text-sm md:text-base text-slate-800 leading-relaxed">
                       {card.desc}
                     </p>
                   </motion.div>
@@ -153,7 +155,7 @@ export default function Vision() {
                     </Button>
                   </motion.div>
                 </CardContent>
-              </Card>
+                </Card>
             </motion.div>
           ))}
         </motion.div>
