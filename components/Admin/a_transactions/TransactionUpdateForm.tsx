@@ -71,15 +71,15 @@ const TransactionUpdateForm = ({
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof Transaction, string>> = {};
-    
-    // Required fields validation
+
     if (!formData.name?.trim()) newErrors.name = "Name is required";
     if (!formData.email?.trim()) newErrors.email = "Email is required";
     if (!formData.phone?.trim()) newErrors.phone = "Phone is required";
-    if (!formData.amount || formData.amount <= 0) newErrors.amount = "Valid amount is required";
-    if (!formData.transactionId?.trim()) newErrors.transactionId = "Transaction ID is required";
-    
-    // Email format validation
+    if (!formData.amount || formData.amount <= 0)
+      newErrors.amount = "Valid amount is required";
+    if (!formData.transactionId?.trim())
+      newErrors.transactionId = "Transaction ID is required";
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = "Invalid email format";
@@ -94,24 +94,22 @@ const TransactionUpdateForm = ({
       if (!prev) return null;
       return { ...prev, [key]: value };
     });
-    // Clear error when field is edited
     if (errors[key]) {
-      setErrors(prev => ({ ...prev, [key]: undefined }));
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData) return;
-  
+
     if (!validateForm()) {
       toast.error("Please fix the form errors before submitting");
       return;
     }
-  
+
     setIsSubmitting(true);
     try {
-      // Note the updated API path here
       const response = await fetch("/api/admin/transactions/update", {
         method: "PUT",
         headers: {
@@ -119,25 +117,24 @@ const TransactionUpdateForm = ({
         },
         body: JSON.stringify({
           ...formData,
-          // Ensure dates are properly formatted
           date: formData.date instanceof Date ? formData.date.toISOString() : formData.date,
           entryAt: formData.entryAt instanceof Date ? formData.entryAt.toISOString() : formData.entryAt,
           verifiedAt: formData.verifiedAt instanceof Date ? formData.verifiedAt.toISOString() : formData.verifiedAt,
         }),
       });
-  
+
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Received non-JSON response from server");
       }
-  
+
       const result = await response.json();
       console.log("Response data:", result);
-  
+
       if (!response.ok) {
         throw new Error(result.error || "Failed to update transaction");
       }
-  
+
       if (result.success) {
         toast.success("Transaction updated successfully");
         onUpdate(result.data);
@@ -263,7 +260,7 @@ const TransactionUpdateForm = ({
           <Label htmlFor="transactionNature">Transaction Nature</Label>
           <Select
             value={formData.transactionNature}
-            onValueChange={(value: TransactionNature) => 
+            onValueChange={(value: TransactionNature) =>
               handleInputChange("transactionNature", value)
             }
             disabled={isSubmitting}
@@ -287,7 +284,7 @@ const TransactionUpdateForm = ({
             value={formData.transactionId || ""}
             onChange={(e) => handleInputChange("transactionId", e.target.value)}
             placeholder="Enter transaction ID"
-            disabled={isSubmitting || formData.type === "CASH"}
+            disabled={isSubmitting || (formData.type as unknown as string) === "CASH"}
             className={errors.transactionId ? "border-red-500" : ""}
           />
           {errors.transactionId && (
@@ -312,7 +309,7 @@ const TransactionUpdateForm = ({
           <Label htmlFor="status">Status</Label>
           <Select
             value={formData.status}
-            onValueChange={(value: TransactionStatus) => 
+            onValueChange={(value: TransactionStatus) =>
               handleInputChange("status", value)
             }
             disabled={isSubmitting}
@@ -336,7 +333,7 @@ const TransactionUpdateForm = ({
           <Label htmlFor="moneyFor">Money For</Label>
           <Select
             value={formData.moneyFor}
-            onValueChange={(value: MoneyForCategory) => 
+            onValueChange={(value: MoneyForCategory) =>
               handleInputChange("moneyFor", value)
             }
             disabled={isSubmitting}
