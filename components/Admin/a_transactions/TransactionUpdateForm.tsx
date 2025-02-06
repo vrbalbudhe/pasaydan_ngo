@@ -23,17 +23,11 @@ import { toast } from "sonner";
 
 /**
  * Export a type alias for the transaction used in the update form.
- * We force statusDescription to be `string | null` instead of possibly undefined.
+ * We force statusDescription to be string | null instead of possibly undefined.
  */
 export type UpdateTransaction = Omit<Transaction, "statusDescription"> & {
   statusDescription: string | null;
 };
-
-interface TransactionUpdateFormProps {
-  transaction: UpdateTransaction | null;
-  onUpdate: (updatedTransaction: UpdateTransaction) => void;
-  onCancel: () => void;
-}
 
 interface Transaction {
   id: string;
@@ -54,11 +48,18 @@ interface Transaction {
   status: TransactionStatus;
   statusDescription?: string;
   verifiedBy?: string;
-  verifiedAt?: Date;
+  // Allow null for verifiedAt as per your database design
+  verifiedAt?: Date | null;
   moneyFor: MoneyForCategory;
   customMoneyFor?: string;
   userId?: string;
   organizationId: string | null;
+}
+
+interface TransactionUpdateFormProps {
+  transaction: UpdateTransaction | null;
+  onUpdate: (updatedTransaction: UpdateTransaction) => void;
+  onCancel: () => void;
 }
 
 const TransactionUpdateForm = ({
@@ -68,11 +69,19 @@ const TransactionUpdateForm = ({
 }: TransactionUpdateFormProps) => {
   const [formData, setFormData] = useState<UpdateTransaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof UpdateTransaction, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof UpdateTransaction, string>>
+  >({});
 
+  // Parse date strings into Date objects.
   useEffect(() => {
     if (transaction) {
-      setFormData({ ...transaction });
+      setFormData({
+        ...transaction,
+        date: transaction.date ? new Date(transaction.date) : new Date(),
+        entryAt: transaction.entryAt ? new Date(transaction.entryAt) : new Date(),
+        verifiedAt: transaction.verifiedAt ? new Date(transaction.verifiedAt) : null,
+      });
     }
   }, [transaction]);
 
@@ -89,9 +98,17 @@ const TransactionUpdateForm = ({
     if (!formData.transactionId?.trim())
       newErrors.transactionId = "Transaction ID is required";
 
+    // Validate email format.
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = "Invalid email format";
+    }
+
+    // Validate date: it must be valid and not in the future.
+    if (!formData.date || isNaN(formData.date.getTime())) {
+      newErrors.date = "Valid transaction date is required";
+    } else if (formData.date > new Date()) {
+      newErrors.date = "Future dates are not allowed";
     }
 
     setErrors(newErrors);
@@ -124,9 +141,12 @@ const TransactionUpdateForm = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          // Send valid ISO strings for dates.
           date: formData.date instanceof Date ? formData.date.toISOString() : formData.date,
           entryAt: formData.entryAt instanceof Date ? formData.entryAt.toISOString() : formData.entryAt,
-          verifiedAt: formData.verifiedAt instanceof Date ? formData.verifiedAt.toISOString() : formData.verifiedAt,
+          verifiedAt: formData.verifiedAt instanceof Date
+            ? formData.verifiedAt.toISOString()
+            : formData.verifiedAt,
         }),
       });
 
@@ -154,8 +174,16 @@ const TransactionUpdateForm = ({
     }
   };
 
+  // Helper to get current datetime in "YYYY-MM-DDTHH:mm" format for the max attribute.
+  const getCurrentDateTimeLocal = () => {
+    return new Date().toISOString().slice(0, 16);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto"
+    >
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -168,7 +196,9 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
             className={errors.name ? "border-red-500" : ""}
           />
-          {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="email">Email</Label>
@@ -181,7 +211,9 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
             className={errors.email ? "border-red-500" : ""}
           />
-          {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="phone">Phone</Label>
@@ -193,13 +225,17 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
             className={errors.phone ? "border-red-500" : ""}
           />
-          {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="text-sm text-red-500 mt-1">{errors.phone}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="userType">User Type</Label>
           <Select
             value={formData.userType}
-            onValueChange={(value: UserType) => handleInputChange("userType", value)}
+            onValueChange={(value: UserType) =>
+              handleInputChange("userType", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -222,20 +258,26 @@ const TransactionUpdateForm = ({
             id="amount"
             value={formData.amount ? formatCurrency(formData.amount) : ""}
             onChange={(e) => {
-              const value = parseFloat(e.target.value.replace(/[^0-9.-]+/g, ""));
+              const value = parseFloat(
+                e.target.value.replace(/[^0-9.-]+/g, "")
+              );
               handleInputChange("amount", value);
             }}
             placeholder="Enter amount"
             disabled={isSubmitting}
             className={errors.amount ? "border-red-500" : ""}
           />
-          {errors.amount && <p className="text-sm text-red-500 mt-1">{errors.amount}</p>}
+          {errors.amount && (
+            <p className="text-sm text-red-500 mt-1">{errors.amount}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="type">Transaction Type</Label>
           <Select
             value={formData.type}
-            onValueChange={(value: TransactionType) => handleInputChange("type", value)}
+            onValueChange={(value: TransactionType) =>
+              handleInputChange("type", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -250,10 +292,14 @@ const TransactionUpdateForm = ({
           </Select>
         </div>
         <div>
-          <Label htmlFor="transactionNature">Transaction Nature</Label>
+          <Label htmlFor="transactionNature">
+            Transaction Nature
+          </Label>
           <Select
             value={formData.transactionNature}
-            onValueChange={(value: TransactionNature) => handleInputChange("transactionNature", value)}
+            onValueChange={(value: TransactionNature) =>
+              handleInputChange("transactionNature", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -270,28 +316,54 @@ const TransactionUpdateForm = ({
           <Input
             id="transactionId"
             value={formData.transactionId || ""}
-            onChange={(e) => handleInputChange("transactionId", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("transactionId", e.target.value)
+            }
             placeholder="Enter transaction ID"
             disabled={isSubmitting || formData.type === "CASH"}
             className={errors.transactionId ? "border-red-500" : ""}
           />
-          {errors.transactionId && <p className="text-sm text-red-500 mt-1">{errors.transactionId}</p>}
+          {errors.transactionId && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.transactionId}
+            </p>
+          )}
         </div>
         <div>
           <Label htmlFor="date">Transaction Date</Label>
           <Input
             id="date"
             type="datetime-local"
-            value={formData.date instanceof Date ? formData.date.toISOString().slice(0, 16) : ""}
-            onChange={(e) => handleInputChange("date", new Date(e.target.value))}
+            value={
+              formData.date instanceof Date && !isNaN(formData.date.getTime())
+                ? formData.date.toISOString().slice(0, 16)
+                : ""
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value) {
+                const selectedDate = new Date(value);
+                if (selectedDate > new Date()) {
+                  toast.error("Future dates are not allowed");
+                  return;
+                }
+                handleInputChange("date", selectedDate);
+              }
+            }}
             disabled={isSubmitting}
+            max={getCurrentDateTimeLocal()}
           />
+          {errors.date && (
+            <p className="text-sm text-red-500 mt-1">{errors.date}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="status">Status</Label>
           <Select
             value={formData.status}
-            onValueChange={(value: TransactionStatus) => handleInputChange("status", value)}
+            onValueChange={(value: TransactionStatus) =>
+              handleInputChange("status", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -312,7 +384,9 @@ const TransactionUpdateForm = ({
           <Label htmlFor="moneyFor">Money For</Label>
           <Select
             value={formData.moneyFor}
-            onValueChange={(value: MoneyForCategory) => handleInputChange("moneyFor", value)}
+            onValueChange={(value: MoneyForCategory) =>
+              handleInputChange("moneyFor", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -330,11 +404,15 @@ const TransactionUpdateForm = ({
         </div>
         {formData.moneyFor === "OTHER" && (
           <div>
-            <Label htmlFor="customMoneyFor">Specify Other Category</Label>
+            <Label htmlFor="customMoneyFor">
+              Specify Other Category
+            </Label>
             <Input
               id="customMoneyFor"
               value={formData.customMoneyFor || ""}
-              onChange={(e) => handleInputChange("customMoneyFor", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("customMoneyFor", e.target.value)
+              }
               placeholder="Specify category"
               disabled={isSubmitting}
             />
@@ -345,7 +423,9 @@ const TransactionUpdateForm = ({
           <Input
             id="description"
             value={formData.description || ""}
-            onChange={(e) => handleInputChange("description", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("description", e.target.value)
+            }
             placeholder="Enter description"
             disabled={isSubmitting}
           />
@@ -359,7 +439,9 @@ const TransactionUpdateForm = ({
           <Input
             id="entryBy"
             value={formData.entryBy || ""}
-            onChange={(e) => handleInputChange("entryBy", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("entryBy", e.target.value)
+            }
             disabled={isSubmitting}
           />
         </div>
@@ -368,7 +450,9 @@ const TransactionUpdateForm = ({
           <Input
             id="verifiedBy"
             value={formData.verifiedBy || ""}
-            onChange={(e) => handleInputChange("verifiedBy", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("verifiedBy", e.target.value)
+            }
             disabled={isSubmitting || formData.status !== "VERIFIED"}
           />
         </div>
@@ -376,10 +460,21 @@ const TransactionUpdateForm = ({
 
       {/* Form Actions */}
       <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} title="Cancel">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          title="Cancel"
+        >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="bg-primary text-white hover:bg-primary/90" title="Update Transaction">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-primary text-white hover:bg-primary/90"
+          title="Update Transaction"
+        >
           {isSubmitting ? "Updating..." : "Update Transaction"}
         </Button>
       </div>
