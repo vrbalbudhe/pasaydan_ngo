@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react"; 
 import {
   Select,
   SelectContent,
@@ -25,7 +24,6 @@ interface TransactionUpdateFormProps {
   transaction: Transaction | null;
   onUpdate: (updatedTransaction: Transaction) => void;
   onCancel: () => void;
-  isOpen: boolean;
 }
 
 interface Transaction {
@@ -58,7 +56,6 @@ const TransactionUpdateForm = ({
   transaction,
   onUpdate,
   onCancel,
-  isOpen,
 }: TransactionUpdateFormProps) => {
   const [formData, setFormData] = useState<Transaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +67,8 @@ const TransactionUpdateForm = ({
     }
   }, [transaction]);
 
-  if (!formData || !isOpen) return null;
+  if (!formData) return null;
+
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof Transaction, string>> = {};
     
@@ -113,6 +111,7 @@ const TransactionUpdateForm = ({
   
     setIsSubmitting(true);
     try {
+      // Note the updated API path here
       const response = await fetch("/api/admin/transactions/update", {
         method: "PUT",
         headers: {
@@ -120,13 +119,20 @@ const TransactionUpdateForm = ({
         },
         body: JSON.stringify({
           ...formData,
+          // Ensure dates are properly formatted
           date: formData.date instanceof Date ? formData.date.toISOString() : formData.date,
           entryAt: formData.entryAt instanceof Date ? formData.entryAt.toISOString() : formData.entryAt,
           verifiedAt: formData.verifiedAt instanceof Date ? formData.verifiedAt.toISOString() : formData.verifiedAt,
         }),
       });
   
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response from server");
+      }
+  
       const result = await response.json();
+      console.log("Response data:", result);
   
       if (!response.ok) {
         throw new Error(result.error || "Failed to update transaction");
@@ -135,7 +141,6 @@ const TransactionUpdateForm = ({
       if (result.success) {
         toast.success("Transaction updated successfully");
         onUpdate(result.data);
-        onCancel(); // Close the form after successful update
       } else {
         throw new Error(result.error || "Failed to update transaction");
       }
@@ -148,16 +153,6 @@ const TransactionUpdateForm = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-md max-h-[90vh] overflow-y-auto w-full max-w-4xl m-4">
-        {/* Close button */}
-        <button
-          onClick={onCancel}
-          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
-          aria-label="Close"
-        >
-          <X className="h-6 w-6" />
-        </button>
     <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -410,27 +405,25 @@ const TransactionUpdateForm = ({
         </div>
       </div>
 
-     {/* Form Actions */}
-     <div className="flex justify-end gap-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-primary text-white hover:bg-primary/90"
-            >
-              {isSubmitting ? "Updating..." : "Update Transaction"}
-            </Button>
-          </div>
-        </form>
+      {/* Form Actions */}
+      <div className="flex justify-end gap-4 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="bg-primary text-white hover:bg-primary/90"
+        >
+          {isSubmitting ? "Updating..." : "Update Transaction"}
+        </Button>
       </div>
-    </div>
+    </form>
   );
 };
 
