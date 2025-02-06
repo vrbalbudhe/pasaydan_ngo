@@ -1,3 +1,4 @@
+// components/Admin/a_transactions/TransactionUpdateForm.tsx
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ interface TransactionUpdateFormProps {
   onCancel: () => void;
 }
 
+// Updated Transaction interface so that fields such as description and screenshotPath allow null values.
 interface Transaction {
   id: string;
   name: string;
@@ -36,20 +38,22 @@ interface Transaction {
   type: TransactionType;
   transactionId: string;
   date: Date;
+  // Now TransactionNature only supports CREDIT and DEBIT
   transactionNature: TransactionNature;
-  screenshotPath?: string | null;
+  screenshotPath: string | null;
   entryType: EntryType;
   entryBy: string;
   entryAt: Date;
-  description?: string;
+  description: string | null;
   status: TransactionStatus;
   statusDescription?: string;
   verifiedBy?: string;
   verifiedAt?: Date;
+  // Updated MoneyFor options: CLOTHES, FOOD, CYCLE, EDUCATION, HEALTHCARE, OTHER
   moneyFor: MoneyForCategory;
   customMoneyFor?: string;
   userId?: string;
-  organizationId?: string | null;
+  organizationId: string | null;
 }
 
 const TransactionUpdateForm = ({
@@ -150,7 +154,10 @@ const TransactionUpdateForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto"
+    >
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Name */}
@@ -269,9 +276,9 @@ const TransactionUpdateForm = ({
               <SelectValue placeholder="Select nature" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="DONATION">Donation</SelectItem>
-              <SelectItem value="EXPENSE">Expense</SelectItem>
-              <SelectItem value="REFUND">Refund</SelectItem>
+              {/* Updated options: only CREDIT and DEBIT */}
+              <SelectItem value="CREDIT">Credit</SelectItem>
+              <SelectItem value="DEBIT">Debit</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -284,7 +291,7 @@ const TransactionUpdateForm = ({
             value={formData.transactionId || ""}
             onChange={(e) => handleInputChange("transactionId", e.target.value)}
             placeholder="Enter transaction ID"
-            disabled={isSubmitting || (formData.type as unknown as string) === "CASH"}
+            disabled={isSubmitting || formData.type === "CASH"}
             className={errors.transactionId ? "border-red-500" : ""}
           />
           {errors.transactionId && (
@@ -342,9 +349,12 @@ const TransactionUpdateForm = ({
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="SALARY">Salary</SelectItem>
-              <SelectItem value="BONUS">Bonus</SelectItem>
-              <SelectItem value="FEES">Fees</SelectItem>
+              {/* Updated options per your schema */}
+              <SelectItem value="CLOTHES">Clothes</SelectItem>
+              <SelectItem value="FOOD">Food</SelectItem>
+              <SelectItem value="CYCLE">Cycle</SelectItem>
+              <SelectItem value="EDUCATION">Education</SelectItem>
+              <SelectItem value="HEALTHCARE">Healthcare</SelectItem>
               <SelectItem value="OTHER">Other</SelectItem>
             </SelectContent>
           </Select>
@@ -403,12 +413,13 @@ const TransactionUpdateForm = ({
       </div>
 
       {/* Form Actions */}
-      <div className="flex justify-end gap-4 pt-4">
+      <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isSubmitting}
+          title="Cancel"
         >
           Cancel
         </Button>
@@ -416,6 +427,7 @@ const TransactionUpdateForm = ({
           type="submit" 
           disabled={isSubmitting}
           className="bg-primary text-white hover:bg-primary/90"
+          title="Update Transaction"
         >
           {isSubmitting ? "Updating..." : "Update Transaction"}
         </Button>

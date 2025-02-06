@@ -24,6 +24,7 @@ import {
   XCircle,
   Search,
   ArrowUpDown,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -56,21 +57,22 @@ import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
 import TransactionUpdateForm from "./TransactionUpdateForm";
 
+// --- Updated FilterOptions: use undefined rather than null ---
+interface FilterOptions {
+  status: TransactionStatus | "ALL";
+  type: TransactionType | "ALL";
+  dateRange: "today" | "week" | "month" | "all" | "custom";
+  selectedDate?: Date;
+  startDate?: Date;
+  endDate?: Date;
+  selectedDates?: string[];
+}
+
 interface Pagination {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
-}
-
-interface FilterOptions {
-  status: TransactionStatus | "ALL";
-  type: TransactionType | "ALL";
-  dateRange: "today" | "week" | "month" | "all" | "custom";
-  selectedDate: Date | null;
-  startDate: Date | undefined;
-  endDate: Date | undefined;
-  selectedDates?: string[];
 }
 
 export default function TransactionTable() {
@@ -109,8 +111,7 @@ export default function TransactionTable() {
     };
   }, [handleSearch]);
 
-  // Instead of calling the API again from the parent, let the update form do it.
-  // On success, simply close the modal, refresh the list, and show a toast.
+  // When update is successful, close modal and refresh list
   const handleUpdateSuccess = (updatedTransaction: Transaction) => {
     toast.success("Transaction updated successfully");
     setShowEditForm(false);
@@ -123,12 +124,12 @@ export default function TransactionTable() {
     setShowEditForm(false);
   };
 
-  // Filter state
+  // --- Update Filter state to use undefined instead of null ---
   const [filters, setFilters] = useState<FilterOptions>({
     status: "ALL",
     type: "ALL",
     dateRange: "all",
-    selectedDate: null,
+    selectedDate: undefined,
     startDate: undefined,
     endDate: undefined,
   });
@@ -156,7 +157,7 @@ export default function TransactionTable() {
         }
         break;
       default:
-        start.setFullYear(2000); // Set a past date for "all"
+        start.setFullYear(2000); // For "all" show a wide range
     }
 
     return { start, end };
@@ -258,6 +259,7 @@ export default function TransactionTable() {
 
   return (
     <Card className="w-full">
+      {/* Screenshot Modal */}
       {showScreenshot && selectedTransaction?.screenshotPath && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
           <div className="relative p-4 bg-white rounded-lg shadow-lg max-w-3xl w-full">
@@ -272,6 +274,7 @@ export default function TransactionTable() {
               <p>No Screenshots Available!</p>
             )}
             <Button
+              title="Close Screenshot"
               variant="outline"
               size="sm"
               className="absolute top-2 right-2"
@@ -366,7 +369,9 @@ export default function TransactionTable() {
                   </Label>
                   <DatePicker
                     selected={filters.startDate}
-                    onSelect={(date) => handleFilterChange("startDate", date)}
+                    onSelect={(date: Date | undefined) =>
+                      handleFilterChange("startDate", date)
+                    }
                     className="w-[150px]"
                   />
                 </div>
@@ -376,7 +381,9 @@ export default function TransactionTable() {
                   </Label>
                   <DatePicker
                     selected={filters.endDate}
-                    onSelect={(date) => handleFilterChange("endDate", date)}
+                    onSelect={(date: Date | undefined) =>
+                      handleFilterChange("endDate", date)
+                    }
                     className="w-[150px]"
                   />
                 </div>
@@ -391,7 +398,7 @@ export default function TransactionTable() {
               {filters.dateRange === "custom" && (
                 <DatePicker
                   selected={filters.selectedDate}
-                  onSelect={(date: Date | null) =>
+                  onSelect={(date: Date | undefined) =>
                     handleFilterChange("selectedDate", date)
                   }
                 />
@@ -404,6 +411,7 @@ export default function TransactionTable() {
               filters.startDate ||
               filters.endDate) && (
               <Button
+                title="Clear Filters"
                 variant="outline"
                 size="sm"
                 className="h-10 self-end"
@@ -415,7 +423,7 @@ export default function TransactionTable() {
                     endDate: undefined,
                     dateRange: "all",
                     selectedDates: undefined,
-                    selectedDate: null,
+                    selectedDate: undefined,
                   });
                 }}
               >
@@ -465,6 +473,7 @@ export default function TransactionTable() {
                         No transactions found
                       </p>
                       <Button
+                        title="Reset Filters"
                         variant="outline"
                         size="sm"
                         onClick={() => {
@@ -475,7 +484,7 @@ export default function TransactionTable() {
                             startDate: undefined,
                             endDate: undefined,
                             dateRange: "all",
-                            selectedDate: null,
+                            selectedDate: undefined,
                           });
                           refetchTransactions();
                         }}
@@ -508,6 +517,7 @@ export default function TransactionTable() {
                     <TableCell className="text-right">
                       <div className="flex space-x-2">
                         <Button
+                          title="Edit Transaction"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowEditForm(true);
@@ -517,6 +527,7 @@ export default function TransactionTable() {
                         </Button>
 
                         <Button
+                          title="View Details"
                           variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
@@ -525,7 +536,9 @@ export default function TransactionTable() {
                         >
                           <Eye className="h-5 w-5" />
                         </Button>
+
                         <Button
+                          title="Verify Transaction"
                           variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
@@ -535,7 +548,9 @@ export default function TransactionTable() {
                         >
                           <CheckCircle className="h-5 w-5" />
                         </Button>
+
                         <Button
+                          title="Reject Transaction"
                           variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
@@ -546,7 +561,9 @@ export default function TransactionTable() {
                         >
                           <XCircle className="h-5 w-5" />
                         </Button>
+
                         <Button
+                          title="Delete Transaction"
                           variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
@@ -555,14 +572,16 @@ export default function TransactionTable() {
                         >
                           <Trash2 className="h-5 w-5" />
                         </Button>
+
                         <Button
+                          title="View Screenshot"
                           variant="ghost"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setShowScreenshot(true);
                           }}
                         >
-                          <Eye className="h-5 w-5" />
+                          <ImageIcon className="h-5 w-5" />
                         </Button>
                       </div>
                     </TableCell>
@@ -576,12 +595,12 @@ export default function TransactionTable() {
         {/* Pagination */}
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {filteredTransactions.length} of {pagination.total}{" "}
-            transactions
+            Showing {filteredTransactions.length} of {pagination.total} transactions
             {searchTerm && ` (Filtered from ${transactions.length} total)`}
           </p>
           <div className="flex items-center space-x-2">
             <Button
+              title="Previous Page"
               variant="outline"
               onClick={() =>
                 setPagination((prev: any) => ({ ...prev, page: prev.page - 1 }))
@@ -594,6 +613,7 @@ export default function TransactionTable() {
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <Button
+              title="Next Page"
               variant="outline"
               onClick={() =>
                 setPagination((prev: any) => ({ ...prev, page: prev.page + 1 }))
@@ -629,18 +649,19 @@ export default function TransactionTable() {
               </DialogTitle>
               <DialogDescription>
                 Are you sure you want to{" "}
-                {statusAction === "VERIFY" ? "verify" : "reject"} this
-                transaction?
+                {statusAction === "VERIFY" ? "verify" : "reject"} this transaction?
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button
+                title="Cancel"
                 variant="outline"
                 onClick={() => setShowStatusDialog(false)}
               >
                 Cancel
               </Button>
               <Button
+                title={statusAction === "VERIFY" ? "Verify" : "Reject"}
                 variant={statusAction === "VERIFY" ? "default" : "destructive"}
                 onClick={() =>
                   handleStatusUpdate(
@@ -663,18 +684,14 @@ export default function TransactionTable() {
             <DialogHeader>
               <DialogTitle>Delete Transaction</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete this transaction? This action
-                cannot be undone.
+                Are you sure you want to delete this transaction? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteDialog(false)}
-              >
+              <Button title="Cancel" variant="outline" onClick={() => setShowDeleteDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button title="Delete" variant="destructive" onClick={handleDelete}>
                 Delete
               </Button>
             </DialogFooter>
@@ -686,8 +703,17 @@ export default function TransactionTable() {
       {showEditForm && selectedTransaction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-lg w-full max-w-xl max-h-[90vh] overflow-y-auto p-6">
+            {/* Ensure the transaction passed to the update form has the expected types:
+                • description and screenshotPath are forced to be null if undefined */}
             <TransactionUpdateForm
-              transaction={selectedTransaction}
+              transaction={
+                {
+                  ...selectedTransaction,
+                  description: selectedTransaction.description ?? null,
+                  screenshotPath: selectedTransaction.screenshotPath ?? null,
+                  organizationId: selectedTransaction.organizationId ?? null,
+                } as Transaction
+              }
               onUpdate={handleUpdateSuccess}
               onCancel={handleCancelUpdate}
             />
