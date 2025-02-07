@@ -9,10 +9,10 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="w-full h-full pb-10 flex flex-col justify-start items-center">
+    <div className="w-full h-full flex flex-col justify-start items-center">
       <HeroSection />
       <TitleInfo />
-      <div className="bg-gradient-to-b from-white via-[#f8faff] to-[#edf2ff] w-full flex flex-col justify-center items-center">
+      <div className="md:bg-gradient-to-b md:from-white md:via-[#f8faff] md:to-[#edf2ff] w-full flex flex-col justify-center items-center">
         <Vision />
         <QRSection />
         <Metrics />

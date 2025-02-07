@@ -10,7 +10,7 @@ const Navbar = async () => {
       {/* Logo */}
       <Link href="/pasaydan/com" className="flex items-center gap-2">
         <Image className="rounded-full w-10 h-10 object-cover" src={logo.src} alt="Pasaydan Logo" width={40} height={50} />
-        <p className="-tracking-tighter text-lg text-slate-800">Pasaydan</p>
+        <p className="tracking-tight text-lg text-gray-800">Pasaydan</p>
       </Link>
 
       <Navigator />

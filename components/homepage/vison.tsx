@@ -11,12 +11,14 @@ const cardsDict = [
     desc: "Our mission is to contribute to the betterment of society. We work towards providing food to the needy, promoting education, and ensuring access to healthcare services. Our goal is to raise awareness within the community and strive for a better future. We are committed to addressing people's challenges by utilizing resources in the right direction. This journey can become even more impactful with your support.",
   },
   {
-    Image: "https://img.freepik.com/premium-vector/cozy-blanket-icon_444196-23906.jpg",
+    Image:
+      "https://img.freepik.com/premium-vector/cozy-blanket-icon_444196-23906.jpg",
     Header: "Donating Blankets",
     desc: "We aim to provide warmth and comfort to the underprivileged during cold seasons by distributing blankets. Every donation helps shield people from harsh weather conditions, ensuring their basic needs are met. Join us in bringing a little warmth into their lives and spreading kindness across communities.",
   },
   {
-    Image: "https://static.vecteezy.com/system/resources/previews/010/353/075/non_2x/cycling-sport-color-icon-illustration-vector.jpg",
+    Image:
+      "https://static.vecteezy.com/system/resources/previews/010/353/075/non_2x/cycling-sport-color-icon-illustration-vector.jpg",
     Header: "Donating Cycles",
     desc: "Transportation is a major challenge for many. By donating cycles, we empower individuals with a means to travel to schools, workplaces, or markets. This initiative not only helps save time but also promotes eco-friendly commuting, benefiting both the individual and the environment.",
   },
@@ -26,7 +28,8 @@ const cardsDict = [
     desc: "Blood donation is a noble cause that saves lives. We actively organize blood donation camps to ensure hospitals have an adequate supply for emergencies. Your donation can make the difference between life and death for someone in need. Be a hero—donate blood today.",
   },
   {
-    Image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa-4xBdVDWVv9B_AogOH3atcHxBZ23OMMjMw&s",
+    Image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa-4xBdVDWVv9B_AogOH3atcHxBZ23OMMjMw&s",
     Header: "Donating Clothes",
     desc: "Clothing donations are a great way to help those in need. By donating gently used clothes, you can provide warmth and comfort to individuals who are facing hardships. Your donation can make a difference in someone's life by giving them dignity and hope. Donate clothes today.",
   },
@@ -46,49 +49,59 @@ export default function Vision() {
 
   return (
     // Wrapper div for full-width background
-    <div className="w-full bg-gradient-to-b from-white to-blue-50 relative">
+    <div className="w-full md:bg-gradient-to-b md:from-white md:to-blue-50 relative">
       {/* Full-width background decorations */}
       <div className="absolute inset-0 w-full overflow-hidden pointer-events-none">
-        <motion.div 
-          className="absolute top-0 left-1/4 w-96 h-96 bg-[#f0f5ff] rounded-full mix-blend-multiply filter blur-xl opacity-50"
+        <motion.div
+          className="absolute top-0 left-1/4 w-96 h-96 md:bg-[#f0f5ff] rounded-full mix-blend-multiply filter blur-xl opacity-50"
           animate={{
-            transform: ["translate(0px, 0px) scale(1)", "translate(30px, -50px) scale(1.1)", "translate(-20px, 20px) scale(0.9)", "translate(0px, 0px) scale(1)"]
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div 
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#e6eeff] rounded-full mix-blend-multiply filter blur-xl opacity-50"
-          animate={{
-            transform: ["translate(0px, 0px) scale(1)", "translate(30px, -50px) scale(1.1)", "translate(-20px, 20px) scale(0.9)", "translate(0px, 0px) scale(1)"]
+            transform: [
+              "translate(0px, 0px) scale(1)",
+              "translate(30px, -50px) scale(1.1)",
+              "translate(-20px, 20px) scale(0.9)",
+              "translate(0px, 0px) scale(1)",
+            ],
           }}
           transition={{
             duration: 7,
             repeat: Infinity,
             ease: "linear",
-            delay: 2
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#e6eeff] rounded-full mix-blend-multiply filter blur-xl opacity-50"
+          animate={{
+            transform: [
+              "translate(0px, 0px) scale(1)",
+              "translate(30px, -50px) scale(1.1)",
+              "translate(-20px, 20px) scale(0.9)",
+              "translate(0px, 0px) scale(1)",
+            ],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "linear",
+            delay: 2,
           }}
         />
       </div>
 
       {/* Content container with 80% width */}
-      <div className="w-[95%] md:w-[80%] mx-auto py-16 md:py-24 relative">
+      <div className="w-[90%] md:w-[80%] mx-auto py-16 md:py-24 relative">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-blue-900 text-center">
+          <h1 className="text-5xl sm:text-4xl md:text-5xl font-semibold md:font-bold text-[#0047AB] text-center">
             How We Contribute
           </h1>
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -110,10 +123,10 @@ export default function Vision() {
                 visible: { opacity: 1, y: 0 },
               }}
             >
-              <Card className="h-full bg-white/90 backdrop-blur border-2 border-[#e3e8ee] rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <Card className="h-full bg-inherit backdrop-blur border bg-white border-gray-200 rounded-4xl overflow-hidden shadow-md md:hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                 <CardHeader className="p-6">
                   <motion.div
-                    className="w-32 h-32 mx-auto mb-4"
+                    className="md:w-32 md:h-32 w-60 h-60 mx-auto mb-4"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
                   >
@@ -123,7 +136,7 @@ export default function Vision() {
                       alt={`${card.Header} Icon`}
                     />
                   </motion.div>
-                  <h2 className="text-xl md:text-2xl font-bold text-blue-900 text-center">
+                  <h2 className="text-3xl md:text-2xl font-bold text-[#0047AB] text-center">
                     {card.Header}
                   </h2>
                 </CardHeader>
@@ -137,7 +150,7 @@ export default function Vision() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <p className="text-sm md:text-base text-slate-800 leading-relaxed">
+                    <p className="text-md md:text-base text-gray-600 italic leading-relaxed">
                       {card.desc}
                     </p>
                   </motion.div>
@@ -155,7 +168,7 @@ export default function Vision() {
                     </Button>
                   </motion.div>
                 </CardContent>
-                </Card>
+              </Card>
             </motion.div>
           ))}
         </motion.div>

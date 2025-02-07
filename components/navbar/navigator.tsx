@@ -26,7 +26,7 @@ export default function Navigator() {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="md:hidden">
+      <div className="md:hidden w-full flex justify-end items-center">
         <button
           onClick={toggleMenu}
           className="p-2 text-slate-800 hover:text-slate-600"
@@ -45,8 +45,8 @@ export default function Navigator() {
                   isActiveRoute(link.href)
                     ? "text-blue-700"
                     : isLogsignRoute
-                    ? "text-white"
-                    : "text-slate-800"
+                      ? "text-white"
+                      : "text-slate-800"
                 } hover:text-slate-700`}
               >
                 {link.label}
@@ -80,7 +80,8 @@ export default function Navigator() {
     </>
   );
 }
-{/*"use client";
+{
+  /*"use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -166,4 +167,5 @@ export default function Navigator() {
       </div>
     </>
   );
-}*/}
+}*/
+}

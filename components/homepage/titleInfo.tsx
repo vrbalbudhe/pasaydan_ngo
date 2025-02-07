@@ -41,7 +41,7 @@ export default function TitleInfo() {
   };
 
   return (
-    <div className="relative min-h-screen w-[95%] md:w-4/5 mx-auto py-12 md:py-20">
+    <div className="relative min-h-screen w-[95%] md:w-4/5 mx-auto md:py-20">
       {/* Background Decorations */}
 
       <div className="relative container mx-auto px-4">
@@ -53,7 +53,7 @@ export default function TitleInfo() {
           variants={fadeInUp}
         >
           <motion.h1
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-[70px] font-bold text-blue-900 tracking-tight"
+            className="text-7xl sm:text-6xl md:text-7xl lg:text-[70px] md:font-bold font-medium text-[#0047AB] tracking-tight"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
@@ -61,14 +61,14 @@ export default function TitleInfo() {
           </motion.h1>
 
           <motion.h2
-            className="text-xl sm:text-2xl md:text-3xl text-slate-800 font-semibold"
+            className="text-2xl md:text-3xl text-gray-600 font-semibold"
             variants={fadeInUp}
           >
             जो जे वांच्छिल तो तें लाहो । प्राणिज
           </motion.h2>
 
           <motion.p
-            className="text-sm sm:text-base md:text-lg text-slate-700"
+            className="text-xl md:text-lg italic text-slate-700"
             variants={fadeInUp}
           >
             ~ संत ज्ञानेश्वर महाराज
@@ -102,15 +102,15 @@ export default function TitleInfo() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <Card className="backdrop-blur-sm bg-white/90 border-2 border-blue-100 rounded-2xl shadow-xl">
+            <Card className="backdrop-blur-sm md:bg-white shadow-none md:border border-none md:border-gray-200 rounded-2xl md:shadow-xl">
               <CardHeader className="space-y-8">
                 {/* Marathi Description */}
-                <CardDescription className="text-base sm:text-lg md:text-2xl text-slate-800 leading-relaxed text-center">
+                <CardDescription className="text-xl md:text-2xl text-gray-800 leading-relaxed text-center">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
-                    className="p-4 rounded-xl bg-blue-50/50"
+                    className="md:p-4 p-2 rounded-xl md:bg-blue-50/50"
                   >
                     पसायदान हा शब्द पासा (पसा) या दोन शब्दांची रचना आहे ज्याचा
                     अर्थ हाताचे तळवे एकमेकांना जोडलेले आहेत (जसे आपण कोणीतरी
@@ -121,12 +121,12 @@ export default function TitleInfo() {
                 </CardDescription>
 
                 {/* English Description */}
-                <CardDescription className="text-sm sm:text-base md:text-lg text-slate-800 text-center">
+                <CardDescription className="text-xl md:text-lg text-gray-800 italic text-center">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.8 }}
-                    className="p-4 rounded-xl bg-purple-50/50"
+                    className="p-4 rounded-xl md:bg-purple-50/50"
                   >
                     THE WORD PASAYDAN IS A COMPOSITION OF TWO WORDS PASA (HT)
                     WHICH MEANS PALMS SPREAD JOINED TOGETHER (LIKE WE MAKE WHEN

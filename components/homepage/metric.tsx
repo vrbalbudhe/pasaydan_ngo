@@ -29,34 +29,36 @@ const MetricCard: React.FC<{
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
     >
-      <Card className="relative flex flex-col items-center p-4 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 overflow-hidden group bg-white/90 backdrop-blur border-2 border-blue-100">
+      <Card className="relative flex flex-col items-center p-6 sm:p-6 md:p-8 bg-[#6495ED] md:hover:shadow-2xl transition-all duration-300 overflow-hidden group md:bg-white/90 backdrop-blur border md:border-2 border-gray-200">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 md:bg-gradient-to-br md:from-blue-50 md:to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative z-10 flex justify-evenly items-center gap-10">
           <motion.div
-            className="text-blue-900 mb-4 transform transition-transform duration-300 group-hover:scale-110"
+            className="text-blue-900 w-1/3 md:w-full mb-4 transform transition-transform duration-300 group-hover:scale-110"
             whileHover={{ rotate: [0, -10, 10, -10, 0] }}
             transition={{ duration: 0.5 }}
           >
             {React.cloneElement(icon as React.ReactElement, {
-              className: "text-4xl sm:text-5xl md:text-7xl",
+              className: "text-6xl md:text-blue-900 text-white sm:text-5xl md:text-7xl",
             })}
           </motion.div>
 
-          <motion.h2
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-900 mb-2"
-            initial={{ scale: 0.5 }}
-            whileInView={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: delay + 0.2 }}
-          >
-            {Math.floor(value)}+
-          </motion.h2>
+          <div className="w-2/3 md:w-full">
+            <motion.h2
+              className="text-4xl sm:text-3xl md:text-4xl font-bold text-white md:text-blue-900 mb-2"
+              initial={{ scale: 0.5 }}
+              whileInView={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: delay + 0.2 }}
+            >
+              {Math.floor(value)}+
+            </motion.h2>
 
-          <p className="text-sm sm:text-base md:text-lg text-blue-700 font-medium">
-            {label}
-          </p>
+            <p className="text-md sm:text-base md:text-lg text-white md:text-blue-700 font-medium">
+              {label}
+            </p>
+          </div>
         </div>
 
         {/* Decorative Elements */}
@@ -158,7 +160,10 @@ const Metrics: React.FC = () => {
   }, [hasAnimated, targetValues]);
 
   return (
-    <div ref={metricsRef} className="relative w-[92%] md:w-[80%] mx-auto py-16 md:py-24">
+    <div
+      ref={metricsRef}
+      className="relative w-[92%] md:w-[80%] mx-auto py-16 md:py-24"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -166,7 +171,7 @@ const Metrics: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 md:mb-20"
         >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 leading-tight">
+          <h1 className="text-4xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 leading-tight">
             THE GOAL:
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
               {" "}
@@ -177,7 +182,7 @@ const Metrics: React.FC = () => {
           </h1>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
           <MetricCard
             icon={<GiDiamondTrophy />}
             value={metrics.awards}

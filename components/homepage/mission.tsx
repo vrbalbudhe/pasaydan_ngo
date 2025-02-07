@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Eye, Target } from "lucide-react";
-import Image from 'next/image';
-import heroo from '@/assets/homepage/heroo.png';
+import Image from "next/image";
+import heroo from "@/assets/homepage/heroo.png";
 
 const Mission: React.FC = () => {
   const containerAnimation = {
@@ -38,11 +38,11 @@ const Mission: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-b from-white to-blue-50">
-      <div className="w-[90%] md:w-4/5 mx-auto py-8 md:py-16">
+    <div className="w-full bg-gradient-to-b md:from-white md:to-blue-50">
+      <div className="w-[92%] md:w-4/5 mx-auto py-8 md:py-16">
         <div className="relative container mx-auto px-2 sm:px-4">
           <motion.h2
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 text-center mb-8 md:mb-12"
+            className="text-5xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 text-center mb-8 md:mb-12"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -60,14 +60,14 @@ const Mission: React.FC = () => {
             >
               {/* Vision Card */}
               <motion.div variants={itemAnimation}>
-                <Card className="w-full transform hover:scale-105 transition-transform duration-300 shadow-xl bg-white/90 backdrop-blur glow-effect border-2 border-blue-200">
+                <Card className="w-full transform md:hover:scale-105 transition-transform duration-300 shadow-md bg-white backdrop-blur glow-effect border border-gray-200">
                   <CardHeader className="relative pb-0">
                     <div className="absolute -top-4 sm:-top-6 md:-top-8 left-1/2 transform -translate-x-1/2">
                       <div className="bg-blue-900 p-2 sm:p-3 md:p-4 rounded-full shadow-lg glow-icon">
                         <Eye className="w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 text-white" />
                       </div>
                     </div>
-                    <CardTitle className="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
+                    <CardTitle className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
                       Vision
                     </CardTitle>
                   </CardHeader>
@@ -86,14 +86,14 @@ const Mission: React.FC = () => {
 
               {/* Mission Card */}
               <motion.div variants={itemAnimation}>
-                <Card className="w-full transform hover:scale-105 transition-transform duration-300 shadow-xl bg-white/90 backdrop-blur glow-effect border-2 border-blue-200">
+                <Card className="w-full transform hover:scale-105 transition-transform duration-300 shadow-md bg-white backdrop-blur glow-effect border border-gray-200">
                   <CardHeader className="relative pb-0">
                     <div className="absolute -top-4 sm:-top-6 md:-top-8 left-1/2 transform -translate-x-1/2">
                       <div className="bg-blue-900 p-2 sm:p-3 md:p-4 rounded-full shadow-lg glow-icon">
                         <Target className="w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 text-white" />
                       </div>
                     </div>
-                    <CardTitle className="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
+                    <CardTitle className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
                       Mission
                     </CardTitle>
                   </CardHeader>
@@ -112,7 +112,7 @@ const Mission: React.FC = () => {
             </motion.div>
 
             {/* Right Column - Overlapping Images */}
-            <motion.div 
+            <motion.div
               className="w-full lg:w-1/2 relative h-[600px]"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -120,7 +120,7 @@ const Mission: React.FC = () => {
             >
               {/* Background blue box */}
               <div className="absolute right-0 top-8 w-4/5 h-[500px] bg-blue-900 rounded-3xl transform rotate-6"></div>
-              
+
               {/* Hero image */}
               <motion.div
                 className="absolute right-8 top-0 w-4/5 h-[500px] overflow-hidden rounded-3xl shadow-2xl"
