@@ -1,8 +1,8 @@
+"use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react"; 
 import {
   Select,
   SelectContent,
@@ -21,12 +21,13 @@ import {
 import { formatCurrency } from "@/utils/format";
 import { toast } from "sonner";
 
-interface TransactionUpdateFormProps {
-  transaction: Transaction | null;
-  onUpdate: (updatedTransaction: Transaction) => void;
-  onCancel: () => void;
-  isOpen: boolean;
-}
+/**
+ * Export a type alias for the transaction used in the update form.
+ * We force statusDescription to be string | null instead of possibly undefined.
+ */
+export type UpdateTransaction = Omit<Transaction, "statusDescription"> & {
+  statusDescription: string | null;
+};
 
 interface Transaction {
   id: string;
@@ -39,103 +40,129 @@ interface Transaction {
   transactionId: string;
   date: Date;
   transactionNature: TransactionNature;
-  screenshotPath?: string | null;
+  screenshotPath: string | null;
   entryType: EntryType;
   entryBy: string;
   entryAt: Date;
-  description?: string;
+  description: string | null;
   status: TransactionStatus;
   statusDescription?: string;
   verifiedBy?: string;
-  verifiedAt?: Date;
+  // Allow null for verifiedAt as per your database design
+  verifiedAt?: Date | null;
   moneyFor: MoneyForCategory;
   customMoneyFor?: string;
   userId?: string;
-  organizationId?: string | null;
+  organizationId: string | null;
+}
+
+interface TransactionUpdateFormProps {
+  transaction: UpdateTransaction | null;
+  onUpdate: (updatedTransaction: UpdateTransaction) => void;
+  onCancel: () => void;
 }
 
 const TransactionUpdateForm = ({
   transaction,
   onUpdate,
   onCancel,
-  isOpen,
 }: TransactionUpdateFormProps) => {
-  const [formData, setFormData] = useState<Transaction | null>(null);
+  const [formData, setFormData] = useState<UpdateTransaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof Transaction, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof UpdateTransaction, string>>
+  >({});
 
+  // Parse date strings into Date objects.
   useEffect(() => {
     if (transaction) {
-      setFormData({ ...transaction });
+      setFormData({
+        ...transaction,
+        date: transaction.date ? new Date(transaction.date) : new Date(),
+        entryAt: transaction.entryAt ? new Date(transaction.entryAt) : new Date(),
+        verifiedAt: transaction.verifiedAt ? new Date(transaction.verifiedAt) : null,
+      });
     }
   }, [transaction]);
 
-  if (!formData || !isOpen) return null;
+  if (!formData) return null;
+
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof Transaction, string>> = {};
-    
-    // Required fields validation
+    const newErrors: Partial<Record<keyof UpdateTransaction, string>> = {};
+
     if (!formData.name?.trim()) newErrors.name = "Name is required";
     if (!formData.email?.trim()) newErrors.email = "Email is required";
     if (!formData.phone?.trim()) newErrors.phone = "Phone is required";
-    if (!formData.amount || formData.amount <= 0) newErrors.amount = "Valid amount is required";
-    if (!formData.transactionId?.trim()) newErrors.transactionId = "Transaction ID is required";
-    
-    // Email format validation
+    if (!formData.amount || formData.amount <= 0)
+      newErrors.amount = "Valid amount is required";
+    if (!formData.transactionId?.trim())
+      newErrors.transactionId = "Transaction ID is required";
+
+    // Validate email format.
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = "Invalid email format";
+    }
+
+    // Validate date: it must be valid and not in the future.
+    if (!formData.date || isNaN(formData.date.getTime())) {
+      newErrors.date = "Valid transaction date is required";
+    } else if (formData.date > new Date()) {
+      newErrors.date = "Future dates are not allowed";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (key: keyof Transaction, value: any) => {
+  const handleInputChange = (key: keyof UpdateTransaction, value: any) => {
     setFormData((prev) => {
       if (!prev) return null;
       return { ...prev, [key]: value };
     });
-    // Clear error when field is edited
     if (errors[key]) {
-      setErrors(prev => ({ ...prev, [key]: undefined }));
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData) return;
-  
+
     if (!validateForm()) {
       toast.error("Please fix the form errors before submitting");
       return;
     }
-  
+
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/admin/transactions/update", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          // Send valid ISO strings for dates.
           date: formData.date instanceof Date ? formData.date.toISOString() : formData.date,
           entryAt: formData.entryAt instanceof Date ? formData.entryAt.toISOString() : formData.entryAt,
-          verifiedAt: formData.verifiedAt instanceof Date ? formData.verifiedAt.toISOString() : formData.verifiedAt,
+          verifiedAt: formData.verifiedAt instanceof Date
+            ? formData.verifiedAt.toISOString()
+            : formData.verifiedAt,
         }),
       });
-  
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Received non-JSON response from server");
+      }
+
       const result = await response.json();
-  
       if (!response.ok) {
         throw new Error(result.error || "Failed to update transaction");
       }
-  
+
       if (result.success) {
         toast.success("Transaction updated successfully");
         onUpdate(result.data);
-        onCancel(); // Close the form after successful update
       } else {
         throw new Error(result.error || "Failed to update transaction");
       }
@@ -147,21 +174,18 @@ const TransactionUpdateForm = ({
     }
   };
 
+  // Helper to get current datetime in "YYYY-MM-DDTHH:mm" format for the max attribute.
+  const getCurrentDateTimeLocal = () => {
+    return new Date().toISOString().slice(0, 16);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="relative bg-white p-6 rounded-lg shadow-md max-h-[90vh] overflow-y-auto w-full max-w-4xl m-4">
-        {/* Close button */}
-        <button
-          onClick={onCancel}
-          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
-          aria-label="Close"
-        >
-          <X className="h-6 w-6" />
-        </button>
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto"
+    >
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Name */}
         <div>
           <Label htmlFor="name">Name</Label>
           <Input
@@ -172,10 +196,10 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
             className={errors.name ? "border-red-500" : ""}
           />
-          {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+          )}
         </div>
-
-        {/* Email */}
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
@@ -187,10 +211,10 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
             className={errors.email ? "border-red-500" : ""}
           />
-          {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+          )}
         </div>
-
-        {/* Phone */}
         <div>
           <Label htmlFor="phone">Phone</Label>
           <Input
@@ -201,15 +225,17 @@ const TransactionUpdateForm = ({
             disabled={isSubmitting}
             className={errors.phone ? "border-red-500" : ""}
           />
-          {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="text-sm text-red-500 mt-1">{errors.phone}</p>
+          )}
         </div>
-
-        {/* User Type */}
         <div>
           <Label htmlFor="userType">User Type</Label>
           <Select
             value={formData.userType}
-            onValueChange={(value: UserType) => handleInputChange("userType", value)}
+            onValueChange={(value: UserType) =>
+              handleInputChange("userType", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -226,29 +252,32 @@ const TransactionUpdateForm = ({
 
       {/* Transaction Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Amount */}
         <div>
           <Label htmlFor="amount">Amount</Label>
           <Input
             id="amount"
             value={formData.amount ? formatCurrency(formData.amount) : ""}
             onChange={(e) => {
-              const value = parseFloat(e.target.value.replace(/[^0-9.-]+/g, ""));
+              const value = parseFloat(
+                e.target.value.replace(/[^0-9.-]+/g, "")
+              );
               handleInputChange("amount", value);
             }}
             placeholder="Enter amount"
             disabled={isSubmitting}
             className={errors.amount ? "border-red-500" : ""}
           />
-          {errors.amount && <p className="text-sm text-red-500 mt-1">{errors.amount}</p>}
+          {errors.amount && (
+            <p className="text-sm text-red-500 mt-1">{errors.amount}</p>
+          )}
         </div>
-
-        {/* Transaction Type */}
         <div>
           <Label htmlFor="type">Transaction Type</Label>
           <Select
             value={formData.type}
-            onValueChange={(value: TransactionType) => handleInputChange("type", value)}
+            onValueChange={(value: TransactionType) =>
+              handleInputChange("type", value)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -262,13 +291,13 @@ const TransactionUpdateForm = ({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Transaction Nature */}
         <div>
-          <Label htmlFor="transactionNature">Transaction Nature</Label>
+          <Label htmlFor="transactionNature">
+            Transaction Nature
+          </Label>
           <Select
             value={formData.transactionNature}
-            onValueChange={(value: TransactionNature) => 
+            onValueChange={(value: TransactionNature) =>
               handleInputChange("transactionNature", value)
             }
             disabled={isSubmitting}
@@ -277,47 +306,62 @@ const TransactionUpdateForm = ({
               <SelectValue placeholder="Select nature" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="DONATION">Donation</SelectItem>
-              <SelectItem value="EXPENSE">Expense</SelectItem>
-              <SelectItem value="REFUND">Refund</SelectItem>
+              <SelectItem value="CREDIT">Credit</SelectItem>
+              <SelectItem value="DEBIT">Debit</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        {/* Transaction ID */}
         <div>
           <Label htmlFor="transactionId">Transaction ID</Label>
           <Input
             id="transactionId"
             value={formData.transactionId || ""}
-            onChange={(e) => handleInputChange("transactionId", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("transactionId", e.target.value)
+            }
             placeholder="Enter transaction ID"
             disabled={isSubmitting || formData.type === "CASH"}
             className={errors.transactionId ? "border-red-500" : ""}
           />
           {errors.transactionId && (
-            <p className="text-sm text-red-500 mt-1">{errors.transactionId}</p>
+            <p className="text-sm text-red-500 mt-1">
+              {errors.transactionId}
+            </p>
           )}
         </div>
-
-        {/* Date */}
         <div>
           <Label htmlFor="date">Transaction Date</Label>
           <Input
             id="date"
             type="datetime-local"
-            value={formData.date instanceof Date ? formData.date.toISOString().slice(0, 16) : ""}
-            onChange={(e) => handleInputChange("date", new Date(e.target.value))}
+            value={
+              formData.date instanceof Date && !isNaN(formData.date.getTime())
+                ? formData.date.toISOString().slice(0, 16)
+                : ""
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value) {
+                const selectedDate = new Date(value);
+                if (selectedDate > new Date()) {
+                  toast.error("Future dates are not allowed");
+                  return;
+                }
+                handleInputChange("date", selectedDate);
+              }
+            }}
             disabled={isSubmitting}
+            max={getCurrentDateTimeLocal()}
           />
+          {errors.date && (
+            <p className="text-sm text-red-500 mt-1">{errors.date}</p>
+          )}
         </div>
-
-        {/* Status */}
         <div>
           <Label htmlFor="status">Status</Label>
           <Select
             value={formData.status}
-            onValueChange={(value: TransactionStatus) => 
+            onValueChange={(value: TransactionStatus) =>
               handleInputChange("status", value)
             }
             disabled={isSubmitting}
@@ -336,12 +380,11 @@ const TransactionUpdateForm = ({
 
       {/* Additional Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Money For Category */}
         <div>
           <Label htmlFor="moneyFor">Money For</Label>
           <Select
             value={formData.moneyFor}
-            onValueChange={(value: MoneyForCategory) => 
+            onValueChange={(value: MoneyForCategory) =>
               handleInputChange("moneyFor", value)
             }
             disabled={isSubmitting}
@@ -350,35 +393,39 @@ const TransactionUpdateForm = ({
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="SALARY">Salary</SelectItem>
-              <SelectItem value="BONUS">Bonus</SelectItem>
-              <SelectItem value="FEES">Fees</SelectItem>
+              <SelectItem value="CLOTHES">Clothes</SelectItem>
+              <SelectItem value="FOOD">Food</SelectItem>
+              <SelectItem value="CYCLE">Cycle</SelectItem>
+              <SelectItem value="EDUCATION">Education</SelectItem>
+              <SelectItem value="HEALTHCARE">Healthcare</SelectItem>
               <SelectItem value="OTHER">Other</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        {/* Custom Money For (shown only when MoneyFor is OTHER) */}
         {formData.moneyFor === "OTHER" && (
           <div>
-            <Label htmlFor="customMoneyFor">Specify Other Category</Label>
+            <Label htmlFor="customMoneyFor">
+              Specify Other Category
+            </Label>
             <Input
               id="customMoneyFor"
               value={formData.customMoneyFor || ""}
-              onChange={(e) => handleInputChange("customMoneyFor", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("customMoneyFor", e.target.value)
+              }
               placeholder="Specify category"
               disabled={isSubmitting}
             />
           </div>
         )}
-
-        {/* Description */}
         <div className="md:col-span-2">
           <Label htmlFor="description">Description</Label>
           <Input
             id="description"
             value={formData.description || ""}
-            onChange={(e) => handleInputChange("description", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("description", e.target.value)
+            }
             placeholder="Enter description"
             disabled={isSubmitting}
           />
@@ -387,50 +434,51 @@ const TransactionUpdateForm = ({
 
       {/* Entry Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Entry By */}
         <div>
           <Label htmlFor="entryBy">Entry By</Label>
           <Input
             id="entryBy"
             value={formData.entryBy || ""}
-            onChange={(e) => handleInputChange("entryBy", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("entryBy", e.target.value)
+            }
             disabled={isSubmitting}
           />
         </div>
-
-        {/* Verified By */}
         <div>
           <Label htmlFor="verifiedBy">Verified By</Label>
           <Input
             id="verifiedBy"
             value={formData.verifiedBy || ""}
-            onChange={(e) => handleInputChange("verifiedBy", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("verifiedBy", e.target.value)
+            }
             disabled={isSubmitting || formData.status !== "VERIFIED"}
           />
         </div>
       </div>
 
-     {/* Form Actions */}
-     <div className="flex justify-end gap-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-primary text-white hover:bg-primary/90"
-            >
-              {isSubmitting ? "Updating..." : "Update Transaction"}
-            </Button>
-          </div>
-        </form>
+      {/* Form Actions */}
+      <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          title="Cancel"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-primary text-white hover:bg-primary/90"
+          title="Update Transaction"
+        >
+          {isSubmitting ? "Updating..." : "Update Transaction"}
+        </Button>
       </div>
-    </div>
+    </form>
   );
 };
 

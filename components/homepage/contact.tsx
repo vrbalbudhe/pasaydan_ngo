@@ -72,50 +72,53 @@ function ContactUs() {
   };
 
   return (
-    <div className="relative w-[90%] md:w-4/5 mx-auto min-h-screen bg-gradient-to-b from-white to-blue-50 px-4 py-12 md:py-20">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12">
-        {/* Left Section */}
-        <motion.div
-          className="w-full lg:w-1/3 flex flex-col justify-center space-y-6 p-4"
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-semibold text-blue-900 leading-tight">
-            Contact us
-          </h1>
+    // Wrapper div for full-width background
+    <div className="w-full bg-gradient-to-b from-white to-blue-50">
+      {/* Content container */}
+      <div className="w-[90%] md:w-4/5 mx-auto min-h-screen px-4 py-12 md:py-20">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12">
+          {/* Left Section */}
+          <motion.div
+            className="w-full lg:w-1/3 flex flex-col justify-center space-y-6 p-4"
+            initial="hidden"
+            animate="visible"
+            variants={fadeIn}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-semibold text-blue-900 leading-tight">
+              Contact us
+            </h1>
 
-          <p className="text-sm md:text-base lg:text-lg text-slate-800 font-medium leading-relaxed">
-            In case you have any query, or want any details about the type of{" "}
-            <span className="text-blue-900 font-bold">Donations</span> or want
-            to donate/ Participate in Our
-            <span className="text-blue-900 font-bold">
-              {" "}
-              Cycle Donation Drive.
-            </span>
-          </p>
+            <p className="text-sm md:text-base lg:text-lg text-slate-800 font-medium leading-relaxed">
+              In case you have any query, or want any details about the type of{" "}
+              <span className="text-blue-900 font-bold">Donations</span> or
+              want to donate/ Participate in Our
+              <span className="text-blue-900 font-bold">
+                {" "}
+                Cycle Donation Drive.
+              </span>
+            </p>
 
-          <h2 className="text-xl md:text-2xl text-slate-800 font-bold">
-            Feel Free To Connect With Us!
-          </h2>
-        </motion.div>
+            <h2 className="text-xl md:text-2xl text-slate-800 font-bold">
+              Feel Free To Connect With Us!
+            </h2>
+          </motion.div>
 
-        {/* Right Section - Form */}
-        <motion.div
-          className="w-full lg:w-2/3"
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-blue-100">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-blue-900">
-                Get in Touch
-              </h2>
-              <Mail className="w-6 h-6 text-blue-900" />
-            </div>
+          {/* Right Section - Form */}
+          <motion.div
+            className="w-full lg:w-2/3"
+            initial="hidden"
+            animate="visible"
+            variants={fadeIn}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-blue-100">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-blue-900">
+                  Get in Touch
+                </h2>
+                <Mail className="w-6 h-6 text-blue-900" />
+              </div>
 
             <form onSubmit={handleContactUs} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -181,7 +184,7 @@ function ContactUs() {
               <div className="flex justify-start">
                 <motion.button
                   type="submit"
-                  className="flex items-center justify-center space-x-2 w-full md:w-auto px-6 py-2.5 text-sm md:text-base font-medium text-white bg-blue-900 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 disabled:opacity-50 transition-all duration-200"
+                  className="flex items-center justify-center space-x-2 w-full md:w-auto px-6 py-2.5 text-sm md:text-base font-medium text-white bg-blue-950 hover:bg-blue-900 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 disabled:opacity-50 transition-all duration-200"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={isSubmitting}
@@ -208,9 +211,10 @@ function ContactUs() {
                   </p>
                 )}
               </motion.div>
-            </form>
-          </div>
-        </motion.div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

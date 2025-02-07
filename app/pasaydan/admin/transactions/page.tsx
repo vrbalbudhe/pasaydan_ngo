@@ -12,13 +12,12 @@ export const metadata: Metadata = {
   description: "Transaction management for NGO administrators",
 };
 
-// Client Component Wrapper
 function TransactionContent() {
   return (
     <TransactionProvider>
       <div className="container mx-auto md:p-6 p-2 space-y-3">
         {/* Header Section */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-800">Transactions</h1>
           <div className="flex items-center gap-3">
             <ExportButton />
@@ -26,9 +25,9 @@ function TransactionContent() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <TransactionStats />
-        </div>
+        <div className="w-full">  {/* Remove the grid here since TransactionStats has its own grid */}
+  <TransactionStats />
+</div>
 
         {/* Main Content */}
         <div className="grid gap-6">
@@ -41,7 +40,7 @@ function TransactionContent() {
           {/* Transaction Table */}
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-3">
                 <h2 className="text-lg font-semibold">Transaction Records</h2>
                 <TransactionFilters />
               </div>
@@ -54,7 +53,6 @@ function TransactionContent() {
   );
 }
 
-// Server Component
 export default function TransactionsPage() {
   return <TransactionContent />;
 }

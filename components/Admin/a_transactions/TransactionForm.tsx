@@ -26,10 +26,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { TransactionType, TransactionNature, UserType, TransactionStatus, MoneyForCategory } from "@prisma/client";
+import {
+  TransactionNature,
+  UserType,
+  TransactionStatus,
+  MoneyForCategory,
+} from "@prisma/client";
+
+// Define our own constant for Payment Types (including "CASH")
+const PAYMENT_TYPES = ["UPI", "NET_BANKING", "CARD", "CASH"] as const;
+type PaymentType = typeof PAYMENT_TYPES[number];
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
 
 // --- Zod Schema ---
 const formSchema = z.object({
@@ -37,20 +51,26 @@ const formSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   amount: z.number().min(1, "Amount is required"),
-  type: z.enum(["UPI", "NET_BANKING", "CARD", "CASH"]),
+  type: z.enum(PAYMENT_TYPES),
   transactionNature: z.enum(["CREDIT", "DEBIT"]),
   userType: z.enum(["INDIVIDUAL", "ORGANIZATION"]),
-  date: z.string(),
+  date: z.string(), // ISO date string (YYYY-MM-DD)
   transactionId: z.string().optional(),
   screenshot: z
     .any()
-    .refine((file) => !file || (file instanceof File && file.size <= MAX_FILE_SIZE), {
-      message: "Max file size is 5MB",
-    })
     .refine(
-      (file) => !file || (file instanceof File && ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      (file) => !file || (file instanceof File && file.size <= MAX_FILE_SIZE),
       {
-        message: "Only .jpg, .jpeg, .png and .webp formats are supported",
+        message: "Max file size is 5MB",
+      }
+    )
+    .refine(
+      (file) =>
+        !file ||
+        (file instanceof File && ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      {
+        message:
+          "Only .jpg, .jpeg, .png and .webp formats are supported",
       }
     )
     .optional(),
@@ -58,7 +78,14 @@ const formSchema = z.object({
   makeDefaultEntry: z.boolean().default(false),
   description: z.string().optional(),
   status: z.enum(["PENDING", "REJECTED", "VERIFIED"]).default("PENDING"),
-  moneyFor: z.enum(["CLOTHES", "FOOD", "CYCLE", "EDUCATION", "HEALTHCARE", "OTHER"]),
+  moneyFor: z.enum([
+    "CLOTHES",
+    "FOOD",
+    "CYCLE",
+    "EDUCATION",
+    "HEALTHCARE",
+    "OTHER",
+  ]),
   customMoneyFor: z.string().optional(),
 });
 
@@ -68,7 +95,7 @@ export default function TransactionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Get default entry name from localStorage
   const [defaultEntryName, setDefaultEntryName] = useState<string>(() => {
@@ -99,11 +126,11 @@ export default function TransactionForm() {
     },
   });
 
-  // Watch for changes in makeDefaultEntry and entryBy
+  // Watch values for conditional rendering
   const makeDefaultEntry = form.watch("makeDefaultEntry");
   const entryBy = form.watch("entryBy");
   const moneyFor = form.watch("moneyFor");
-  const type = form.watch("type");
+  const paymentType = form.watch("type") as PaymentType;
 
   // Update localStorage when default entry changes
   useEffect(() => {
@@ -119,7 +146,6 @@ export default function TransactionForm() {
       const file = e.target.files[0];
       setSelectedFile(file);
       form.setValue("screenshot", file);
-      
       // Create preview URL
       const fileUrl = URL.createObjectURL(file);
       setPreviewUrl(fileUrl);
@@ -143,34 +169,27 @@ export default function TransactionForm() {
     };
   }, [previewUrl]);
 
-
   async function onSubmit(data: FormData) {
     try {
       setIsSubmitting(true);
-
-      const formData = new FormData();
-      
-      // Append all form fields
+      const formDataToSend = new FormData();
+      // Append all form fields (except screenshot)
       Object.entries(data).forEach(([key, value]) => {
         if (key !== "screenshot" && value !== undefined) {
-          formData.append(key, value.toString());
+          formDataToSend.append(key, value.toString());
         }
       });
-
       // Append file if exists
       if (selectedFile) {
-        formData.append("screenshot", selectedFile);
+        formDataToSend.append("screenshot", selectedFile);
       }
-
       const response = await fetch("/api/admin/transactions", {
         method: "POST",
-        body: formData,
+        body: formDataToSend,
       });
-
       if (!response.ok) {
         throw new Error("Failed to add transaction");
       }
-
       toast.success("Transaction added successfully");
       form.reset();
       setSelectedFile(null);
@@ -185,13 +204,14 @@ export default function TransactionForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Basic Details Section */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* Name Field */}
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter name" {...field} />
@@ -206,7 +226,7 @@ export default function TransactionForm() {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="Enter email" {...field} />
@@ -221,7 +241,7 @@ export default function TransactionForm() {
             control={form.control}
             name="phone"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
                   <Input type="tel" placeholder="Enter phone number" {...field} />
@@ -236,14 +256,23 @@ export default function TransactionForm() {
             control={form.control}
             name="amount"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Amount (₹)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     placeholder="Enter amount"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                    value={
+                      typeof field.value === "number" && !isNaN(field.value)
+                        ? field.value
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const { value } = e.target;
+                      // Pass 0 if empty, otherwise convert to number
+                      const numberValue = value === "" ? 0 : Number(value);
+                      field.onChange(numberValue);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -256,7 +285,7 @@ export default function TransactionForm() {
             control={form.control}
             name="type"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Payment Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -265,9 +294,9 @@ export default function TransactionForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.values(TransactionType).map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type.replace("_", " ")}
+                    {PAYMENT_TYPES.map((pt) => (
+                      <SelectItem key={pt} value={pt}>
+                        {pt.replace("_", " ")}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -282,7 +311,7 @@ export default function TransactionForm() {
             control={form.control}
             name="transactionNature"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Nature</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -291,7 +320,7 @@ export default function TransactionForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.values(TransactionNature).map((nature) => (
+                    {["CREDIT", "DEBIT"].map((nature) => (
                       <SelectItem key={nature} value={nature}>
                         {nature}
                       </SelectItem>
@@ -308,7 +337,7 @@ export default function TransactionForm() {
             control={form.control}
             name="userType"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>User Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -317,9 +346,9 @@ export default function TransactionForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.values(UserType).map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
+                    {(["INDIVIDUAL", "ORGANIZATION"] as const).map((ut) => (
+                      <SelectItem key={ut} value={ut}>
+                        {ut}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -334,7 +363,7 @@ export default function TransactionForm() {
             control={form.control}
             name="date"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Date</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
@@ -343,21 +372,33 @@ export default function TransactionForm() {
               </FormItem>
             )}
           />
+        </section>
 
-          {/* Transaction ID (conditional) */}
-          {type !== "CASH" && (
+        {/* Mobile Toggle for Advanced Details */}
+        <div className="block md:hidden">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setShowAdvanced((prev) => !prev)}
+          >
+            {showAdvanced ? "Hide Advanced Details" : "Show Advanced Details"}
+          </Button>
+        </div>
+
+        {/* Advanced Details Section */}
+        <section
+          className={`${showAdvanced ? "block" : "hidden"} md:block grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6`}
+        >
+          {/* Transaction ID (if payment type is not CASH) */}
+          {paymentType !== "CASH" && (
             <FormField
               control={form.control}
               name="transactionId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormLabel>Transaction ID</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter transaction ID"
-                      {...field}
-                      required={type !== "CASH"}
-                    />
+                    <Input placeholder="Enter transaction ID" {...field} required />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -366,84 +407,75 @@ export default function TransactionForm() {
           )}
 
           {/* Screenshot Upload */}
-  <FormField
-    control={form.control}
-    name="screenshot"
-    render={({ field: { onChange, ...field } }) => (
-      <FormItem className="col-span-2">
-        <FormLabel>Transaction Screenshot</FormLabel>
-        <FormControl>
-          <div className="space-y-4">
-            {/* File Input Container */}
-            <div className="flex items-center justify-center w-full">
-              <label
-                htmlFor="screenshot-upload"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-              >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-3 text-gray-400" />
-                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Supported formats: JPG, PNG, JPEG, WEBP (Max 5MB)
-                  </p>
-                </div>
-                <input
-                  id="screenshot-upload"
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </label>
-            </div>
-
-            {/* Preview Container */}
-            {previewUrl && (
-              <div className="relative w-full max-w-md mx-auto">
-                <div className="relative group">
-                  <img
-                    src={previewUrl}
-                    alt="Transaction Screenshot"
-                    className="w-full h-auto rounded-lg shadow-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveFile}
-                    className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white opacity-90 hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <p className="mt-2 text-sm text-gray-500 text-center">
-                  {selectedFile?.name}
-                </p>
-              </div>
+          <FormField
+            control={form.control}
+            name="screenshot"
+            render={({ field: { onChange, ...field } }) => (
+              <FormItem className="w-full md:col-span-2">
+                <FormLabel>Transaction Screenshot</FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor="screenshot-upload"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Supported formats: JPG, PNG, JPEG, WEBP (Max 5MB)
+                          </p>
+                        </div>
+                        <input
+                          id="screenshot-upload"
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </div>
+                    {previewUrl && (
+                      <div className="relative w-full max-w-md mx-auto">
+                        <div className="relative group">
+                          <img
+                            src={previewUrl}
+                            alt="Transaction Screenshot"
+                            className="w-full h-auto rounded-lg shadow-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleRemoveFile}
+                            className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white opacity-90 hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-500 text-center">
+                          {selectedFile?.name}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+                <FormDescription>Upload transaction screenshot (Max 5MB)</FormDescription>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-        </FormControl>
-        <FormDescription>
-          Upload transaction screenshot (Max 5MB)
-        </FormDescription>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
+          />
 
           {/* Entry By */}
           <FormField
             control={form.control}
             name="entryBy"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Entry By</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Enter your name" 
-                    {...field} 
-                    disabled={defaultEntryName !== "" && makeDefaultEntry}
-                  />
+                  <Input placeholder="Enter your name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -455,18 +487,15 @@ export default function TransactionForm() {
             control={form.control}
             name="makeDefaultEntry"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Make Default Entry Name</FormLabel>
-                  <FormDescription>
-                    Save this name for future entries
-                  </FormDescription>
+              <FormItem className="w-full">
+                <div className="flex items-center gap-3 p-4 border rounded-md">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <div className="flex-1">
+                    <FormLabel className="mb-0">Make Default Entry Name</FormLabel>
+                    <FormDescription className="text-xs">Save this name for future entries</FormDescription>
+                  </div>
                 </div>
               </FormItem>
             )}
@@ -477,13 +506,10 @@ export default function TransactionForm() {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <FormItem className="col-span-2">
+              <FormItem className="w-full md:col-span-2">
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Enter transaction description"
-                    {...field}
-                  />
+                  <Textarea placeholder="Enter transaction description" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -495,7 +521,7 @@ export default function TransactionForm() {
             control={form.control}
             name="status"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -504,7 +530,7 @@ export default function TransactionForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.values(TransactionStatus).map((status) => (
+                    {(["PENDING", "REJECTED", "VERIFIED"] as const).map((status) => (
                       <SelectItem key={status} value={status}>
                         {status}
                       </SelectItem>
@@ -521,7 +547,7 @@ export default function TransactionForm() {
             control={form.control}
             name="moneyFor"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Money For</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -548,20 +574,17 @@ export default function TransactionForm() {
               control={form.control}
               name="customMoneyFor"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormLabel>Specify Category</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter custom category"
-                      {...field}
-                    />
+                    <Input placeholder="Enter custom category" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           )}
-        </div>
+        </section>
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Adding Transaction..." : "Add Transaction"}

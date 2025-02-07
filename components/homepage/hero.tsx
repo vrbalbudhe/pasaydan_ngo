@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDown, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { StaticImageData } from 'next/image';
 import logo from '@/assets/homepage/logo.png';
 import hp1 from '@/assets/homepage/hp1.png';
 import hp2 from '@/assets/homepage/hp2.png';
@@ -20,6 +21,17 @@ interface CardWithImageProps {
   titleClassName?: string;
 }
 
+interface CarouselItem {
+  type: 'image' | 'text';
+  imageSrc?: string;
+  imageAlt?: string;
+  title?: string;
+  content?: string;
+  bgColor?: string;
+  buttonText?: string;
+  buttonLink?: string;
+}
+
 const carouselItems = [
   {
     imageSrc: hp2.src,
@@ -30,7 +42,7 @@ const carouselItems = [
   {
     type: "text",
     content: "The world changes when we care. And that change begins with YOU!",
-    bgColor: "bg-blue-500"
+    bgColor: "bg-gradient-to-br from-blue-600 to-blue-800"
   },
   {
     imageSrc: hp1.src,
@@ -137,6 +149,8 @@ const Carousel: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  
+
   return (
     <div className="relative w-full h-96 overflow-hidden rounded-3xl">
       <AnimatePresence mode="wait">
@@ -196,7 +210,8 @@ const Carousel: React.FC = () => {
 const TextCard: React.FC<{
   children: React.ReactNode;
   className?: string;
-}> = ({ children, className = "" }) => {
+  textColor?: string;
+}> = ({ children, className = "", textColor = "text-white" }) => {
   const cardAnimation = {
     initial: { scale: 1, y: 0 },
     hover: { 
@@ -207,9 +222,9 @@ const TextCard: React.FC<{
   };
 
   return (
-    <Card className={`rounded-3xl overflow-hidden relative aspect-square ${className}`}>
+    <Card className={`rounded-3xl overflow-hidden relative aspect-square shadow-lg ${className}`}>
       <motion.div 
-        className="h-full p-4 sm:p-6"
+        className={`h-full p-4 sm:p-6 ${textColor}`}
         initial="initial"
         whileHover="hover"
         variants={cardAnimation}
@@ -298,22 +313,22 @@ const HeroSection: React.FC = () => {
         {/* Responsive Layout */}
         <div className="hidden lg:block">
           {/* Desktop Grid */}
-          <div className="grid grid-cols-5 gap-5 max-w-7xl mx-auto">
-            {/* Original grid content... */}
-            <div className="col-span-1 space-y-5 -mt-[130px]">
-              <CardWithImage 
-                imageSrc={hp2.src}
-                imageAlt="Child smiling"
-                title="Be the reason someone smiles"
-              />
-              <TextCard className="bg-blue-500">
-                <div className="h-full flex flex-col justify-center items-center text-center text-white">
-                  <p className="text-2xl italic bold">
-                    The world changes when we care. And that change begins with YOU!
-                  </p>
-                </div>
-              </TextCard>
-            </div>
+  <div className="grid grid-cols-5 gap-5 max-w-7xl mx-auto">
+    <div className="col-span-1 space-y-5 -mt-[130px]">
+      <CardWithImage 
+        imageSrc={hp2.src}
+        imageAlt="Child smiling"
+        title="Be the reason someone smiles"
+      />
+      <TextCard className="bg-gradient-to-br from-blue-600 to-blue-800">
+        <div className="h-full flex flex-col justify-center items-center text-center">
+          <p className="text-2xl italic font-bold text-white">
+            The world changes when we care. And that change begins with YOU!
+          </p>
+        </div>
+      </TextCard>
+    </div>
+
 
             <div className="col-span-1 pt-[45px]">
               <CardWithImage 
@@ -325,19 +340,19 @@ const HeroSection: React.FC = () => {
             </div>
 
             <div className="col-span-1 pt-[120px]">
-              <TextCard className="bg-blue-300">
-                <div className="h-full flex flex-col items-center justify-center text-center">
-                  <h3 className="text-xl font-semibold mb-4">
-                    Join 1000 people building a better tomorrow.
-                  </h3>
-                  <Link href="/pasaydan/com/drive">
-                    <Button className="bg-blue-950 text-white rounded-full">
-                      Join Our Drives
-                    </Button>
-                  </Link>
-                </div>
-              </TextCard>
-            </div>
+      <TextCard className="bg-gradient-to-br from-blue-400 to-blue-500">
+        <div className="h-full flex flex-col items-center justify-center text-center">
+          <h3 className="text-xl font-semibold mb-4 text-white">
+            Join 1000 people building a better tomorrow.
+          </h3>
+          <Link href="/pasaydan/com/drive">
+            <Button className="bg-blue-50 rounded-full">
+              Join Our Drives
+            </Button>
+          </Link>
+        </div>
+      </TextCard>
+    </div>
 
             <div className="col-span-1 pt-[45px]">
               <CardWithImage 
@@ -349,20 +364,20 @@ const HeroSection: React.FC = () => {
             </div>
 
             <div className="col-span-1 space-y-5 -mt-[135px]">
-              <CardWithImage 
-                imageSrc={hp4.src}
-                imageAlt="Learning"
-                title="Helping those in need"
-                titleClassName="text-xl"
-              />
-              <TextCard className="bg-blue-800">
-                <div className="h-full flex flex-col justify-center items-center text-center text-white">
-                  <h3 className="text-lg italic">Your generosity creates a ripple effect that lasts a lifetime</h3>
-                  <h4 className="text-2xl italic bold">START THE RIPPLE!</h4>
-                </div>
-              </TextCard>
-            </div>
-          </div>
+      <CardWithImage 
+        imageSrc={hp4.src}
+        imageAlt="Learning"
+        title="Helping those in need"
+        titleClassName="text-xl"
+      />
+      <TextCard className="bg-gradient-to-br from-blue-600 to-blue-800">
+        <div className="h-full flex flex-col justify-center items-center text-center">
+          <h3 className="text-lg italic text-white">Your generosity creates a ripple effect that lasts a lifetime</h3>
+          <h4 className="text-2xl italic font-bold text-white mt-2">START THE RIPPLE!</h4>
+        </div>
+      </TextCard>
+    </div>
+  </div>   
         </div>
 
         {/* Mobile/Tablet Carousel */}

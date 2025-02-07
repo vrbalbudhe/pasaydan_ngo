@@ -1,5 +1,7 @@
+// components/Admin/sideBar.tsx
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Home,
   Inbox,
@@ -43,6 +45,15 @@ export function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Add a mounted state to delay client-only rendering
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Until the component is mounted, render nothing (or a placeholder if desired)
+  if (!mounted) return null;
+
   const handleLogout = async () => {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
@@ -75,7 +86,7 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => {
-                  // Use the pathname from the hook instead of window.location.pathname
+                  // Now that we are mounted, pathname is stable
                   const isActive = pathname === item.url;
                   return (
                     <SidebarMenuItem

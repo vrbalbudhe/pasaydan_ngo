@@ -1,3 +1,4 @@
+// app/pasaydan/admin/drives/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,12 +26,19 @@ interface Drive {
   };
 }
 
+// Create an interface for new files with preview URLs
+interface NewFilePreview {
+  file: File;
+  preview: string;
+}
+
 export default function DriveUpdatePage() {
   const [drive, setDrive] = useState<Drive | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imagePaths, setImagePaths] = useState<string[]>([]);
-  const [newFiles, setNewFiles] = useState<File[]>([]);
+  // Instead of File[], store objects with file and preview URL
+  const [newFilePreviews, setNewFilePreviews] = useState<NewFilePreview[]>([]);
 
   const router = useRouter();
   const params = useParams();
@@ -70,7 +78,7 @@ export default function DriveUpdatePage() {
     };
 
     fetchDrive();
-  },  [id, setValue, toast]);
+  }, [id, setValue, toast]);
 
   const onSubmit = async (formData: Drive) => {
     try {
@@ -103,8 +111,8 @@ export default function DriveUpdatePage() {
       // Append existing photos
       submitFormData.append('existingPhotos', JSON.stringify(imagePaths));
 
-      // Append new files
-      newFiles.forEach(file => {
+      // Append new files (using the file property)
+      newFilePreviews.forEach(({ file }) => {
         submitFormData.append('newPhotos', file);
       });
 
@@ -112,7 +120,6 @@ export default function DriveUpdatePage() {
         method: "PUT",
         body: submitFormData,
       });
-
 
       if (!response.ok) throw new Error("Failed to update drive");
       
@@ -139,8 +146,8 @@ export default function DriveUpdatePage() {
     const files = e.target.files;
     if (!files) return;
 
-    // Validate files
-    const validFiles = Array.from(files).filter(file => {
+    const validFiles: NewFilePreview[] = [];
+    Array.from(files).forEach(file => {
       const isValid = file.type.startsWith('image/');
       const isUnderSize = file.size <= 5 * 1024 * 1024; // 5MB limit
 
@@ -148,23 +155,40 @@ export default function DriveUpdatePage() {
         toast({
           variant: "destructive",
           title: "Invalid file",
-          description: `${file.name} is ${!isValid ? 'not an image' : 'too large (max 5MB)'}`
+          description: `${file.name} is ${!isValid ? 'not an image' : 'too large (max 5MB)'}`,
         });
-        return false;
+        return;
       }
-      return true;
+      // Create a preview URL once and store it with the file
+      const preview = URL.createObjectURL(file);
+      validFiles.push({ file, preview });
     });
 
-    setNewFiles(prev => [...prev, ...validFiles]);
+    setNewFilePreviews(prev => [...prev, ...validFiles]);
   };
 
   const removeNewFile = (index: number) => {
-    setNewFiles(prev => prev.filter((_, i) => i !== index));
+    setNewFilePreviews(prev => {
+      const fileToRemove = prev[index];
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.preview);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const removeExistingPhoto = (index: number) => {
     setImagePaths(prev => prev.filter((_, i) => i !== index));
   };
+
+  // Cleanup all object URLs on unmount
+  useEffect(() => {
+    return () => {
+      newFilePreviews.forEach(({ preview }) => {
+        URL.revokeObjectURL(preview);
+      });
+    };
+  }, [newFilePreviews]);
 
   if (loading) {
     return (
@@ -392,16 +416,16 @@ export default function DriveUpdatePage() {
           </div>
 
           {/* New Photos Preview */}
-          {newFiles.length > 0 && (
+          {newFilePreviews.length > 0 && (
             <div>
               <label className="block text-sm mb-3 font-medium text-gray-700">
                 New Photos to Upload
               </label>
               <div className="grid grid-cols-2 gap-4">
-                {newFiles.map((file, index) => (
+                {newFilePreviews.map(({ preview }, index) => (
                   <div key={index} className="relative group">
                     <img
-                      src={URL.createObjectURL(file)}
+                      src={preview}
                       alt={`New photo ${index + 1}`}
                       className="w-full h-32 object-cover rounded-lg"
                     />
@@ -448,7 +472,7 @@ export default function DriveUpdatePage() {
           </Button>
           <Button 
             type="submit" 
-            className=" text-white"
+            className="text-white"
             disabled={loading}
           >
             {loading ? (
