@@ -38,22 +38,28 @@ function ContactUs() {
     setIsSubmitting(true);
 
     try {
-      const res = await axios.post(
-        "http://localhost:8000/pasaydan/contact/makeRequest",
-        formData,
-        { withCredentials: true }
-      );
+      setIsSubmitting(true);
 
-      if (res.status === 200 && res.data.success) {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData), // Fix: Remove unnecessary wrapping object
+      });
+
+      if (res.ok) {
         setSuccess(true);
         setFormData({ fullname: "", email: "", message: "" });
         setTimeout(() => {
           setSuccess(false);
         }, 5000);
       } else {
-        setError("Failed to send message. Please try again later.");
+        const errorData = await res.json();
+        setError(
+          errorData.error || "Failed to send message. Please try again later."
+        );
       }
     } catch (error) {
+      console.error("Error submitting contact form:", error);
       setError("Failed to send message. Please try again later.");
     } finally {
       setIsSubmitting(false);
@@ -82,8 +88,8 @@ function ContactUs() {
 
           <p className="text-sm md:text-base lg:text-lg text-slate-800 font-medium leading-relaxed">
             In case you have any query, or want any details about the type of{" "}
-            <span className="text-blue-900 font-bold">Donations</span> or
-            want to donate/ Participate in Our
+            <span className="text-blue-900 font-bold">Donations</span> or want
+            to donate/ Participate in Our
             <span className="text-blue-900 font-bold">
               {" "}
               Cycle Donation Drive.

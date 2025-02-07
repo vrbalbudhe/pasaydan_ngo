@@ -30,19 +30,19 @@ model Drive {
 }
 
 model User {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  userType       String   @default("individual")
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  userType       String        @default("individual")
   fullname       String?
-  email          String   @unique
+  email          String        @unique
   password       String
-  address        Address? @relation(fields: [addressId], references: [id])
-  addressId      String?  @db.ObjectId
+  address        Address?      @relation(fields: [addressId], references: [id])
+  addressId      String?       @db.ObjectId
   avatar         String?
   mobile         String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime      @default(now())
   otp            String?
-  organizationId String?  @db.ObjectId
-  transactions Transaction[]
+  organizationId String?       @db.ObjectId
+  transactions   Transaction[]
 }
 
 model Organization {
@@ -60,7 +60,7 @@ model Organization {
   otp           String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  transactions Transaction[]
+  transactions  Transaction[]
 }
 
 model ContactPerson {
@@ -133,8 +133,6 @@ model SubAdmins {
   canEdit   Boolean  @default(false)
 }
 
-
-
 enum UserType {
   INDIVIDUAL
   ORGANIZATION
@@ -173,20 +171,20 @@ enum MoneyForCategory {
 }
 
 model Transaction {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
   name              String
   email             String
   phone             String
-  userType          UserType  @default(INDIVIDUAL)
+  userType          UserType          @default(INDIVIDUAL)
   amount            Float
   type              TransactionType
-  transactionId     String    @unique
+  transactionId     String            @unique
   date              DateTime
   transactionNature TransactionNature
   screenshotPath    String?
   entryType         EntryType
   entryBy           String
-  entryAt           DateTime  @default(now())
+  entryAt           DateTime          @default(now())
   description       String?
   status            TransactionStatus @default(PENDING)
   statusDescription String?
@@ -194,8 +192,15 @@ model Transaction {
   verifiedAt        DateTime?
   moneyFor          MoneyForCategory
   customMoneyFor    String?
-  User              User?     @relation(fields: [userId], references: [id])
-  userId            String?   @db.ObjectId
-  Organization      Organization? @relation(fields: [organizationId], references: [id])
-  organizationId    String?   @db.ObjectId
+  User              User?             @relation(fields: [userId], references: [id])
+  userId            String?           @db.ObjectId
+  Organization      Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId    String?           @db.ObjectId
+}
+
+model contactUs {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  fullname String
+  email    String
+  message  String
 }
