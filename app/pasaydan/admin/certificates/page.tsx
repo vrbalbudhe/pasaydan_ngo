@@ -23,7 +23,7 @@ export default function Certificates() {
             <Award className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 className="text-lg md:text-2xl font-medium md:font-bold text-gray-900">
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900">
               Certificates
             </h1>
             <p className="text-sm text-gray-500 mt-1">

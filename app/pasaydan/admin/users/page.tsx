@@ -17,7 +17,7 @@ export default function ManageUser() {
             <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+            <h1 className="text-lg  md:text-2xl font-bold text-gray-900">
               Manage Users
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
@@ -27,7 +27,7 @@ export default function ManageUser() {
         </div>
 
         {/* Search Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
+        <div className="flex flex-col items-center sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
           <div className="relative flex-grow w-full sm:max-w-md md:max-w-3xl">
             <Input
               className="w-full pl-4 pr-10 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-lg shadow-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200"
@@ -49,7 +49,7 @@ export default function ManageUser() {
             )}
           </div>
           <Button
-            className="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white rounded-lg shadow-sm transition-colors duration-200 py-2 sm:py-2.5"
+            className="w-40 sm:w-auto bg-gray-900 hover:bg-gray-800 text-white rounded-lg shadow-sm transition-colors duration-200 py-2 sm:py-2.5"
             onClick={() => setSearchQuery("")}
           >
             Clear All
