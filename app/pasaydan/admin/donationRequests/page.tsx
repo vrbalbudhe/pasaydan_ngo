@@ -15,7 +15,7 @@ export default function DonationRequest() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 pb-5">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 pt-5">
             <div className="bg-black p-2 rounded-lg">
               <Heart className="h-8 w-8 text-white" />
             </div>

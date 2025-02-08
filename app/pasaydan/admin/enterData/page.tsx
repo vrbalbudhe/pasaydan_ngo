@@ -3,18 +3,24 @@ import DriveEntryForm from "@/components/Admin/a_EnterData/DriveEntryForm";
 import DonationRequestForm from "@/components/Admin/a_EnterData/DonationRequestForm";
 import CertificateEntryForm from "@/components/Admin/a_EnterData/CertificateEntryForm";
 import TransactionEntryForm from "@/components/Admin/a_EnterData/TransactionEntryForm";
+import { PenLine } from "lucide-react";
 
 export default function EnterDataPage() {
   return (
-    <div className="h-full flex-1 flex-col space-y-6 md:space-y-8 p-4 md:p-8 flex">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
-        <div className="text-wrap">
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-            Enter Data
-          </h2>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Manage and enter various types of data for the NGO
-          </p>
+    <div className="h-full flex-1 flex-col space-y-6 p-4 md:p-8 flex">
+      <div className="w-full h-20 flex justify-between items-center px-4">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-black p-2 rounded-lg">
+            <PenLine className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg md:text-2xl font-medium md:font-bold text-gray-900">
+              Enter Data
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage and enter various types of data for the NGO
+            </p>
+          </div>
         </div>
       </div>
 

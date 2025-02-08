@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Download,
+  FileDown,
   Loader2,
   ArrowUpDown,
   X,
@@ -474,14 +475,24 @@ export default function DownloadData() {
   // Main Render
   // ─────────────────────────────────────────────
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6">
+      <div className="w-full h-20 flex justify-between items-center px-4 pl-11 pt-14">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-black p-2 rounded-lg">
+            <FileDown className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg md:text-2xl font-medium md:font-bold text-gray-900">
+              Download Data
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Export and analyze data records
+            </p>
+          </div>
+        </div>
+      </div>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Download Data</CardTitle>
-          <CardDescription>
-            View and download data from different categories
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <div className="space-y-6">
             {error && (

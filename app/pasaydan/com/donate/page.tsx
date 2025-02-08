@@ -23,7 +23,7 @@ const CommunityPageHeading = () => {
 
 export default function DonatePage() {
   return (
-    <div className="w-[100%] flex flex-col justify-start pb-10 items-center min-h-screen bg-gradient-to-tr from-white via-blue-100 to-white/90">
+    <div className="w-[100%] flex flex-col justify-start pb-10 items-center min-h-screen bg-gradient-to-tr from-white via-blue-50 to-white/90">
       <div className="md:w-[80%] w-full flex flex-col justify-center items-center">
         <DonationForm />
         <div className="w-[90%] md:w-[100%] min-h-[500px] flex md:flex-row flex-col-reverse gap-3 justify-between ">

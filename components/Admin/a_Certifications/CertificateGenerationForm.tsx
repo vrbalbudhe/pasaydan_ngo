@@ -112,14 +112,7 @@ export default function CertificateGenerationForm() {
     <div className="min-h-screen md:w-full w-fit flex flex-col justify-start items-start bg-gray-50 md:p-6">
       {/* Header Section */}
       <div className="w-full pl-5 md:pl-0 h-fit md:mx-auto mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <Award className="h-6 w-6 text-blue-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Manage Certifications
-          </h1>
-        </div>
+        
         {/* <p className="text-gray-600 min-h-fit text-wrap ml-11">
           Generate and manage donation certificates
         </p> */}

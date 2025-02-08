@@ -1,4 +1,3 @@
-// app/pasaydan/admin/transactions/page.tsx
 import { Metadata } from "next";
 import TransactionForm from "@/components/Admin/a_transactions/TransactionForm";
 import TransactionTable from "@/components/Admin/a_transactions/TransactionTable";
@@ -6,6 +5,7 @@ import TransactionFilters from "@/components/Admin/a_transactions/TransactionFil
 import { TransactionStats } from "@/components/Admin/a_transactions/TransactionStats";
 import { ExportButton } from "@/components/Admin/a_transactions/ExportButton";
 import { TransactionProvider } from "@/contexts/TransactionContext";
+import { IndianRupee } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Transactions | Admin Dashboard",
@@ -17,17 +17,29 @@ function TransactionContent() {
     <TransactionProvider>
       <div className="container mx-auto md:p-6 p-2 space-y-3">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-800">Transactions</h1>
+        <div className="w-full h-20 flex justify-between items-center px-4 pl-5 pt-7">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-black p-2 rounded-lg">
+              <IndianRupee className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg md:text-2xl font-medium md:font-bold text-gray-900">
+                Transactions
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Manage and track transactions
+              </p>
+            </div>
+          </div>
           <div className="flex items-center gap-3">
             <ExportButton />
           </div>
         </div>
 
         {/* Stats */}
-        <div className="w-full">  {/* Remove the grid here since TransactionStats has its own grid */}
-  <TransactionStats />
-</div>
+        <div className="w-full">
+          <TransactionStats />
+        </div>
 
         {/* Main Content */}
         <div className="grid gap-6">

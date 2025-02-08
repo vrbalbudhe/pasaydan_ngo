@@ -15,7 +15,7 @@ export default function ManageDrives() {
 
   return (
     <div className="w-full min-h-screen relative bg-gray-50">
-      <div className="w-full h-20 mt-14 flex justify-between items-center px-4">
+      <div className="w-full h-20 mt-14 flex justify-between items-center px-4 pl-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="bg-black p-2 rounded-lg">
             <Inbox className="h-8 w-8 text-white" />

@@ -12,7 +12,7 @@ export default function ManageUser() {
     <div className="w-full min-h-screen overflow-hidden pt-12 px-3 sm:px-4 md:px-6 bg-gray-50">
       {/* Header Section */}
       <div className="mb-6 sm:mb-8 w-full">
-        <div className="flex items-center gap-3 mb-4 sm:mb-6 flex-wrap">
+        <div className="flex items-center gap-3 mb-4 sm:mb-6 flex-wrap pl-6 pt-1">
           <div className="bg-black p-2 rounded-lg">
             <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
           </div>
