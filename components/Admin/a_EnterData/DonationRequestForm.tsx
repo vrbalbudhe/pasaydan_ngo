@@ -161,10 +161,14 @@ export default function DonationRequestForm() {
   };
 
   return (
-    <Card className="p-6">
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button onClick={handleDownloadTemplate}>
+    <Card className="p-4 md:p-6">
+      <div className="space-y-4 md:space-y-6">
+        {/* Responsive controls container */}
+        <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+          <Button 
+            onClick={handleDownloadTemplate}
+            className="w-full md:w-fit"
+          >
             Download CSV Template
           </Button>
           <input
@@ -176,10 +180,15 @@ export default function DonationRequestForm() {
               file:rounded-full file:border-0
               file:text-sm file:font-semibold
               file:bg-violet-50 file:text-violet-700
-              hover:file:bg-violet-100"
+              hover:file:bg-violet-100
+              md:flex-1"
           />
           {csvData.length > 0 && (
-            <Button variant="outline" onClick={clearData}>
+            <Button 
+              variant="outline" 
+              onClick={clearData}
+              className="w-full md:w-fit"
+            >
               Clear Data
             </Button>
           )}
@@ -205,31 +214,36 @@ export default function DonationRequestForm() {
 
         {csvData.length > 0 && (
           <div className="space-y-4">
-            <div className="max-h-96 overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Full Name</TableHead>
-                    <TableHead>Mobile</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Quantity</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {csvData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{row.fullname}</TableCell>
-                      <TableCell>{row.mobile}</TableCell>
-                      <TableCell>{row.email}</TableCell>
-                      <TableCell>{row.address}</TableCell>
-                      <TableCell>{row.type}</TableCell>
-                      <TableCell>{row.quantity}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            {/* Responsive table container */}
+            <div className="max-h-96 overflow-auto -mx-4 md:mx-0">
+              <div className="min-w-full inline-block align-middle">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="whitespace-nowrap">Full Name</TableHead>
+                        <TableHead className="whitespace-nowrap">Mobile</TableHead>
+                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                        <TableHead className="whitespace-nowrap">Address</TableHead>
+                        <TableHead className="whitespace-nowrap">Type</TableHead>
+                        <TableHead className="whitespace-nowrap">Quantity</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {csvData.map((row, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="whitespace-nowrap">{row.fullname}</TableCell>
+                          <TableCell className="whitespace-nowrap">{row.mobile}</TableCell>
+                          <TableCell className="break-all">{row.email}</TableCell>
+                          <TableCell className="max-w-xs truncate">{row.address}</TableCell>
+                          <TableCell className="whitespace-nowrap">{row.type}</TableCell>
+                          <TableCell className="whitespace-nowrap">{row.quantity}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </div>
             
             <Button 

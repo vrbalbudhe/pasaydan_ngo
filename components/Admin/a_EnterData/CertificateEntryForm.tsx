@@ -246,10 +246,14 @@ const CertificateEntryForm = () => {
   }
 
   return (
-    <Card className="p-6">
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button onClick={downloadTemplate}>
+    <Card className="p-4 md:p-6">
+      <div className="space-y-4 md:space-y-6">
+        {/* Responsive controls container */}
+        <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+          <Button 
+            onClick={downloadTemplate}
+            className="w-full md:w-fit"
+          >
             Download CSV Template
           </Button>
           <input
@@ -261,10 +265,15 @@ const CertificateEntryForm = () => {
               file:rounded-full file:border-0
               file:text-sm file:font-semibold
               file:bg-violet-50 file:text-violet-700
-              hover:file:bg-violet-100"
+              hover:file:bg-violet-100
+              md:flex-1"
           />
           {csvData.length > 0 && (
-            <Button variant="outline" onClick={clearData}>
+            <Button 
+              variant="outline" 
+              onClick={clearData}
+              className="w-full md:w-fit"
+            >
               Clear Data
             </Button>
           )}
@@ -290,29 +299,46 @@ const CertificateEntryForm = () => {
 
         {csvData.length > 0 && (
           <div className="space-y-4">
-            <div className="max-h-96 overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {Object.keys(fieldConfig.baseFields).map((column) => (
-                      <TableHead key={column}>
-                        {column}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {csvData.map((row, index) => (
-                    <TableRow key={index}>
-                      {Object.keys(fieldConfig.baseFields).map((column) => (
-                        <TableCell key={column}>
-                          {row[column as keyof CertificateData] || '-'}
-                        </TableCell>
+            {/* Responsive table container */}
+            <div className="max-h-96 overflow-auto -mx-4 md:mx-0">
+              <div className="min-w-full inline-block align-middle">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {Object.keys(fieldConfig.baseFields).map((column) => (
+                          <TableHead 
+                            key={column}
+                            className="whitespace-nowrap px-2 md:px-4"
+                          >
+                            {column}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {csvData.map((row, index) => (
+                        <TableRow key={index}>
+                          {Object.keys(fieldConfig.baseFields).map((column) => (
+                            <TableCell 
+                              key={column}
+                              className={`px-2 md:px-4 ${
+                                column === 'description' 
+                                  ? 'max-w-xs truncate' 
+                                  : column === 'email' 
+                                    ? 'break-all'
+                                    : 'whitespace-nowrap'
+                              }`}
+                            >
+                              {row[column as keyof CertificateData] || '-'}
+                            </TableCell>
+                          ))}
+                        </TableRow>
                       ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </div>
             
             <Button 
