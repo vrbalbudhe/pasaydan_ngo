@@ -12,24 +12,31 @@ function CommunityHeroSection() {
         alt="Community event"
         layout="fill"
       />
-      {/* Text appearing on top */}
-      <p className="hidden md:block absolute top-40 tracking-tighter flex-wrap left-10 text-slate-800 text-7xl opacity-0 animate-fadeIn z-10">
-        Join
-        <span className="block text-blue-500 font-bold">Pasaydan</span>
-        <span className="block">Community</span>
-      </p>
-      <p className="hidden md:block absolute top-[375px] font-semibold left-10 text-slate-800 text-md ml-2 opacity-0 animate-fadeIn z-10">
-        जो जे वांच्छिल तो तें लाहो । प्राणिज
-      </p>
-      <p className="hidden md:block absolute top-[210px] right-40 text-4xl text-slate-800 opacity-0 animate-fadeIn z-10">
-        Together
-        <span className="block text-4xl">We</span>
-        <span className="block text-4xl">Make</span>
-        <span className="block mt-2 text-[80px] font-bold text-blue-500">
-          Better
-        </span>
-        <span className="block mt-2 text-4xl">Future</span>
-      </p>
+      {/* Text appearing on top - Left side */}
+      <div className="absolute top-20 md:top-40 left-4 md:left-10 z-10">
+        <p className="tracking-tighter text-4xl md:text-7xl text-slate-800 opacity-0 animate-fadeIn">
+          Join
+          <span className="block text-blue-500 font-bold">Pasaydan</span>
+          <span className="block">Community</span>
+        </p>
+        <p className="font-semibold text-sm md:text-md text-slate-800 mt-4 md:mt-8 ml-2 opacity-0 animate-fadeIn">
+          जो जे वांच्छिल तो तें लाहो । प्राणिज
+        </p>
+      </div>
+
+      {/* Text appearing on top - Right side */}
+      <div className="absolute top-[70%] md:top-[210px] right-4 md:right-40 text-right md:text-left z-10">
+        <p className="text-2xl md:text-4xl text-slate-800 opacity-0 animate-fadeIn">
+          Together
+          <span className="block">We</span>
+          <span className="block">Make</span>
+          <span className="block mt-2 text-5xl md:text-[80px] font-bold text-blue-500">
+            Better
+          </span>
+          <span className="block mt-2">Future</span>
+        </p>
+      </div>
+
       <style jsx>{`
         @keyframes fadeIn {
           0% {
