@@ -240,37 +240,38 @@ export default function UsersCertificateDetails() {
             <p className="text-sm text-gray-500">Manage all certificates</p>
 
             <div className="overflow-x-auto mt-10 md:mt-0 w-full">
-              <Table className="hidden md:block">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Index</TableHead>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Mobile</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user, index) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{user.donationId}</TableCell>
-                      <TableCell>
-                        {highlightText(user.fullname || "NA", searchQuery)}
-                      </TableCell>
-                      <TableCell>
-                        {highlightText(user.email || "NA", searchQuery)}
-                      </TableCell>
-                      <TableCell>
-                        {highlightText(user.mobile || "NA", searchQuery)}
-                      </TableCell>
-                      <TableCell>
-                        {highlightText(user.description || "NA", searchQuery)}
-                      </TableCell>
-                      <TableCell>{user.type}</TableCell>
+<Table className="hidden md:block">
+  <TableHeader>
+    <TableRow>
+      <TableHead>Index</TableHead>
+      <TableHead>ID</TableHead>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+      <TableHead>Mobile</TableHead>
+      <TableHead className="w-1/4">Description</TableHead> {/* Added width control */}
+      <TableHead>Type</TableHead>
+      <TableHead>Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {filteredUsers.map((user, index) => (
+      <TableRow key={user.id}>
+        <TableCell>{index + 1}</TableCell>
+        <TableCell>{user.donationId}</TableCell>
+        <TableCell>
+          {highlightText(user.fullname || "NA", searchQuery)}
+        </TableCell>
+        <TableCell>
+          {highlightText(user.email || "NA", searchQuery)}
+        </TableCell>
+        <TableCell>
+          {highlightText(user.mobile || "NA", searchQuery)}
+        </TableCell>
+        <TableCell className="max-w-xs whitespace-normal break-words">
+          {highlightText(user.description || "NA", searchQuery)}
+        </TableCell>
+        <TableCell>{user.type}</TableCell>
+        
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <TooltipProvider>
