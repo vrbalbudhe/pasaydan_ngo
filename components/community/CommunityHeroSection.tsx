@@ -14,19 +14,19 @@ function CommunityHeroSection() {
       />
       {/* Text appearing on top - Left side */}
       <div className="absolute top-20 md:top-40 left-4 md:left-10 z-10">
-        <p className="tracking-tighter text-4xl md:text-7xl text-slate-800 opacity-0 animate-fadeIn">
+        <p className="tracking-tighter text-5xl md:text-7xl text-slate-800 opacity-0 animate-fadeIn font-semibold">
           Join
           <span className="block text-blue-500 font-bold">Pasaydan</span>
           <span className="block">Community</span>
         </p>
-        <p className="font-semibold text-sm md:text-md text-slate-800 mt-4 md:mt-8 ml-2 opacity-0 animate-fadeIn">
+        <p className="font-semibold text-lg md:text-md text-slate-800 mt-4 md:mt-8 ml-2 opacity-0 animate-fadeIn">
           जो जे वांच्छिल तो तें लाहो । प्राणिज
         </p>
       </div>
 
       {/* Text appearing on top - Right side */}
       <div className="absolute top-[70%] md:top-[210px] right-4 md:right-40 text-right md:text-left z-10">
-        <p className="text-2xl md:text-4xl text-slate-800 opacity-0 animate-fadeIn">
+        <p className="text-3xl md:text-4xl text-slate-800 opacity-0 animate-fadeIn font-semibold">
           Together
           <span className="block">We</span>
           <span className="block">Make</span>

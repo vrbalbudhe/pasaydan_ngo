@@ -275,14 +275,14 @@ const HeroSection: React.FC = () => {
           </div>
           
           <motion.h1 
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl italic font-bold mb-2 text-blue-900"
+            className="text-6xl sm:text-4xl md:text-5xl lg:text-6xl italic font-bold mb-2 text-blue-900"
             variants={fadeIn}
           >
             पसायदान
           </motion.h1>
           
           <motion.h2 
-            className="text-lg sm:text-xl md:text-2xl italic font-bold mb-3"
+            className="text-xl sm:text-xl md:text-2xl italic font-bold mb-3"
             variants={fadeIn}
           >
             जो जे वांछिल, तो ते लाहो। प्राणिजात ॥

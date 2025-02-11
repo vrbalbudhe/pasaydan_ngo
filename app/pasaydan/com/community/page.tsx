@@ -8,7 +8,7 @@ const CommunityPageHeading = () => {
         Witness Our
         <span className="ml-2 font-bold text-slate-800">Community</span>
       </h1>
-      <p className="md:w-[80%] w-[100%] text-center text-pretty p-5 -tracking-tight text-slate-700">
+      <p className="md:w-[80%] w-[100%] text-center text-xl p-5 -tracking-tight text-slate-700">
         Join us in transforming lives and building a stronger community. Through
         your support and our dedicated efforts, we bring hope, resources, and
         opportunities to those in need. Together, we can create a brighter

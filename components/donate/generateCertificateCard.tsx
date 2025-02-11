@@ -64,7 +64,7 @@ export default function CertificateForm() {
         <div className="bg-white p-8 rounded-2xl shadow-xl">
           <div className="flex items-center justify-center mb-8">
             <FileCheck className="text-black w-12 h-12" />{" "}
-            <h2 className="text-2xl font-bold text-gray-800 ml-3">
+            <h2 className="text-3xl font-bold text-gray-800 ml-3">
               Download Certificate
             </h2>
           </div>

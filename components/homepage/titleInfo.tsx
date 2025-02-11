@@ -105,7 +105,7 @@ export default function TitleInfo() {
             <Card className="backdrop-blur-sm md:bg-white shadow-none md:border border-none md:border-gray-200 rounded-2xl md:shadow-xl">
               <CardHeader className="space-y-8">
                 {/* Marathi Description */}
-                <CardDescription className="text-xl md:text-2xl text-gray-800 leading-relaxed text-center">
+                <CardDescription className="text-xl md:text-2xl text-gray-800 leading-relaxed text-center font-semibold">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -121,7 +121,7 @@ export default function TitleInfo() {
                 </CardDescription>
 
                 {/* English Description */}
-                <CardDescription className="text-xl md:text-lg text-gray-800 italic text-center">
+                <CardDescription className="text-xl md:text-lg text-gray-800 italic text-center font-semibold">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

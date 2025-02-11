@@ -67,14 +67,14 @@ const Mission: React.FC = () => {
                         <Eye className="w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 text-white" />
                       </div>
                     </div>
-                    <CardTitle className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
+                    <CardTitle className="text-3xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
                       Vision
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-2 sm:pt-4 md:pt-6 pb-4 sm:pb-6 md:pb-8 px-2 sm:px-4 md:px-6">
                     <div className="flex flex-col items-center space-y-2 sm:space-y-3 md:space-y-4">
                       <FaQuoteLeft className="text-xl sm:text-2xl md:text-3xl text-blue-900" />
-                      <CardDescription className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-slate-700 font-medium leading-relaxed">
+                      <CardDescription className="text-center text-lg sm:text-sm md:text-base lg:text-lg text-slate-700 font-medium leading-relaxed">
                         To prescribe - by preach or by practice - the remedy to
                         human suffering, whether spiritual, moral, physical, or
                         material.
@@ -93,14 +93,14 @@ const Mission: React.FC = () => {
                         <Target className="w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 text-white" />
                       </div>
                     </div>
-                    <CardTitle className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
+                    <CardTitle className="text-3xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-blue-900 text-center pt-4 sm:pt-6 md:pt-8">
                       Mission
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-2 sm:pt-4 md:pt-6 pb-4 sm:pb-6 md:pb-8 px-2 sm:px-4 md:px-6">
                     <div className="flex flex-col items-center space-y-2 sm:space-y-3 md:space-y-4">
                       <FaQuoteLeft className="text-xl sm:text-2xl md:text-3xl text-blue-900" />
-                      <CardDescription className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-slate-700 font-medium leading-relaxed">
+                      <CardDescription className="text-center text-lg sm:text-sm md:text-base lg:text-lg text-slate-700 font-medium leading-relaxed">
                         To adopt ways and means for the spiritual, moral &
                         material progress of society based on Indian culture and
                         traditions...

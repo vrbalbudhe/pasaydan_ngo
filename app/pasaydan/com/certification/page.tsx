@@ -4,13 +4,13 @@ import GenerateCertificateForm from "@/components/donate/generateCertificateCard
 const CommunityPageHeading = () => {
   return (
     <div className="w-full pl-2 min-h-[250px] flex flex-col justify-center">
-      <h1 className="md:text-6xl text-4xl font-semibold text-slate-800">
+      <h1 className="md:text-6xl text-5xl font-semibold text-gray-800">
         Download
         <span className="font-bold text-[#1a237e] md:ml-2 block md:inline-block">
           Certificates
         </span>
       </h1>
-      <p className="md:w-[90%] w-full text-pretty py-5 -tracking-tight text-slate-700 text-base md:text-lg">
+      <p className="md:w-[90%] w-full text-xl py-5 -tracking-tight text-gray-700 text-base md:text-lg">
         Join us in transforming lives and building a stronger community. Through
         your support and our dedicated efforts, we bring hope, resources, and
         opportunities to those in need. Together, we can create a brighter
