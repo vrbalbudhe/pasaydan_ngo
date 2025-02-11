@@ -34,25 +34,25 @@ export default function DriveAccordion() {
   ];
 
   return (
-    <Card className="w-full border-none shadow-none">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex font-normal items-center gap-2 text-lg text-slate-800">
+    <Card className="w-full border-none h-fit mt-10 md:mt-0 shadow-none">
+      <CardHeader className="md:pb-3 w-full">
+        <CardTitle className="flex font-normal w-full items-center gap-2 text-lg text-gray-800">
           <TbInfoSquareRounded className="text-3xl" />
           <p>Drive Information</p>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Accordion type="single" collapsible className="w-full space-y-2">
+        <Accordion type="single" collapsible className="w-full flex flex-col justify-start items-start gap-2">
           {informationDict.map((info, index) => (
             <AccordionItem
               key={index}
               value={`item-${index + 1}`}
-              className="border shadow-md border-gray-300 rounded-2xl px-4 py-2 hover:bg-gray-50 transition-colors"
+              className="border  w-full shadow-md border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50 transition-colors"
             >
               <AccordionTrigger className="flex gap-3 text-left hover:no-underline">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">{info.Icon}</span>
-                  <span className="text-sm font-medium text-blue-950">
+                  <span className="text-2xl">{info.Icon}</span>
+                  <span className="text-md font-semibold text-gray-800">
                     {info.Head}
                   </span>
                 </div>

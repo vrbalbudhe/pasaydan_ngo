@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const payload = await verifyToken(req);
-  console.log("this is the payload: :", payload);
+  // console.log("this is the payload: :", payload);
   if (!payload && pathname !== "/pasaydan/auth/logsign") {
     console.log("Invalid token, redirecting to login...");
     const redirectUrl = new URL("/pasaydan/auth/logsign", req.nextUrl.origin);
@@ -37,7 +37,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const userRole = payload?.role || payload?.userType;
-  console.log("user roles : ", userRole);
+  // console.log("user roles : ", userRole);
   if (pathname.startsWith("/pasaydan/com/profile")) {
     if (userRole !== "individual" && userRole !== "organization") {
       console.log(

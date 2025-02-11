@@ -77,7 +77,7 @@ export default function CalendarComponent() {
   };
 
   return (
-    <div className="w-full ">
+    <div className="w-full bg-white border-none ">
       {loading ? (
         <div className="text-center text-gray-500 flex flex-wrap justify-start items-center gap-5 mb-10 w-full">
           <SkeletonTab />
@@ -94,7 +94,7 @@ export default function CalendarComponent() {
         </div>
       ) : (
         <div className="w-full h-full">
-          <div className="w-full h-full flex flex-col justify-start items-start gap-1">
+          <div className="w-full h-full flex flex-col justify-start items-start gap-1 ">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -103,7 +103,7 @@ export default function CalendarComponent() {
               modifiers={modifiers}
               modifiersClassNames={modifiersClassNames}
             />
-            <div className="w-full rounded-md py-2 pl-2 pr-2 min-h-fit flex-wrap flex justify-center items-start gap-2">
+            <div className="w-full rounded-md py-2 pl-2 pr-2 border border-gray-200 shadow-sm  bg-white mt-5 min-h-fit flex-wrap flex justify-center items-start gap-2">
               <p className=" px-2 bg-green-400 text-white cursor-pointer md:hover:text-green-400 md:hover:bg-white -tracking-tight text-sm rounded-md py-1 ">
                 <span className=" mr-1 rounded-full"></span>
                 Cycle
@@ -122,10 +122,10 @@ export default function CalendarComponent() {
               </p>
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 ">
             {products?.length && (
-              <h1 className="p-2 text-md mb-2 md:text-md flex justify-start items-center gap-2 md:gap-2 text-slate-800">
-                <span className="text-slate-900 text-2xl -tracking-tight">
+              <h1 className="pt-10 md:pt-0 md:p-2 text-xl mb-5 md:text-md font-semibold flex justify-start items-center gap-2 md:gap-2 text-slate-800">
+                <span className="text-gray-800 text-4xl md:text-2xl -tracking-tight">
                   <BsCalendar2Event />
                 </span>
                 Upcoming Drives
@@ -136,17 +136,17 @@ export default function CalendarComponent() {
               .map((product) => (
                 <div
                   key={product?.id}
-                  className={`p-4 mb-2 shadow-md hover:shadow-md hover:border-slate-200 border border-gray-300 rounded-2xl flex justify-between items-center `}
+                  className={`p-4 mb-2 bg-white  shadow-md hover:shadow-md hover:border-slate-200 border-2 border-gray-200 rounded-md flex justify-between items-center `}
                 >
                   <div className="w-full flex flex-col gap-2">
-                    <h2 className="text-xl text-blue-600 cursor-pointer">
+                    <h2 className="text-xl font-semibold text-gray-800 tracking-tight cursor-pointer">
                       {product?.title}
                     </h2>
-                    <p className="text-sm flex justify-start gap-2 items-center text-slate-800 font-semibold -tracking-tight">
-                      <span className="inline text-xl text-slate-800">
+                    <p className="text-sm flex justify-start gap-1 items-center text-blue-500 font-semibold -tracking-tight">
+                      <span className="inline text-xl text-blue-500">
                         <MdLocationOn />
                       </span>
-                      {product?.location}
+                      {product?.location.toUpperCase()}
                     </p>
                     <p className="text-zinc-800 gap-2 flex justify-start items-center tracking-tighter text-sm">
                       <span className="inline text-xl text-slate-800">

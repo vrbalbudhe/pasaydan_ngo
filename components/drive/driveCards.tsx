@@ -47,8 +47,8 @@ export function DriveCards() {
 
   const getStatusStyles = (status: string) => {
     return status === "pending"
-      ? "bg-gradient-to-r from-green-400 to-green-500 ring-4 ring-blue-950/20"
-      : "bg-gradient-to-r from-yellow-400 to-yellow-500 ring-4 ring-blue-950/20";
+      ? "bg-gradient-to-r from-green-400 to-green-500 ring-blue-950/20"
+      : "bg-gradient-to-r from-yellow-400 to-yellow-500 ring-blue-950/20";
   };
 
   if (loading) {
@@ -78,16 +78,16 @@ export function DriveCards() {
   }
 
   return (
-    <div className="w-full space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="w-full">
+      <div className="w-full h-full flex flex-wrap justify-start items-start gap-2 ">
         {products?.slice(0, noOfDrives)?.map((product, index) => (
           <Card
             key={index}
-            className="w-full overflow-hidden bg-gradient-to-tr from-zinc-50 via-white to-zinc-50 hover:shadow-md transition-all duration-300 border border-blue-100"
+            className="w-full md:w-[450px] bg-white min-h-fit rounded-sm overflow-hidden shadow-lg hover:shadow-md transition-all duration-300 border border-gray-200"
           >
-            <CardHeader className="pb-4">
+            <CardHeader className="">
               <div className="flex justify-between items-start mb-5">
-                <CardTitle className="text-3xl md:hover:text-blue-600 cursor-pointer font-normal text-slate-900">
+                <CardTitle className="text-2xl text-blue-500 cursor-pointer font-medium">
                   {product?.title}
                 </CardTitle>
                 <div
@@ -97,27 +97,27 @@ export function DriveCards() {
 
               <CardDescription className="w-full h-full flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-gray-700">
-                  <GoLocation className="text-slate-800 text-2xl flex-shrink-0" />
+                  <GoLocation className="text-slate-800 text-xl flex-shrink-0" />
                   <span className="text-sm">{product?.location}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-700">
-                  <MdTimer className="text-slate-800 text-2xl flex-shrink-0" />
+                  <MdTimer className="text-slate-800 text-xl flex-shrink-0" />
                   <span className="text-sm">{product?.timeInterval}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-700">
-                  <MdOutlineAccessTime className="text-slate-800 text-2xl flex-shrink-0" />
+                  <MdOutlineAccessTime className="text-slate-800 text-xl flex-shrink-0" />
                   <span className="text-sm">
                     {product?.startDate} - {product?.EndDate}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <IoArrowRedoCircleSharp className="text-slate-800 text-2xl flex-shrink-0" />
+                  <IoArrowRedoCircleSharp className="text-slate-800 text-xl flex-shrink-0" />
                   <Badge
                     variant="secondary"
-                    className="bg-zinc-200 py-2 cursor-pointer hover:text-white rounded-full text-slate-700 hover:bg-blue-600"
+                    className="bg-blue-500 border py-2 cursor-pointer rounded-full text-gray-700"
                   >
                     {product?.dtype} Donations
                   </Badge>
@@ -127,10 +127,12 @@ export function DriveCards() {
 
             <CardFooter className="pt-4 pb-6">
               <Link href={`drive/${product.id}`} className="w-full">
-                <Button className="w-1/2 bg-zinc-800 md:hover:bg-zinc-800 md:hover:text-blue-600 rounded-full  text-white shadow-md">
-                  <span className="flex-1">Show Details</span>
+                <div className="w-2/3 md:w-1/2 flex justify-center items-center px-3 py-3 border border-gray-300 md:hover:bg-zinc-800 text-white bg-gray-800 rounded-2xl shadow-md">
+                  <span className="flex-1 text-white font-semibold">
+                    Show Details
+                  </span>
                   <FaExternalLinkAlt className="ml-2 h-4 w-4" />
-                </Button>
+                </div>
               </Link>
             </CardFooter>
           </Card>
@@ -138,15 +140,15 @@ export function DriveCards() {
       </div>
 
       {products && products.length > noOfDrives && (
-        <div className="w-full flex justify-center">
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+        <div className="w-full flex justify-start">
+          <div
+            className="w-full md:w-fit text-center md:text-left bg-inherit text-gray-800 px-2 py-3 border-2 rounded-xl cursor-pointer font-semibold text-sm bg-blue-600 border-gray-200 shadow-md"
             onClick={() =>
               setNoOfDrives((prev) => (prev !== null ? prev + 4 : 4))
             }
           >
-            Show More Drives
-          </Button>
+            Show More
+          </div>
         </div>
       )}
     </div>
