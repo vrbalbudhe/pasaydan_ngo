@@ -43,10 +43,10 @@ export default function Navigator() {
               <li
                 className={`cursor-pointer ${
                   isActiveRoute(link.href)
-                    ? "text-blue-700"
+                    ? "text-blue-700 font-semibold"
                     : isLogsignRoute
                       ? "text-white"
-                      : "text-slate-800"
+                      : "text-gray-800 font-semibold"
                 } hover:text-slate-700`}
               >
                 {link.label}
