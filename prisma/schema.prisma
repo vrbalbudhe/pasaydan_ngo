@@ -204,3 +204,21 @@ model contactUs {
   email    String
   message  String
 }
+
+model Participant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName  String
+  contact   String
+  school    String
+  standard  String
+  area      String
+  photos    Photo[]
+  createdAt DateTime @default(now())
+}
+
+model Photo {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  url           String
+  participantId String      @db.ObjectId
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+}

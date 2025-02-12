@@ -7,6 +7,7 @@ import { MdOutlineAccessTime, MdCategory } from "react-icons/md";
 import Image from "next/image";
 import { useToast } from "hooks/use-toast"; // Corrected import
 import { Badge } from "components/ui/badge"; // Corrected import
+import AddParticipants from "./addParticipants";
 
 interface GeoLocation {
   latitude: string;
@@ -37,9 +38,9 @@ const InfoCard: React.FC<{
   link?: string;
 }> = ({ icon: Icon, title, content, link }) => {
   return (
-    <div className="rounded-xl border  flex bg-white p-6 shadow-md border-gray-400 hover:bg-gray-200">
+    <div className="rounded-md border  flex bg-gray-100 p-4 shadow-md border-gray-200 hover:bg-gray-200">
       <div className="w-[20%] flex justify-center text-[200px] items-center">
-        <Icon className="h-5 w-5 text-gray-500 " />
+        <Icon className="h-10 w-10 text-gray-500 " />
       </div>
       <div className="w-[80%] h-full">
         <div className="flex items-center gap-3">
@@ -132,13 +133,13 @@ export default function DriveInfo() {
         </div>
         <div className="absolute inset-0 bg-black/50">
           <div className="container mx-auto h-full px-4">
-            <div className="flex h-full pl-16 flex-col justify-end pb-16">
-              <h1 className="text-4xl font-bold text-white md:text-6xl">
+            <div className="flex h-full md:pl-16 pl-5 flex-col justify-end pb-16">
+              <h1 className="text-4xl font-semibold text-left text-white md:text-6xl">
                 {drive.title}
               </h1>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Badge
-                  className="text-white -tracking-tighter text-lg"
+                  className="text-gray-800 py-2 -tracking-tighter text-lg"
                   variant={
                     drive.status === "active"
                       ? "default"
@@ -151,7 +152,7 @@ export default function DriveInfo() {
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="text-white -tracking-tighter text-lg"
+                  className="text-gray-900 bg-white px-2 -tracking-tighter text-lg"
                 >
                   {drive.dtype}
                 </Badge>
@@ -162,27 +163,29 @@ export default function DriveInfo() {
       </div>
 
       {/* Content Section */}
-      <div className="container w-[95%] mx-auto px-4 py-12">
+      <div className="container w-[90%] mx-auto px-4 py-12">
         <div className="w-full h-full flex flex-col-reverse md:flex-row gap-5">
           {/* Left Column - Details */}
           <div className="md:w-[70%] h-fit text-wrap">
             <section className="rounded-lg mb-4 bg-white shadow-sm">
-              <h2 className=" text-4xl font-semibold mb-5 text-slate-800">
+              <h2 className=" text-4xl font-semibold mb-5 tracking-tight text-gray-800">
                 Description
               </h2>
-              <p className="text-gray-700 text-md leading-relaxed">
+              <p className="text-gray-700 text-md leading-relaxed tracking-tight">
                 {drive.description}
               </p>
             </section>
 
             {/* Image Gallery */}
             <section className="mt-10">
-              <h2 className="text-4xl font-semibold mb-4">Photos</h2>
+              <h2 className="text-4xl text-gray-800 tracking-tight font-semibold mb-4">
+                Photos
+              </h2>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 {drive.photos.map((photo, index) => (
                   <div
                     key={index}
-                    className="aspect-square relative overflow-hidden rounded-lg cursor-pointer"
+                    className="aspect-square relative overflow-hidden cursor-pointer"
                     onClick={() => setActiveImage(photo)}
                   >
                     <img
@@ -197,7 +200,8 @@ export default function DriveInfo() {
           </div>
 
           {/* Right Column - Info Cards */}
-          <div className="md:w-[30%] flex gap-2 flex-col">
+          <div className="md:w-[30%] flex gap-3 flex-col">
+            <AddParticipants />
             <InfoCard
               icon={GoCalendar}
               title="Dates"
@@ -214,24 +218,6 @@ export default function DriveInfo() {
               content={drive.location}
               link={drive.placeLink}
             />
-            {/* {drive.geoLocation && (
-              <div className="rounded-lg bg-white flex flex-col p-6 justify-center items-start gap-3 shadow-lg border border-gray-200">
-                <div className="text-gray-700">
-                  <span className="block text-md font-semibold">Latitude:</span>
-                  <span className="block text-gray-600">
-                    {drive.geoLocation.latitude}
-                  </span>
-                </div>
-                <div className="text-gray-700">
-                  <span className="block text-md font-semibold">
-                    Longitude:
-                  </span>
-                  <span className="block text-gray-600">
-                    {drive.geoLocation.longitude}
-                  </span>
-                </div>
-              </div>
-            )} */}
           </div>
         </div>
       </div>
