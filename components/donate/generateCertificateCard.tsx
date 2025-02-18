@@ -61,7 +61,7 @@ export default function CertificateForm() {
   return (
     <div className="min-h-fit w-full flex items-center justify-center">
       <div className="w-full max-w-lg">
-        <div className="bg-white p-8 rounded-2xl shadow-xl">
+        <div className="bg-white p-8 rounded-none shadow-md">
           <div className="flex items-center justify-center mb-8">
             <FileCheck className="text-black w-12 h-12" />{" "}
             <h2 className="text-3xl font-bold text-gray-800 ml-3">
@@ -108,7 +108,7 @@ export default function CertificateForm() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-blue-950 hover:bg-blue-900 text-white font-semibold py-3 px-6 rounded-md transition duration-200 flex items-center justify-center space-x-2 group ${
+              className={`w-full bg-[#0496ff] hover:bg-blue-900 text-white font-semibold py-3 px-6 rounded-md transition duration-200 flex items-center justify-center space-x-2 group ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

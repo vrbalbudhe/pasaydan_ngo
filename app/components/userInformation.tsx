@@ -34,7 +34,6 @@ export default function UserInformation() {
 
     fetchUserProfile();
   }, [router]);
-  console.log("he he : ", user?.userType);
 
   if (!user) {
     return (
@@ -42,9 +41,9 @@ export default function UserInformation() {
         <Link href="/pasaydan/auth/logsign">
           <Button
             variant="outline"
-            className="-tracking-tighter bg-blue-600 hover:bg-blue-500 hover:text-white rounded-[10px] border-none text-white shadow-sm shadow-slate-100"
+            className="-tracking-tighter bg-gray-800 hover:bg-blue-500 hover:text-white rounded-none border-none text-white shadow-sm shadow-slate-100"
           >
-            Login
+            Donate Us
           </Button>
         </Link>
       </div>

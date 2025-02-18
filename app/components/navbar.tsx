@@ -6,7 +6,7 @@ import logo from "@/assets/homepage/logo.png";
 
 const Navbar = async () => {
   return (
-    <div className="w-[100%] md:w-[92%] h-[70px] flex justify-between items-center md:p-5 pl-5 pr-5">
+    <div className="w-[100%] md:w-[100%] h-[70px] bg-[#f0f3f5] flex justify-between items-center md:p-5 pl-5 pr-5">
       {/* Logo */}
       <Link href="/pasaydan/com" className="flex items-center gap-2">
         <Image
@@ -16,7 +16,7 @@ const Navbar = async () => {
           width={40}
           height={50}
         />
-        <p className="tracking-tight text-lg font-semibold text-gray-800">
+        <p className="-tracking-tight  text-lg font-lexend text-gray-800">
           Pasaydan
         </p>
       </Link>

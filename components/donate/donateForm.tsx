@@ -30,9 +30,6 @@ export default function DonationForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log(formData);
-    console.log(address);
-    console.log(donateType);
     e.preventDefault();
     if (
       !formData.fullname ||
@@ -90,7 +87,7 @@ export default function DonationForm() {
       {/* Blob Animations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute top-1/4 left-10 w-[400px] h-[400px] bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+          className="absolute top-1/4 left-10 w-[400px] h-[400px] bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
           animate={{
             scale: [1, 1.1, 1],
             x: [0, 30, 0],
@@ -103,7 +100,7 @@ export default function DonationForm() {
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 left-20 w-[350px] h-[350px] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+          className="absolute bottom-1/4 left-20 w-[350px] h-[350px] rounded-full mix-blend-multiply filter blur-3xl opacity-30"
           animate={{
             scale: [1, 1.2, 1],
             x: [0, -20, 0],
@@ -126,13 +123,13 @@ export default function DonationForm() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-5xl sm:text-5xl text-gray-800 lg:text-6xl xl:text-7xl leading-tight text-semibold">
-              <span className="text-[#1a237e] font-bold">Donate</span> What
-              You Can Spare <br />
+            <h1 className="text-5xl sm:text-5xl text-gray-800 lg:text-6xl tracking-tight xl:text-7xl leading-tight text-semibold">
+              <span className="text-[#0496ff] font-bold">Donate</span> What You
+              Can Spare <br />
               and Make a <br />
-              <span className="text-[#1a237e] font-bold">Difference</span>
+              <span className="text-[#0496ff] font-bold">Difference</span>
             </h1>
-            <p className="mt-6 text-xl text-gray-600 max-w-xl mx-auto lg:mx-0">
+            <p className="mt-6 text-md text-gray-800 font-lexend max-w-xl mx-auto lg:mx-0">
               Your contribution can change lives. Every donation, no matter how
               small, makes a significant impact on someone's life.
             </p>
@@ -144,7 +141,7 @@ export default function DonationForm() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100 p-6 sm:p-8 md:p-10">
+            <div className="bg-white/80 backdrop-blur-sm rounded-none shadow-md border border-blue-100 p-6 sm:p-8 md:p-10">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label

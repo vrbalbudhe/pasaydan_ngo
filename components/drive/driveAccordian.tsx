@@ -34,20 +34,24 @@ export default function DriveAccordion() {
   ];
 
   return (
-    <Card className="w-full border-none h-fit mt-10 md:mt-0 shadow-none">
+    <Card className="w-full border-none h-fit mt-10 md:mt-0 shadow-none ">
       <CardHeader className="md:pb-3 w-full">
-        <CardTitle className="flex font-normal w-full items-center gap-2 text-lg text-gray-800">
-          <TbInfoSquareRounded className="text-3xl" />
+        <CardTitle className="flex font-normal w-full items-center gap-2 text-xl text-gray-800">
+          <TbInfoSquareRounded className="text-3xl italic" />
           <p>Drive Information</p>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Accordion type="single" collapsible className="w-full flex flex-col justify-start items-start gap-2">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full flex flex-col justify-start items-start gap-2"
+        >
           {informationDict.map((info, index) => (
             <AccordionItem
               key={index}
               value={`item-${index + 1}`}
-              className="border  w-full shadow-md border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50 transition-colors"
+              className="border  w-full shadow-md border-gray-200 rounded-md px-4 py-2 bg-[#fbfbff] transition-colors"
             >
               <AccordionTrigger className="flex gap-3 text-left hover:no-underline">
                 <div className="flex items-center gap-3">
@@ -72,62 +76,3 @@ export default function DriveAccordion() {
   );
 }
 
-{
-  /*import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { TiInfoLargeOutline } from "react-icons/ti";
-import { TbInfoSquareRounded } from "react-icons/tb"
-export default function DriveAccordian() {
-  const informationDict = [
-    {
-      Head: "Is this drive timings are volatile?",
-      Content:
-        "Mostly Drives timings are not volatile, but if we want to reschedule we will inform it on prior basis.",
-    },
-    {
-      Head: "What is the schedule?",
-      Content: "The drive is scheduled for 15th December, 2024.",
-    },
-    {
-      Head: "How to participate in this drives?",
-      Content:
-        "Just Be in the location on given timings our pasaydan will catch your attention.",
-    },
-    {
-      Head: "How to participate?",
-      Content: "Sign up on our platform and confirm your slot.",
-    },
-  ];
-
-  return (
-    <div className="mt-10 w-full">
-      <div>
-        <h1 className="text-md  flex justify-start items-center gap-1 text-blue-600 hover:underline mb-2 cursor-pointer">
-          <span className="inline text-xl text-black">
-            <TbInfoSquareRounded />
-          </span>
-          Drive Information
-        </h1>
-      </div>
-      <Accordion type="single" collapsible className="w-full">
-        {informationDict.map((info, index) => (
-          <AccordionItem key={index} value={`item-${index + 1}`}>
-            <AccordionTrigger className="text-md">
-              {index + 1}
-              {". "} {info.Head}
-            </AccordionTrigger>
-            <AccordionContent className="text-blue-600 italic -tracking-tight">
-              {"> "}
-              {info.Content}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </div>
-  );
-} */
-}

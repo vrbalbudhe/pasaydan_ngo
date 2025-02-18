@@ -37,16 +37,16 @@ export default function Navigator() {
 
       {/* Desktop Navigation */}
       <div className="hidden md:block">
-        <ul className="flex gap-3 text-[13px] text-slate-800 -tracking-tighter">
+        <ul className="flex gap-3 text-sm text-gray-800 font-lexend -tracking-tighter">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}>
               <li
                 className={`cursor-pointer ${
                   isActiveRoute(link.href)
-                    ? "text-blue-700 font-semibold"
+                    ? "text-gray-900 font-semibold "
                     : isLogsignRoute
                       ? "text-white"
-                      : "text-gray-800 font-semibold"
+                      : "text-gray-700 font-medium"
                 } hover:text-slate-700`}
               >
                 {link.label}
@@ -64,9 +64,7 @@ export default function Navigator() {
               <Link key={link.href} href={link.href}>
                 <li
                   className={`px-6 py-2 cursor-pointer ${
-                    isActiveRoute(link.href)
-                      ? "text-blue-700"
-                      : "text-slate-800"
+                    isActiveRoute(link.href) ? "text-blue-700" : "text-gray-800"
                   } hover:bg-slate-100`}
                   onClick={toggleMenu}
                 >

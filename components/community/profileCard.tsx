@@ -18,7 +18,7 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   return (
     <div>
-      <Card className="md:w-[180px] w-[150px] hover:scale-95 duration-500 ease-in-out h-[180px] md:h-[220px] border border-slate-300 shadow-sm">
+      <Card className="md:w-[180px] w-[150px] rounded-none md:hover:scale-95 duration-500 ease-in-out h-[180px] md:h-[220px] bg-[#fbfbff] border border-slate-200 shadow-md">
         <CardContent className="w-full h-full flex flex-col justify-evenly items-center">
           <img
             className="md:w-24 md:h-24 w-14 h-14 bg-slate-200 object-coverF border-2 border-blue-600 rounded-full"
