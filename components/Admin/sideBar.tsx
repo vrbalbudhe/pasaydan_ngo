@@ -27,6 +27,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { MdLogout } from "react-icons/md";
+import { Calendar } from "lucide-react";
 
 const items = [
   { title: "Dashboard", url: "/pasaydan/admin", icon: Home },
@@ -37,6 +38,7 @@ const items = [
   { title: "Transactions", url: "/pasaydan/admin/transactions", icon: IndianRupeeIcon },
   { title: "Downloads", url: "/pasaydan/admin/downloadData", icon: Download },
   { title: "EnterData", url: "/pasaydan/admin/enterData", icon: FileText },
+  { title: "Calendar", url: "/pasaydan/admin/calendar", icon: Calendar},
   { title: "Manage Admins", url: "/pasaydan/admin/logsign", icon: Shield },
   { title: "Settings", url: "/pasaydan/admin/settings", icon: Settings },
 ];
