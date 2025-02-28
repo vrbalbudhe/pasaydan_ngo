@@ -1,173 +1,173 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-export async function GET(request: Request) {
+const prisma = new PrismaClient();
+
+// GET: Fetch donations for a date range
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const month = searchParams.get('month');
-    const year = searchParams.get('year');
-    const userType = searchParams.get('userType') || 'all';
+    // Get query parameters
+    const searchParams = request.nextUrl.searchParams;
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
-    if (!month || !year) {
-      return NextResponse.json({ error: 'Month and year are required' }, { status: 400 });
+    // Validate required parameters
+    if (!startDate || !endDate) {
+      return NextResponse.json(
+        { success: false, message: "startDate and endDate are required" },
+        { status: 400 }
+      );
     }
 
-    // Create date range for the selected month
-    const startDate = new Date(`${year}-${month.padStart(2, '0')}-01`);
-    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
-    const endDate = new Date(`${year}-${month.padStart(2, '0')}-${lastDay}`);
-    
-    // Get all transactions for the specified month and year
+    // Parse dates for query
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    endDateTime.setHours(23, 59, 59, 999); // Set to end of day
+
+    // Fetch transactions within the specified date range
+    // We'll use the existing Transaction model instead of creating a new one
     const transactions = await prisma.transaction.findMany({
       where: {
         date: {
-          gte: startDate,
-          lte: endDate,
+          gte: startDateTime,
+          lte: endDateTime,
         },
+        // Only include transactions created manually (for calendar entries)
+        entryType: "MANUAL",
       },
-      include: {
-        User: {
-          select: {
-            id: true,
-            fullname: true,
-            email: true
-          }
-        },
-        Organization: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-      },
-      orderBy: {
-        date: 'asc',
-      },
-    });
-
-    // Get all users of different types
-    let userQuery = {};
-    if (userType !== 'all') {
-      userQuery = {
-        where: {
-          userType: userType === 'individual' ? 'individual' : {
-            contains: userType
-          }
-        }
-      };
-    }
-
-    const users = await prisma.user.findMany({
-      ...userQuery,
       select: {
         id: true,
-        fullname: true,
-        email: true,
-        userType: true,
+        userId: true, // Using the userId field from Transaction
+        date: true,
+        amount: true,
+        transactionNature: true,
+        description: true,
       },
     });
 
-    const admins = await prisma.admin.findMany({
-      where: userType === 'all' || userType === 'Admin' ? {} : { id: 'none' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        userType: true,
-      },
-    });
-
-    const subAdmins = await prisma.subAdmins.findMany({
-      where: userType === 'all' || userType === 'MiniAdmin' ? {} : { id: 'none' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        userType: true,
-      },
-    });
-
-    const organizations = await prisma.organization.findMany({
-      where: userType === 'all' || userType === 'organization' ? {} : { id: 'none' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        userType: true,
-      },
-    });
-
-    // Format all entity types to have a common structure
-    const formattedUsers = users.map(user => ({
-      id: user.id,
-      name: user.fullname || user.email,
-      email: user.email,
-      userType: user.userType
+    // Format dates to YYYY-MM-DD for frontend compatibility
+    const formattedDonations = transactions.map(transaction => ({
+      id: transaction.id,
+      userId: transaction.userId || "", // Handle null userId
+      date: transaction.date.toISOString().split('T')[0],
+      amount: transaction.amount,
+      transactionNature: transaction.transactionNature,
+      description: transaction.description,
     }));
 
-    const formattedAdmins = admins.map(admin => ({
-      id: admin.id,
-      name: admin.name || admin.email,
-      email: admin.email,
-      userType: admin.userType
-    }));
-
-    const formattedSubAdmins = subAdmins.map(subAdmin => ({
-      id: subAdmin.id,
-      name: subAdmin.name || subAdmin.email,
-      email: subAdmin.email,
-      userType: subAdmin.userType
-    }));
-
-    const formattedOrganizations = organizations.map(org => ({
-      id: org.id,
-      name: org.name || org.email,
-      email: org.email,
-      userType: org.userType
-    }));
-
-    // Combine all entity types
-    const allEntities = [
-      ...formattedUsers,
-      ...formattedAdmins,
-      ...formattedSubAdmins,
-      ...formattedOrganizations
-    ];
-
-    return NextResponse.json({ 
-      transactions, 
-      entities: allEntities,
-      daysInMonth: lastDay
+    return NextResponse.json({
+      success: true,
+      donations: formattedDonations,
     });
   } catch (error) {
-    console.error('Error fetching calendar data:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error fetching donations:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch donations" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(request: Request) {
+// POST: Create or update donation entry
+export async function POST(request: NextRequest) {
   try {
+    // Parse request body
     const body = await request.json();
-    const { transactionId, amount, description } = body;
+    const { id, userId, date, amount, transactionNature, description } = body;
 
-    if (!transactionId) {
-      return NextResponse.json({ error: 'Transaction ID is required' }, { status: 400 });
+    // Validate required fields
+    if (!userId || !date || amount === undefined || !transactionNature) {
+      return NextResponse.json(
+        { success: false, message: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    const updatedTransaction = await prisma.transaction.update({
-      where: {
-        id: transactionId,
-      },
-      data: {
-        amount,
-        description,
-      },
+    // We'll use the user information
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fullname: true, email: true, mobile: true }
     });
 
-    return NextResponse.json(updatedTransaction);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Generate a unique transaction ID
+    const transactionId = `CALENDAR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    // Create transaction data using the existing Transaction model
+    const transactionData = {
+      name: user.fullname || "Unknown User",
+      email: user.email || "unknown@email.com",
+      phone: user.mobile || "Unknown",
+      userType: "INDIVIDUAL", // Default userType
+      amount: Number(amount),
+      type: "CASH", // Default type for calendar entries
+      transactionId: id ? `${id}` : transactionId, // Use existing ID or generate new one
+      date: new Date(date),
+      transactionNature,
+      description,
+      entryType: "MANUAL", // This identifies it as a calendar entry
+      entryBy: "ADMIN", // Since we're not using auth for now
+      moneyFor: "OTHER", // Default category
+      status: "VERIFIED", // Auto-verify calendar entries
+      userId: userId, // Link to user
+    };
+
+    let result;
+
+    // If ID exists, update existing transaction, otherwise create new one
+    if (id) {
+      result = await prisma.transaction.update({
+        where: { id },
+        data: {
+          amount: Number(amount),
+          transactionNature,
+          description,
+        },
+      });
+    } else {
+      // Check if a transaction already exists for this user on this date with MANUAL entry type
+      const existingTransaction = await prisma.transaction.findFirst({
+        where: {
+          userId,
+          date: new Date(date),
+          entryType: "MANUAL",
+        },
+      });
+
+      if (existingTransaction) {
+        // Update existing transaction if found
+        result = await prisma.transaction.update({
+          where: { id: existingTransaction.id },
+          data: {
+            amount: Number(amount),
+            transactionNature,
+            description,
+          },
+        });
+      } else {
+        // Create new transaction
+        result = await prisma.transaction.create({
+          data: transactionData,
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Donation saved successfully",
+      donationId: result.id,
+    });
   } catch (error) {
-    console.error('Error updating transaction:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error saving donation:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to save donation" },
+      { status: 500 }
+    );
   }
 }

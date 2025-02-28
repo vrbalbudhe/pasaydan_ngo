@@ -1,609 +1,855 @@
-'use client';
+"use client";
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Plus,
+  Edit,
+  CreditCard,
+  Check,
+  X,
+  InfoIcon,
+} from "lucide-react";
+import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
-import { useState, useEffect, useMemo } from 'react';
-import { format } from 'date-fns';
-import { 
-  CalendarIcon, 
-  ChevronLeft, 
-  ChevronRight, 
-  Edit, 
-  Info,
-  ArrowUpRight,
-  ArrowDownRight,
-  CreditCard
-} from 'lucide-react';
-
-// Import all necessary components from your UI library
-import { Card } from '@/components/ui/card';
-import { CardContent } from '@/components/ui/card';
-import { CardHeader } from '@/components/ui/card';
-import { CardTitle } from '@/components/ui/card';
-import { CardDescription } from '@/components/ui/card';
-import { Select } from '@/components/ui/select';
-import { SelectContent } from '@/components/ui/select';
-import { SelectItem } from '@/components/ui/select';
-import { SelectTrigger } from '@/components/ui/select';
-import { SelectValue } from '@/components/ui/select';
-import { Table } from '@/components/ui/table';
-import { TableBody } from '@/components/ui/table';
-import { TableCell } from '@/components/ui/table';
-import { TableHead } from '@/components/ui/table';
-import { TableHeader } from '@/components/ui/table';
-import { TableRow } from '@/components/ui/table';
-import { Dialog } from '@/components/ui/dialog';
-import { DialogContent } from '@/components/ui/dialog';
-import { DialogHeader } from '@/components/ui/dialog';
-import { DialogTitle } from '@/components/ui/dialog';
-import { DialogFooter } from '@/components/ui/dialog';
-import { DialogDescription } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs } from '@/components/ui/tabs';
-import { TabsContent } from '@/components/ui/tabs';
-import { TabsList } from '@/components/ui/tabs';
-import { TabsTrigger } from '@/components/ui/tabs';
-import { ToggleGroup } from '@/components/ui/toggle-group';
-import { ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
-interface Transaction {
+interface User {
   id: string;
+  fullname: string;
+}
+
+interface DonationEntry {
+  id?: string;
+  userId: string;
+  date: string; // YYYY-MM-DD format
   amount: number;
-  date: string;
-  description: string;
-  transactionNature: 'CREDIT' | 'DEBIT';
-  transactionId: string;
-  type: string;
-  User?: { fullname: string; email: string } | null;
-  Organization?: { name: string; email: string } | null;
+  transactionNature: "CREDIT" | "DEBIT";
+  description?: string;
 }
 
-interface Entity {
-  id: string;
-  name: string;
-  email: string;
-  userType: string;
-}
-
-interface DayTransaction {
-  day: number;
-  transactions: Transaction[];
-}
-
-export default function CalendarPage() {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [entities, setEntities] = useState<Entity[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [daysInMonth, setDaysInMonth] = useState(31);
-  const [selectedUserType, setSelectedUserType] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+const DonationCalendarPage = () => {
+  // Define month names and get current date
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
   
-  // New state variables
-  const [selectedDayTransactions, setSelectedDayTransactions] = useState<Transaction[]>([]);
-  const [selectedEntityName, setSelectedEntityName] = useState('');
-  const [selectedDay, setSelectedDay] = useState(0);
-  const [editingTransaction, setEditingTransaction] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{[key: string]: {amount: string, description: string}}>({});
+  const currentDate = new Date();
+  const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
+  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
+  const [users, setUsers] = useState<User[]>([]);
+  const [donations, setDonations] = useState<DonationEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingDonation, setEditingDonation] = useState<{
+    userId: string;
+    day: number;
+    donation: DonationEntry | null;
+  } | null>(null);
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
-  const months = [
-    { value: 1, label: 'January' },
-    { value: 2, label: 'February' },
-    { value: 3, label: 'March' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'May' },
-    { value: 6, label: 'June' },
-    { value: 7, label: 'July' },
-    { value: 8, label: 'August' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'October' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'December' },
-  ];
+  // Get days in month
+  const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
 
-  const userTypes = [
-    { value: 'all', label: 'All' },
-    { value: 'individual', label: 'Users' },
-    { value: 'organization', label: 'Organizations' },
-    { value: 'Admin', label: 'Admins' },
-    { value: 'MiniAdmin', label: 'Sub Admins' },
-  ];
+  const getFirstDayOfMonth = (month: number, year: number) => {
+    return new Date(year, month, 1).getDay();
+  };
 
+  const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+  const firstDayOfMonth = getFirstDayOfMonth(currentMonth, currentYear);
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  // Calculate calendar grid with proper day placement
+  const calendarGrid = [];
+  let dayCounter = 1;
+  
+  // Generate weeks
+  for (let week = 0; week < 6; week++) {
+    const weekDays = [];
+    for (let day = 0; day < 7; day++) {
+      if ((week === 0 && day < firstDayOfMonth) || dayCounter > daysInMonth) {
+        weekDays.push(null); // Empty cell
+      } else {
+        weekDays.push(dayCounter++);
+      }
+    }
+    calendarGrid.push(weekDays);
+    if (dayCounter > daysInMonth) break;
+  }
+
+  // Fetch users and donations
   useEffect(() => {
-    fetchCalendarData();
-  }, [selectedMonth, selectedYear, selectedUserType]);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch users
+        const usersResponse = await fetch("/api/admin/calendar/users");
+        const usersData = await usersResponse.json();
+        
+        if (usersData.success) {
+          setUsers(usersData.users);
+        }
 
-  const fetchCalendarData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/admin/calendar?month=${selectedMonth}&year=${selectedYear}&userType=${selectedUserType}`
-      );
-      const data = await response.json();
-      setTransactions(data.transactions);
-      setEntities(data.entities);
-      setDaysInMonth(data.daysInMonth);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching calendar data:', error);
-      setIsLoading(false);
+        // Fetch donations for current month
+        const startDate = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-01`;
+        const endDate = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
+        
+        const donationsResponse = await fetch(
+          `/api/admin/calendar?startDate=${startDate}&endDate=${endDate}`
+        );
+        const donationsData = await donationsResponse.json();
+        
+        if (donationsData.success) {
+          setDonations(donationsData.donations);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [currentMonth, currentYear, daysInMonth]);
+
+  // Handle month navigation
+  const previousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
     }
   };
 
-  const handleTransactionUpdate = async (transactionId: string) => {
-    if (!editValues[transactionId]) return;
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
 
+  // Get donation for a specific user and day
+  const getDonation = (userId: string, day: number) => {
+    const date = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return donations.find(
+      (d) => d.userId === userId && d.date === date
+    );
+  };
+
+  // Get donations for a specific day (all users)
+  const getDayDonations = (day: number) => {
+    const date = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return donations.filter((d) => d.date === date);
+  };
+
+  // Handle opening donation editor
+  const openDonationEditor = (userId: string, day: number) => {
+    const donation = getDonation(userId, day);
+    
+    setEditingDonation({
+      userId,
+      day,
+      donation: donation || {
+        userId,
+        date: `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        amount: 0,
+        transactionNature: "CREDIT",
+        description: "",
+      },
+    });
+  };
+
+  // Save donation from editor
+  const saveEditingDonation = async () => {
+    if (!editingDonation) return;
+    
+    setIsSaving(true);
+    
     try {
-      const response = await fetch('/api/admin/calendar', {
-        method: 'PUT',
+      const donation = editingDonation.donation;
+      
+      if (!donation) return;
+      
+      const response = await fetch("/api/admin/calendar", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          transactionId: transactionId,
-          amount: parseFloat(editValues[transactionId].amount),
-          description: editValues[transactionId].description,
-        }),
+        body: JSON.stringify(donation),
       });
-
-      if (response.ok) {
-        // Update local state to reflect changes
-        const updatedTransactions = selectedDayTransactions.map(t => {
-          if (t.id === transactionId) {
-            return {
-              ...t, 
-              amount: parseFloat(editValues[transactionId].amount),
-              description: editValues[transactionId].description
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update the donation in the state
+        setDonations(prev => {
+          const existingIndex = prev.findIndex(
+            d => d.userId === donation.userId && d.date === donation.date
+          );
+          
+          if (existingIndex !== -1) {
+            const updated = [...prev];
+            updated[existingIndex] = {
+              ...donation,
+              id: donation.id || data.donationId,
             };
+            return updated;
+          } else {
+            return [...prev, { ...donation, id: data.donationId }];
           }
-          return t;
         });
         
-        setSelectedDayTransactions(updatedTransactions);
-        setEditingTransaction(null);
-        
-        // Refetch all data to ensure everything is in sync
-        fetchCalendarData();
+        toast.success("Donation saved successfully");
+        setEditingDonation(null);
+      } else {
+        toast.error(data.message || "Failed to save donation");
       }
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      console.error("Error saving donation:", error);
+      toast.error("Failed to save donation. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const goToPreviousMonth = () => {
-    if (selectedMonth === 1) {
-      setSelectedMonth(12);
-      setSelectedYear(selectedYear - 1);
-    } else {
-      setSelectedMonth(selectedMonth - 1);
-    }
-  };
-
-  const goToNextMonth = () => {
-    if (selectedMonth === 12) {
-      setSelectedMonth(1);
-      setSelectedYear(selectedYear + 1);
-    } else {
-      setSelectedMonth(selectedMonth + 1);
-    }
-  };
-
-  const filteredEntities = useMemo(() => {
-    return entities.filter(entity => {
-      const matchesUserType = selectedUserType === 'all' || entity.userType.toLowerCase() === selectedUserType.toLowerCase();
-      const matchesSearch = searchTerm === '' || 
-        entity.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        entity.email?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return matchesUserType && matchesSearch;
-    });
-  }, [entities, selectedUserType, searchTerm]);
-
-  const getTransactionsForEntityAndMonth = (entityId: string) => {
-    const days: DayTransaction[] = [];
-    
-    // Create entries for all days in the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dayTransactions = transactions.filter(t => {
-        const transactionDay = new Date(t.date).getDate();
-        return ((t.User?.email && entities.find(e => e.id === entityId)?.email === t.User?.email) || 
-               (t.Organization?.email && entities.find(e => e.id === entityId)?.email === t.Organization?.email)) && 
-               transactionDay === day;
-      });
-      
-      days.push({ day, transactions: dayTransactions });
-    }
-    
-    return days;
-  };
-
+  // Format currency for display
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'INR'
+      currency: 'INR',
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
-  const openDayTransactions = (entity: Entity, day: number, transactions: Transaction[]) => {
-    setSelectedEntityName(entity.name);
-    setSelectedDay(day);
-    setSelectedDayTransactions(transactions);
+  // Get user name by ID
+  const getUserName = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    return user ? user.fullname : "Unknown User";
+  };
+
+  // Get color for transaction
+  const getTransactionColor = (type: "CREDIT" | "DEBIT") => {
+    return type === "CREDIT" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
+  };
+
+  // Calculate total donations for a day
+  const getDayTotal = (day: number) => {
+    const dayDonations = getDayDonations(day);
+    let total = 0;
     
-    // Initialize edit values for each transaction
-    const initialEditValues: {[key: string]: {amount: string, description: string}} = {};
-    transactions.forEach(t => {
-      initialEditValues[t.id] = {
-        amount: t.amount.toString(),
-        description: t.description || ''
-      };
-    });
-    setEditValues(initialEditValues);
-    
-    setIsDialogOpen(true);
-  };
-
-  const handleEditStart = (transactionId: string) => {
-    setEditingTransaction(transactionId);
-  };
-
-  const handleEditCancel = () => {
-    setEditingTransaction(null);
-    // Reset edit values to original
-    const resetValues: {[key: string]: {amount: string, description: string}} = {};
-    selectedDayTransactions.forEach(t => {
-      resetValues[t.id] = {
-        amount: t.amount.toString(),
-        description: t.description || ''
-      };
-    });
-    setEditValues(resetValues);
-  };
-
-  const handleInputChange = (transactionId: string, field: 'amount' | 'description', value: string) => {
-    setEditValues(prev => ({
-      ...prev,
-      [transactionId]: {
-        ...prev[transactionId],
-        [field]: value
+    dayDonations.forEach(donation => {
+      if (donation.transactionNature === "CREDIT") {
+        total += donation.amount;
+      } else {
+        total -= donation.amount;
       }
-    }));
+    });
+    
+    return total;
   };
+
+  // Calculate total donations for a user in current month
+  const getUserMonthlyTotal = (userId: string) => {
+    const userDonations = donations.filter(d => d.userId === userId);
+    let total = 0;
+    
+    userDonations.forEach(donation => {
+      if (donation.transactionNature === "CREDIT") {
+        total += donation.amount;
+      } else {
+        total -= donation.amount;
+      }
+    });
+    
+    return total;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="animate-spin h-10 w-10 text-primary" />
+        <span className="ml-2 text-xl">Loading donation calendar...</span>
+      </div>
+    );
+  }
 
   return (
-    <Card className="w-full shadow-lg border-t-4 border-blue-500">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle className="text-2xl font-semibold text-blue-800">Transaction Calendar</CardTitle>
-            <CardDescription>View and manage financial transactions by date</CardDescription>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={goToPreviousMonth}
-                className="h-9 w-9"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              
-              <Select
-                value={selectedMonth.toString()}
-                onValueChange={(value) => setSelectedMonth(parseInt(value))}
-              >
-                <SelectTrigger className="w-32 h-9">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month.value} value={month.value.toString()}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => setSelectedYear(parseInt(value))}
-              >
-                <SelectTrigger className="w-24 h-9">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <SelectItem 
-                      key={new Date().getFullYear() - 2 + i} 
-                      value={(new Date().getFullYear() - 2 + i).toString()}
-                    >
-                      {new Date().getFullYear() - 2 + i}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={goToNextMonth}
-                className="h-9 w-9"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+    <div className="container mx-auto py-6 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Pasaydan Donations</h1>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant={viewMode === "calendar" ? "default" : "outline"} 
+            onClick={() => setViewMode("calendar")}
+            size="sm"
+          >
+            <CalendarIcon className="h-4 w-4 mr-2" /> Calendar View
+          </Button>
+          <Button 
+            variant={viewMode === "list" ? "default" : "outline"} 
+            onClick={() => setViewMode("list")}
+            size="sm"
+          >
+            <CreditCard className="h-4 w-4 mr-2" /> List View
+          </Button>
         </div>
-      </CardHeader>
+      </div>
       
-      <CardContent className="p-4">
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <ToggleGroup type="single" value={selectedUserType} onValueChange={(value) => value && setSelectedUserType(value)}>
-              {userTypes.map(type => (
-                <ToggleGroupItem key={type.value} value={type.value} aria-label={type.label} className="text-xs sm:text-sm">
-                  {type.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+      {/* Month navigation */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center">
+            <Button 
+              variant="outline" 
+              onClick={previousMonth}
+              className="flex items-center"
+              size="sm"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+            </Button>
             
-            <div className="w-full sm:w-64">
-              <Input 
-                type="text" 
-                placeholder="Search by name or email" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-9"
-              />
+            <div className="text-xl font-semibold">
+              {monthNames[currentMonth]} {currentYear}
             </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={nextMonth}
+              className="flex items-center"
+              size="sm"
+            >
+              Next <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
-          
-          {isLoading ? (
-            <div className="flex justify-center items-center h-60">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-lg border shadow">
-              <Table>
-                <TableHeader className="bg-blue-50">
-                  <TableRow>
-                    <TableHead className="sticky left-0 bg-blue-50 z-10 min-w-[180px]">User / Entity</TableHead>
-                    <TableHead className="text-center">Type</TableHead>
-                    <TableHead className="text-center">Transactions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEntities.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center h-40">
-                        No results found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {filteredEntities.map((entity) => {
-                    const entityTransactions = getTransactionsForEntityAndMonth(entity.id);
-                    
+        </CardContent>
+      </Card>
+      
+      {/* Calendar View */}
+      {viewMode === "calendar" && (
+        <div className="grid grid-cols-1 gap-6">
+          {/* Google Calendar-inspired view */}
+          <Card>
+            <CardContent className="p-4">
+              {/* Day headers */}
+              <div className="grid grid-cols-7 mb-2">
+                {dayLabels.map((day, index) => (
+                  <div key={index} className="text-center font-medium text-gray-500 py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Calendar grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {calendarGrid.flat().map((day, index) => {
+                  if (day === null) {
                     return (
-                      <TableRow key={entity.id} className="hover:bg-slate-50">
-                        <TableCell className="font-medium sticky left-0 bg-white z-10 whitespace-nowrap">
-                          <div className="flex flex-col">
-                            <span>{entity.name}</span>
-                            <span className="text-xs text-gray-500">{entity.email}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant={
-                            entity.userType === 'Admin' ? "destructive" : 
-                            entity.userType === 'MiniAdmin' ? "secondary" :
-                            entity.userType === 'organization' ? "outline" : "default"
-                          }>
-                            {entity.userType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="p-2">
-                          <div className="flex flex-wrap gap-1">
-                            {entityTransactions.map(({ day, transactions }) => {
-                              if (transactions.length === 0) {
-                                return (
-                                  <div key={day} className="h-6 w-8 text-center text-sm text-gray-800 flex items-center justify-center">
-                                    {day}
-                                  </div>
-                                );
-                              }
-                              
-                              const hasCreditTransaction = transactions.some(t => t.transactionNature === 'CREDIT');
-                              const hasDebitTransaction = transactions.some(t => t.transactionNature === 'DEBIT');
-                              const totalCredit = transactions
-                                .filter(t => t.transactionNature === 'CREDIT')
-                                .reduce((sum, t) => sum + t.amount, 0);
-                              const totalDebit = transactions
-                                .filter(t => t.transactionNature === 'DEBIT')
-                                .reduce((sum, t) => sum + t.amount, 0);
-                              
-                              return (
-                                <Button
-                                  key={day}
-                                  variant="ghost"
-                                  size="sm"
-                                  className={`rounded-md px-1 py-0.5 flex flex-col items-center justify-center min-w-12 h-11 text-xs font-normal ${
-                                    hasCreditTransaction && hasDebitTransaction
-                                      ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-                                      : hasCreditTransaction
-                                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                      : 'bg-red-100 text-red-800 hover:bg-red-200'
-                                  }`}
-                                  onClick={() => openDayTransactions(entity, day, transactions)}
-                                >
-                                  <span className="font-bold">{day}</span>
-                                  <div className="flex flex-col items-center">
-                                    {hasCreditTransaction && (
-                                      <span className="text-green-600 text-xs">+{formatCurrency(totalCredit)}</span>
-                                    )}
-                                    {hasDebitTransaction && (
-                                      <span className="text-red-600 text-xs">-{formatCurrency(totalDebit)}</span>
-                                    )}
-                                  </div>
-                                </Button>
-                              );
-                            })}
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <div 
+                        key={`empty-${index}`} 
+                        className="bg-gray-50 h-28 rounded-md"
+                      />
                     );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
-      </CardContent>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <CalendarIcon className="h-5 w-5" />
-              Transactions for {selectedEntityName} on {months.find(m => m.value === selectedMonth)?.label} {selectedDay}, {selectedYear}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedDayTransactions.length} transaction{selectedDayTransactions.length !== 1 ? 's' : ''} found
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-2">
-            <Accordion type="single" collapsible className="w-full">
-              {selectedDayTransactions.map((transaction, index) => {
-                const isEditing = editingTransaction === transaction.id;
-                
-                return (
-                  <AccordionItem 
-                    key={transaction.id} 
-                    value={transaction.id}
-                    className={`border rounded-lg mb-3 ${
-                      transaction.transactionNature === 'CREDIT' 
-                        ? 'border-green-200 bg-green-50' 
-                        : 'border-red-200 bg-red-50'
-                    }`}
-                  >
-                    <AccordionTrigger className="px-4 py-2 hover:no-underline">
-                      <div className="flex justify-between items-center w-full">
-                        <div className="flex items-center gap-2">
-                          {transaction.transactionNature === 'CREDIT' ? (
-                            <ArrowUpRight className="h-5 w-5 text-green-600" />
-                          ) : (
-                            <ArrowDownRight className="h-5 w-5 text-red-600" />
-                          )}
-                          <span className={transaction.transactionNature === 'CREDIT' ? 'text-green-700' : 'text-red-700'}>
-                            {transaction.transactionNature === 'CREDIT' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="mr-2">
-                            {transaction.type}
-                          </Badge>
-                          <span className="text-sm text-gray-500">ID: {transaction.transactionId.slice(0, 8)}...</span>
-                        </div>
+                  }
+                  
+                  const dayDonations = getDayDonations(day);
+                  const dayTotal = getDayTotal(day);
+                  const hasPositiveDonations = dayDonations.some(d => d.transactionNature === "CREDIT" && d.amount > 0);
+                  const hasNegativeDonations = dayDonations.some(d => d.transactionNature === "DEBIT" && d.amount > 0);
+                  
+                  return (
+                    <div 
+                      key={`day-${day}`}
+                      className={`border rounded-md h-28 p-1 overflow-hidden flex flex-col
+                        ${new Date().getDate() === day && 
+                          new Date().getMonth() === currentMonth && 
+                          new Date().getFullYear() === currentYear 
+                            ? 'bg-blue-50 border-blue-200' 
+                            : 'bg-white'}`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-medium">{day}</span>
+                        {dayDonations.length > 0 && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Badge variant={dayTotal >= 0 ? "success" : "destructive"}>
+                                  {formatCurrency(Math.abs(dayTotal))}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Day Total: {formatCurrency(dayTotal)}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <div className="space-y-1.5">
-                              <div className="font-medium text-sm text-gray-500">User/Organization</div>
-                              <div>{transaction.User?.fullname || transaction.Organization?.name || 'Unknown'}</div>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="space-y-1.5">
-                              <div className="font-medium text-sm text-gray-500">Email</div>
-                              <div>{transaction.User?.email || transaction.Organization?.email || 'Unknown'}</div>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="space-y-1.5">
-                              <div className="font-medium text-sm text-gray-500">Transaction ID</div>
-                              <div className="font-mono text-sm">{transaction.transactionId}</div>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="space-y-1.5">
-                              <div className="font-medium text-sm text-gray-500">Date & Time</div>
-                              <div>{format(new Date(transaction.date), 'PPP p')}</div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {isEditing ? (
-                          <div className="space-y-4 pt-4 border-t border-gray-200">
-                            <h4 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                              <Edit className="h-4 w-4" />
-                              Update Transaction
-                            </h4>
-                            <div className="space-y-4">
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Amount</label>
-                                <Input
-                                  type="number"
-                                  value={editValues[transaction.id]?.amount || ''}
-                                  onChange={(e) => handleInputChange(transaction.id, 'amount', e.target.value)}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium">Description</label>
-                                <Input
-                                  value={editValues[transaction.id]?.description || ''}
-                                  onChange={(e) => handleInputChange(transaction.id, 'description', e.target.value)}
-                                />
-                              </div>
-                              <div className="flex justify-end gap-2">
-                                <Button variant="outline" onClick={handleEditCancel}>
-                                  Cancel
-                                </Button>
-                                <Button onClick={() => handleTransactionUpdate(transaction.id)}>
-                                  Save Changes
-                                </Button>
+                      
+                      <div className="overflow-y-auto flex-grow text-xs space-y-1">
+                        {dayDonations.length > 0 ? (
+                          dayDonations.slice(0, 3).map((donation, idx) => (
+                            <div 
+                              key={`donation-${idx}`} 
+                              className={`px-1 py-0.5 rounded ${
+                                donation.transactionNature === "CREDIT" 
+                                  ? "bg-green-50 border-l-2 border-green-500" 
+                                  : "bg-red-50 border-l-2 border-red-500"
+                              }`}
+                              onClick={() => openDonationEditor(donation.userId, day)}
+                            >
+                              <div className="truncate">{getUserName(donation.userId)}</div>
+                              <div className="font-medium">
+                                {formatCurrency(donation.amount)}
                               </div>
                             </div>
-                          </div>
+                          ))
                         ) : (
-                          <div className="space-y-2 pt-4 border-t border-gray-200">
-                            <div className="space-y-1.5">
-                              <div className="font-medium text-sm text-gray-500">Description</div>
-                              <div>{transaction.description || 'No description provided'}</div>
-                            </div>
-                            <div className="flex justify-end">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="mt-2"
-                                onClick={() => handleEditStart(transaction.id)}
-                              >
-                                <Edit className="h-4 w-4 mr-1" /> Edit
-                              </Button>
-                            </div>
+                          <div className="h-full flex items-center justify-center text-gray-400">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 text-xs"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" /> Add
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Add Donation</DialogTitle>
+                                  <DialogDescription>
+                                    {format(new Date(currentYear, currentMonth, day), "MMMM d, yyyy")}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                
+                                <div className="space-y-4 py-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Select Member</label>
+                                    <Select onValueChange={(value) => setSelectedUser(value)}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select a member" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {users.map((user) => (
+                                          <SelectItem key={user.id} value={user.id}>
+                                            {user.fullname}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                
+                                <DialogFooter>
+                                  <Button 
+                                    onClick={() => {
+                                      if (selectedUser) {
+                                        openDonationEditor(selectedUser, day);
+                                        setSelectedUser(null);
+                                      }
+                                    }}
+                                    disabled={!selectedUser}
+                                  >
+                                    Continue
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        )}
+                        
+                        {dayDonations.length > 3 && (
+                          <div className="text-center text-gray-500">
+                            +{dayDonations.length - 3} more
                           </div>
                         )}
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Card>
+                      
+                      {dayDonations.length > 0 && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-5 text-xs mt-1"
+                            >
+                              <Plus className="h-3 w-3 mr-1" /> Add
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Donation</DialogTitle>
+                              <DialogDescription>
+                                {format(new Date(currentYear, currentMonth, day), "MMMM d, yyyy")}
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="space-y-4 py-4">
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">Select Member</label>
+                                <Select onValueChange={(value) => setSelectedUser(value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a member" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {users.map((user) => (
+                                      <SelectItem key={user.id} value={user.id}>
+                                        {user.fullname}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            
+                            <DialogFooter>
+                              <Button 
+                                onClick={() => {
+                                  if (selectedUser) {
+                                    openDonationEditor(selectedUser, day);
+                                    setSelectedUser(null);
+                                  }
+                                }}
+                                disabled={!selectedUser}
+                              >
+                                Continue
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {/* List View */}
+      {viewMode === "list" && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">
+                Donation Entries: {monthNames[currentMonth]} {currentYear}
+              </h2>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" /> New Donation
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Donation</DialogTitle>
+                    <DialogDescription>
+                      Select a member and date to add a new donation entry
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select Member</label>
+                      <Select onValueChange={(value) => setSelectedUser(value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a member" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.fullname}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select Day</label>
+                      <Select onValueChange={(value) => {
+                        if (selectedUser) {
+                          openDonationEditor(selectedUser, parseInt(value));
+                        }
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a day" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {days.map((day) => (
+                            <SelectItem key={day} value={day.toString()}>
+                              {day} {monthNames[currentMonth]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            
+            <div className="space-y-2">
+              {/* User summary cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {users.map((user) => {
+                  const userTotal = getUserMonthlyTotal(user.id);
+                  const userDonationCount = donations.filter(d => d.userId === user.id).length;
+                  
+                  return (
+                    <Card key={user.id} className="overflow-hidden">
+                      <div className={`h-2 ${userTotal >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-lg truncate">{user.fullname}</h3>
+                        <div className="flex justify-between items-center mt-2">
+                          <div>
+                            <span className="text-sm text-gray-500">Total: </span>
+                            <span className={`font-bold ${userTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatCurrency(userTotal)}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {userDonationCount} entries
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              
+              {/* Donation entries table */}
+              <div className="bg-white rounded-md border overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Member
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {donations.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                          No donations found for this month. Add a new donation to get started.
+                        </td>
+                      </tr>
+                    ) : (
+                      donations
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((donation, index) => {
+                          const day = parseInt(donation.date.split('-')[2]);
+                          return (
+                            <tr key={donation.id || index}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {format(new Date(donation.date), "d MMM yyyy")}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {getUserName(donation.userId)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {formatCurrency(donation.amount)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  donation.transactionNature === "CREDIT" 
+                                    ? "bg-green-100 text-green-800" 
+                                    : "bg-red-100 text-red-800"
+                                }`}>
+                                  {donation.transactionNature}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                                {donation.description || "-"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => openDonationEditor(donation.userId, day)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Donation Editor Dialog */}
+      {editingDonation && (
+        <Dialog open={!!editingDonation} onOpenChange={(open) => !open && setEditingDonation(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingDonation.donation?.id ? "Edit Donation" : "New Donation"}
+              </DialogTitle>
+              <DialogDescription>
+                {getUserName(editingDonation.userId)} - {format(
+                  new Date(currentYear, currentMonth, editingDonation.day), 
+                  "MMMM d, yyyy"
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Amount</label>
+                  <Input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={editingDonation.donation?.amount || ""}
+                    onChange={(e) => setEditingDonation({
+                      ...editingDonation,
+                      donation: {
+                        ...editingDonation.donation!,
+                        amount: parseFloat(e.target.value) || 0
+                      }
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Transaction Type</label>
+                  <Select
+                    value={editingDonation.donation?.transactionNature || "CREDIT"}
+                    onValueChange={(value) => setEditingDonation({
+                      ...editingDonation,
+                      donation: {
+                        ...editingDonation.donation!,
+                        transactionNature: value as "CREDIT" | "DEBIT"
+                      }
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CREDIT">Credit (Received)</SelectItem>
+                      <SelectItem value="DEBIT">Debit (Paid Out)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Description (Optional)</label>
+                <Textarea
+                  placeholder="Enter description..."
+                  rows={3}
+                  value={editingDonation.donation?.description || ""}
+                  onChange={(e) => setEditingDonation({
+                    ...editingDonation,
+                    donation: {
+                      ...editingDonation.donation!,
+                      description: e.target.value
+                    }
+                  })}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setEditingDonation(null)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={saveEditingDonation}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="animate-spin h-4 w-4 mr-2" /> 
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Save
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Auto-save notification */}
+      {isSaving && (
+        <div className="fixed bottom-4 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-md flex items-center shadow-md">
+          <Loader2 className="animate-spin h-4 w-4 mr-2" /> 
+          Saving changes...
+        </div>
+      )}
+    </div>
   );
-}
+};
+
+export default DonationCalendarPage;
