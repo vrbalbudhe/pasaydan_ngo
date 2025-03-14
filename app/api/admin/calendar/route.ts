@@ -24,36 +24,35 @@ export async function GET(request: NextRequest) {
     // Fetch transactions with user details
     const transactions = await prisma.transaction.findMany({
       where: {
-         date: {
-            gte: startDateTime,
-            lte: endDateTime,
-         },
-         entryType: "MANUAL",
+        date: {
+          gte: startDateTime,
+          lte: endDateTime,
+        },
+        entryType: "MANUAL",
       },
       select: {
-         id: true,
-         userId: true,
-         organizationId: true,
-         date: true,
-         amount: true,
-         transactionNature: true,
-         description: true,
-         name: true, // Include manually entered name
-         User: { select: { fullname: true } },
-         Organization: { select: { name: true } },
+        id: true,
+        userId: true,
+        organizationId: true,
+        date: true,
+        amount: true,
+        transactionNature: true,
+        description: true,
+        name: true, // Preserve manually entered name
+        User: { select: { fullname: true } },
+        Organization: { select: { name: true } },
       },
-   });
-   
-   const formattedDonations = transactions.map(transaction => ({
+    });
+
+    const formattedDonations = transactions.map(transaction => ({
       id: transaction.id,
       userId: transaction.userId || transaction.organizationId || "",
-      userName: transaction.User?.fullname || transaction.Organization?.name || transaction.name || "Unknown User", 
+      userName: transaction.User?.fullname || transaction.Organization?.name || transaction.name || "Unknown User",
       date: transaction.date.toISOString().split("T")[0],
       amount: transaction.amount,
       transactionNature: transaction.transactionNature,
       description: transaction.description,
-   }));
-   
+    }));
 
     return NextResponse.json({
       success: true,
@@ -72,37 +71,55 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, userId, date, amount, transactionNature, description } = body;
+    const { id, userId, name, date, amount, transactionNature, description } = body;
 
-    if (!userId || !date || amount === undefined || !transactionNature) {
+    if (!date || amount === undefined || !transactionNature) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { fullname: true, email: true, mobile: true },
-   });
-   
-   const organization = await prisma.organization.findUnique({
-      where: { id: userId }, // Since userId might be organizationId
-      select: { name: true, email: true, mobile: true },
-   });
+    let user = null;
+    let organization = null;
 
-    const transactionId = `CALENDAR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    if (userId) {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { fullname: true, email: true, mobile: true },
+      });
+
+      organization = await prisma.organization.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true, mobile: true },
+      });
+    }
+
+    const transactionId = id || `CALENDAR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    let existingTransaction = null;
+    if (id) {
+      existingTransaction = await prisma.transaction.findUnique({
+        where: { id },
+        select: { name: true },
+      });
+    }
 
     const transactionData = {
-      name: user?.fullname || organization?.name || body.name || "Unknown User", // Use transaction.name if no user/org
-      email: user?.email || organization?.email || body.email || "unknown@email.com",
-      phone: user?.mobile || organization?.mobile || body.phone || "Unknown",
+      name:
+        user?.fullname ||
+        organization?.name ||
+        name ||
+        existingTransaction?.name || // Preserve name if it was manually entered
+        "Unknown User",
+      email: user?.email || organization?.email || "unknown@email.com",
+      phone: user?.mobile || organization?.mobile || "Unknown",
       userType: user ? "INDIVIDUAL" : organization ? "ORGANIZATION" : "MANUAL_ENTRY",
       userId: user?.id || null,
       organizationId: organization?.id || null,
       amount: Number(amount),
       type: "CASH",
-      transactionId: id ? `${id}` : transactionId,
+      transactionId,
       date: new Date(date),
       transactionNature,
       description,
@@ -110,23 +127,28 @@ export async function POST(request: NextRequest) {
       entryBy: "ADMIN",
       moneyFor: "OTHER",
       status: "VERIFIED",
-   };
+    };
 
     let result;
 
     if (id) {
+      // Ensure name is not reset when updating manually entered transactions
       result = await prisma.transaction.update({
         where: { id },
         data: {
+          name: transactionData.name, // Preserve name properly
           amount: Number(amount),
           transactionNature,
           description,
+          userId: transactionData.userId,
+          organizationId: transactionData.organizationId,
         },
       });
     } else {
+      // Check if there's an existing transaction for the same user and date
       const existingTransaction = await prisma.transaction.findFirst({
         where: {
-          userId,
+          userId: transactionData.userId,
           date: new Date(date),
           entryType: "MANUAL",
         },
