@@ -121,7 +121,7 @@ export default function DriveInfo() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
       <div className="relative h-[60vh] w-full">
         <div className="absolute inset-0">
@@ -134,7 +134,7 @@ export default function DriveInfo() {
         <div className="absolute inset-0 bg-black/50">
           <div className="container mx-auto h-full px-4">
             <div className="flex h-full md:pl-16 pl-5 flex-col justify-end pb-16">
-              <h1 className="text-4xl font-semibold text-left text-white md:text-6xl">
+              <h1 className="text-4xl font-medium text-left text-white md:text-6xl">
                 {drive.title}
               </h1>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -185,7 +185,7 @@ export default function DriveInfo() {
                 {drive.photos.map((photo, index) => (
                   <div
                     key={index}
-                    className="aspect-square relative overflow-hidden cursor-pointer"
+                    className="aspect-square rounded-2xl relative overflow-hidden cursor-pointer"
                     onClick={() => setActiveImage(photo)}
                   >
                     <img

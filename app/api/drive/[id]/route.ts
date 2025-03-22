@@ -3,16 +3,19 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id?: string } }
 ) {
-  if (!params?.id) {
-    return NextResponse.json({ error: "Drive ID is required" }, { status: 400 });
+  if (!params || !params?.id) {
+    return NextResponse.json(
+      { error: "Drive ID is required" },
+      { status: 400 }
+    );
   }
 
   try {
     const drive = await prisma.drive.findUnique({
       where: {
-        id: params.id,
+        id: params?.id,
       },
     });
 

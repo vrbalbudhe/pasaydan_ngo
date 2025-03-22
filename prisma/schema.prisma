@@ -14,19 +14,20 @@ datasource db {
 }
 
 model Drive {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
   title        String
   location     String
   description  String
-  status       String   @default("pending")
+  status       String        @default("pending")
   dtype        String
   startDate    String
   EndDate      String
   timeInterval String
+  participants Participant[]
   geoLocation  Json?
   placeLink    String?
   photos       String[]
-  createdAt    DateTime @default(now())
+  createdAt    DateTime      @default(now())
 }
 
 model User {
@@ -214,6 +215,8 @@ model Participant {
   area      String
   photos    Photo[]
   createdAt DateTime @default(now())
+  Drive     Drive?   @relation(fields: [driveId], references: [id])
+  driveId   String?  @db.ObjectId
 }
 
 model Photo {
