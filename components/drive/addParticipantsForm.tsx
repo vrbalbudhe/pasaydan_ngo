@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, ChangeEvent } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "next/navigation";
 
 interface FormDataState {
   fullName: string;
@@ -11,7 +13,11 @@ interface FormDataState {
 }
 
 const AddParticipantForm: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = params?.id as string | undefined; // Extract `id` from dynamic route
+
+  console.log("Extracted ID from URL:", id);
+
   const [formData, setFormData] = useState<FormDataState>({
     fullName: "",
     contact: "",
@@ -20,10 +26,16 @@ const AddParticipantForm: React.FC = () => {
     area: "",
     driveId: id || "",
   });
+
   const [photos, setPhotos] = useState<File[]>([]);
 
   useEffect(() => {
-    if (id) setFormData((prevData) => ({ ...prevData, driveId: id }));
+    if (id) {
+      setFormData((prevData) => ({
+        ...prevData,
+        driveId: id,
+      }));
+    }
   }, [id]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +43,9 @@ const AddParticipantForm: React.FC = () => {
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setPhotos(Array.from(e.target.files));
+    if (e.target.files) {
+      setPhotos(Array.from(e.target.files));
+    }
   };
 
   const handleSubmit = async () => {
@@ -48,9 +62,14 @@ const AddParticipantForm: React.FC = () => {
         method: "POST",
         body: formDataObj,
       });
+
       const data = await response.json();
-      if (response.ok) console.log("Participant added successfully!", data);
-      else console.error("Error:", data.message);
+
+      if (response.ok) {
+        console.log("Participant added successfully!", data);
+      } else {
+        console.error("Error:", data.message);
+      }
     } catch (error) {
       console.error("Failed to submit:", error);
     }

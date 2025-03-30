@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { ObjectId } from "mongodb";
 import fs from "fs/promises";
 import path from "path";
 
@@ -27,34 +26,15 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    const fields = [
-      "fullName",
-      "contact",
-      "school",
-      "standard",
-      "area",
-      "driveId",
-    ];
+    const fields = ["fullName", "contact", "school", "standard", "area", "driveId"];
+
     const participantData = Object.fromEntries(
-      fields.map((field) => [
-        field,
-        formData.get(field)?.toString().trim() || "",
-      ])
+      fields.map((field) => [field, formData.get(field)?.toString().trim() || ""])
     );
 
-    if (Object.values(participantData).some((value) => !value)) {
+    if (!participantData.driveId) {
       return NextResponse.json(
-        { message: "All fields are required!" },
-        { status: 400 }
-      );
-    }
-
-    if (
-      !participantData.driveId ||
-      !ObjectId.isValid(participantData.driveId)
-    ) {
-      return NextResponse.json(
-        { message: "Invalid driveId format" },
+        { message: "driveId is required" },
         { status: 400 }
       );
     }
@@ -79,8 +59,10 @@ export async function POST(req: NextRequest) {
         school: participantData.school,
         standard: participantData.standard,
         area: participantData.area,
-        drive: { connect: { id: participantData.driveId } },
-        photos: { create: fileUrls.map((url) => ({ url: url || "" })) },
+        Drive: { connect: { id: participantData.driveId } }, // ✅ Correct relation
+        photos: {
+          create: fileUrls.map((url) => ({ url })), // ✅ Ensuring URLs are saved
+        },
       },
       include: { photos: true },
     });

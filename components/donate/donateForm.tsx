@@ -1,10 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Heart, Phone, Mail, Home, Package, Hash } from "lucide-react";
+import {
+  Heart,
+  Phone,
+  Mail,
+  Home,
+  Package,
+  Hash,
+  Image as ImageIcon,
+  X,
+} from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -14,6 +23,9 @@ import {
 } from "@/components/ui/select";
 
 export default function DonationForm() {
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [address, setAddress] = useState("");
   const [donateType, setDonateType] = useState("");
   const [formData, setFormData] = useState({
@@ -27,6 +39,27 @@ export default function DonationForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setFiles(selectedFiles);
+
+      // Create preview URLs
+      const urls = selectedFiles.map((file) => URL.createObjectURL(file));
+      setPreviews(urls);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    setFiles(newFiles);
+
+    const newPreviews = [...previews];
+    newPreviews.splice(index, 1);
+    setPreviews(newPreviews);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,26 +79,35 @@ export default function DonationForm() {
     try {
       setLoading(true);
 
+      // Create FormData object
+      const formPayload = new FormData();
+
+      // Append text fields
+      formPayload.append("fullname", formData.fullname);
+      formPayload.append("mobile", formData.mobile);
+      formPayload.append("email", formData.email);
+      formPayload.append("address", address);
+      formPayload.append("type", donateType);
+      formPayload.append("quantity", formData.quantity);
+
+      // Append image files
+      files.forEach((file) => {
+        formPayload.append("photos", file);
+      });
+
       const response = await fetch("/api/donation/request", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullname: formData.fullname,
-          mobile: formData.mobile,
-          email: formData.email,
-          address,
-          type: donateType,
-          quantity: formData.quantity,
-        }),
+        body: formPayload, // No headers - browser sets correct Content-Type
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit the request.");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit the request.");
       }
 
       alert("Donation request submitted successfully!");
+
+      // Reset all form states
       setFormData({
         fullname: "",
         mobile: "",
@@ -74,9 +116,15 @@ export default function DonationForm() {
       });
       setAddress("");
       setDonateType("");
+      setFiles([]);
+      setPreviews([]);
     } catch (error) {
       console.error("Error submitting donation request:", error);
-      alert("Failed to submit donation request. Please try again.");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit donation request. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -289,6 +337,56 @@ export default function DonationForm() {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Upload Donation Photos
+                  </Label>
+                  <div className="flex flex-col gap-4">
+                    <div
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition-colors"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                      <div className="flex flex-col items-center gap-2">
+                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                        <p className="text-gray-500">
+                          Click to upload photos or drag and drop
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Maximum 5 images (JPEG, PNG)
+                        </p>
+                      </div>
+                    </div>
+
+                    {previews.length > 0 && (
+                      <div className="grid grid-cols-3 gap-4">
+                        {previews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={preview}
+                              alt={`Preview ${index + 1}`}
+                              className="h-32 w-full object-cover rounded-lg border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 <motion.div
                   whileHover={{ scale: 1.02 }}
@@ -338,196 +436,4 @@ export default function DonationForm() {
       </div>
     </div>
   );
-}
-
-{
-  /*"use client";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-
-export default function DonationForm() {
-  const [address, setAddress] = useState("");
-  const [donateType, setDonateType] = useState("");
-  const [formData, setFormData] = useState({
-    fullname: "",
-    mobile: "",
-    email: "",
-    quantity: "",
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (
-      !formData.fullname ||
-      !formData.mobile ||
-      !formData.email ||
-      !address ||
-      !donateType ||
-      !formData.quantity
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const response = await fetch("/api/donation/request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullname: formData.fullname,
-          mobile: formData.mobile,
-          email: formData.email,
-          address,
-          type: donateType,
-          quantity: formData.quantity,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit the request.");
-      }
-
-      alert("Donation request submitted successfully!");
-      setFormData({
-        fullname: "",
-        mobile: "",
-        email: "",
-        quantity: "",
-      });
-      setAddress("");
-      setDonateType("");
-    } catch (error) {
-      console.error("Error submitting donation request:", error);
-      alert("Failed to submit donation request. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="w-[90%] min-h-screen md:flex justify-between items-center gap-5">
-      <div className="w-full md:w-1/2 md:h-[600px] p-5 flex justify-center items-center">
-        <h1 className="text-5xl md:text-7xl tracking-tighter text-center text-gray-800">
-          <span className="text-blue-700 font-semibold md:text-[80px]">
-            Donate
-          </span>{" "}
-          What You Can Spare and Make a{" "}
-          <span className="text-blue-700 font-semibold md:text-[80px]">
-            Difference
-          </span>
-        </h1>
-      </div>
-
-      <div className="w-full md:w-1/2 h-full p-5">
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 max-w-lg bg-white mx-auto p-4 border rounded-xl shadow-md"
-        >
-          <div>
-            <Label htmlFor="fullname">Name</Label>
-            <Input
-              type="text"
-              id="fullname"
-              name="fullname"
-              placeholder="Enter your name"
-              value={formData.fullname}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="mobile">Mobile</Label>
-            <Input
-              type="tel"
-              id="mobile"
-              name="mobile"
-              placeholder="Enter your mobile number"
-              value={formData.mobile}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="address">Address</Label>
-            <Input
-              type="text"
-              id="address"
-              name="address"
-              placeholder="Enter your address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="donateType">Donate Type</Label>
-            <Select onValueChange={(value) => setDonateType(value)}>
-              <SelectTrigger id="donateType">
-                <SelectValue placeholder="Select donation type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="blankets">Blankets</SelectItem>
-                <SelectItem value="cycle">Cycle</SelectItem>
-                <SelectItem value="food">Food</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="quantity">Quantity</Label>
-            <Input
-              type="number"
-              id="quantity"
-              name="quantity"
-              placeholder="Enter quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <Button type="submit" disabled={loading}>
-            {loading ? "Submitting..." : "Submit"}
-          </Button>
-        </form>
-      </div>
-    </div>
-  );
-}*/
 }

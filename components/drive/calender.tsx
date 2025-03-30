@@ -79,11 +79,9 @@ export default function CalendarComponent() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-inherit md:p-6">
+    <div className="w-full min-h-screen flex justify-center items-center gap-10 bg-inherit md:p-6">
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SkeletonTab />
-          <SkeletonTab />
           <SkeletonTab />
           <SkeletonTab />
         </div>
@@ -91,11 +89,9 @@ export default function CalendarComponent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-red-500">
           <SkeletonTab />
           <SkeletonTab />
-          <SkeletonTab />
-          <SkeletonTab />
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
+        <div className="flex flex-col md:flex-row gap-5 justify-center items-center">
           {/* {products?.length && (
               <div className="flex items-center gap-3 mb-6">
                 <BsCalendar2Event className="text-3xl text-blue-600" />
@@ -105,7 +101,7 @@ export default function CalendarComponent() {
                 </h1>
               </div>
             )} */}
-          <div className="w-full md:w-fit space-y-6">
+          <div className="w-full md:w-1/3">
             <div className="bg-white w-fit rounded-xl shadow-lg md:p-4 transition-all duration-300 hover:shadow-xl">
               <Calendar
                 mode="single"
@@ -117,8 +113,8 @@ export default function CalendarComponent() {
               />
             </div>
 
-            <div className="bg-white rounded-xl md:p-4 transition-all duration-300 border-none">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-xl w-fit md:p-4 transition-all duration-300 border-none">
+              <div className="grid grid-cols-2 gap-2">
                 <button className="px-4 py-2 bg-green-500 text-white rounded-lg transition-all duration-300 hover:bg-green-600 hover:shadow-md">
                   Cycle
                 </button>
@@ -135,29 +131,29 @@ export default function CalendarComponent() {
             </div>
           </div>
 
-          <div className="w-full md:w-2/3">
+          <div className="w-full md:w-2/3 ">
             <div className="w-full h-full flex flex-wrap gap-2 justify-center items-center">
               {products
                 ?.filter((product) => product.status === "pending")
                 .map((product) => (
                   <div
                     key={product?.id}
-                    className="bg-gray-800 md:w-72 w-full shadow-md rounded-md md:rounded-none p-3 border border-gray-200"
+                    className="border border-gray-200 md:w-72 w-full shadow-md rounded-md md:rounded-none p-3"
                   >
                     <div className="space-y-2">
-                      <h2 className="text-xl font-bold text-[#0496ff] transition-colors duration-300">
+                      <h2 className="text-xl font-bold text-blue-500 transition-colors duration-300">
                         {product?.title}
                       </h2>
 
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <MdLocationOn className="text-md text-white" />
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <MdLocationOn className="text-md text-gray-700" />
                         <p className="font-medium text-md">
                           {product?.location}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 text-white">
-                        <BsCalendar2Date className="text-sm" />
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <BsCalendar2Date className="text-xs" />
                         <p className="font-medium text-sm">
                           {product?.startDate} - {product?.EndDate}
                         </p>

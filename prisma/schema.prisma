@@ -88,15 +88,23 @@ model Address {
 }
 
 model DonationRequests {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  fullname  String
-  mobile    String
-  email     String
-  address   String
-  type      String
-  quantity  String
-  status    String   @default("Pending")
-  createdAt DateTime @default(now())
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  fullname    String
+  mobile      String
+  email       String
+  address     String
+  type        String
+  quantity    String
+  status      String        @default("Pending")
+  createdAt   DateTime      @default(now())
+  DonorsPhoto DonorsPhoto[]
+}
+
+model DonorsPhoto {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  url               String
+  donationRequest   DonationRequests @relation(fields: [donationRequestId], references: [id], onDelete: Cascade)
+  donationRequestId String           @db.ObjectId
 }
 
 model Certificates {

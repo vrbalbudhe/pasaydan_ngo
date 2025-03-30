@@ -5,12 +5,12 @@ export async function POST(request: NextRequest) {
   const { email, type, fullname, mobile, description, donationId } =
     await request.json();
   try {
-    if (!email || !type || !fullname || !mobile || !donationId) {
-      return NextResponse.json(
-        { error: "All fields are required." },
-        { status: 400 }
-      );
-    }
+    // if (!email || !type || !fullname || !mobile || !donationId) {
+    //   return NextResponse.json(
+    //     { error: "All fields are required." },
+    //     { status: 400 }
+    //   );
+    // }
 
     const newRecord = {
       email,

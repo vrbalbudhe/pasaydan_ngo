@@ -14,7 +14,7 @@ export default async function Layout({ children }: LayoutProps) {
           {children}
         </main>
       </div>
-      <div className="bg-gray-800 w-full h-full flex justify-center items-start p-5">
+      <div className="bg-[#2b2d42] w-full h-full flex justify-center items-start p-5">
         <Footer />
       </div>
     </div>
