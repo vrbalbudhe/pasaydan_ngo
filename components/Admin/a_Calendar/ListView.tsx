@@ -31,8 +31,7 @@ const ListView: React.FC<ListViewProps> = ({
 }) => {
     const handleNewDonation = () => {
         setSelectedUser(null);
-        openDonationEditor("", 1);
-    };
+        openAddDonationDialog(day)}
 
     return (
         <Card className="bg-white shadow-md overflow-hidden">

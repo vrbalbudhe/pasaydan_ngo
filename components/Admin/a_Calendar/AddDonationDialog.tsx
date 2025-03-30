@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Check } from "lucide-react";
 
-const DonationEditorDialog = ({
+const AddDonationDialog = ({
   open,
   onClose,
   donation,
@@ -31,13 +31,6 @@ const DonationEditorDialog = ({
 }: any) => {
   const [manualName, setManualName] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("manual-entry");
-
-  useEffect(() => {
-    if (donation) {
-      setManualName(donation.name || "");
-      setSelectedUserId(donation.userId || "manual-entry");
-    }
-  }, [donation]);
 
   const handleSave = () => {
     const userName = selectedUserId === "manual-entry" 
@@ -57,7 +50,7 @@ const DonationEditorDialog = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Donation</DialogTitle>
+          <DialogTitle>Add New Donation</DialogTitle>
           <DialogDescription>{dateDisplay}</DialogDescription>
         </DialogHeader>
 
@@ -168,4 +161,4 @@ const DonationEditorDialog = ({
   );
 };
 
-export default DonationEditorDialog;
+export default AddDonationDialog;

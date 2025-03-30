@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// GET: Fetch donations for a date range
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -21,7 +20,6 @@ export async function GET(request: NextRequest) {
     const endDateTime = new Date(endDate);
     endDateTime.setHours(23, 59, 59, 999);
 
-    // Fetch transactions with user details
     const transactions = await prisma.transaction.findMany({
       where: {
         date: {
@@ -38,20 +36,27 @@ export async function GET(request: NextRequest) {
         amount: true,
         transactionNature: true,
         description: true,
-        name: true, // Preserve manually entered name
+        name: true,
         User: { select: { fullname: true } },
         Organization: { select: { name: true } },
+      },
+      orderBy: {
+        date: "asc",
       },
     });
 
     const formattedDonations = transactions.map(transaction => ({
       id: transaction.id,
       userId: transaction.userId || transaction.organizationId || "",
-      userName: transaction.User?.fullname || transaction.Organization?.name || transaction.name || "Unknown User",
+      userName: transaction.name || 
+               transaction.User?.fullname || 
+               transaction.Organization?.name || 
+               "Unknown User",
       date: transaction.date.toISOString().split("T")[0],
       amount: transaction.amount,
       transactionNature: transaction.transactionNature,
       description: transaction.description,
+      name: transaction.name,
     }));
 
     return NextResponse.json({
@@ -67,7 +72,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Create or update donation entry
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -82,44 +86,37 @@ export async function POST(request: NextRequest) {
 
     let user = null;
     let organization = null;
+    let finalName = name || "Unknown User";
 
-    if (userId) {
+    if (userId && userId !== "manual-entry") {
       user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { fullname: true, email: true, mobile: true },
+        select: { id: true, fullname: true, email: true, mobile: true },
       });
 
-      organization = await prisma.organization.findUnique({
-        where: { id: userId },
-        select: { name: true, email: true, mobile: true },
-      });
-    }
-
-    const transactionId = id || `CALENDAR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-    let existingTransaction = null;
-    if (id) {
-      existingTransaction = await prisma.transaction.findUnique({
-        where: { id },
-        select: { name: true },
-      });
+      if (user) {
+        finalName = user.fullname;
+      } else {
+        organization = await prisma.organization.findUnique({
+          where: { id: userId },
+          select: { id: true, name: true, email: true, mobile: true },
+        });
+        if (organization) {
+          finalName = organization.name;
+        }
+      }
     }
 
     const transactionData = {
-      name:
-        user?.fullname ||
-        organization?.name ||
-        name ||
-        existingTransaction?.name || // Preserve name if it was manually entered
-        "Unknown User",
+      name: finalName,
       email: user?.email || organization?.email || "unknown@email.com",
       phone: user?.mobile || organization?.mobile || "Unknown",
-      userType: user ? "INDIVIDUAL" : organization ? "ORGANIZATION" : "MANUAL_ENTRY",
+      userType: user ? "INDIVIDUAL" : organization ? "ORGANIZATION" : "INDIVIDUAL",
       userId: user?.id || null,
       organizationId: organization?.id || null,
       amount: Number(amount),
       type: "CASH",
-      transactionId,
+      transactionId: id ? undefined : `CALENDAR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       date: new Date(date),
       transactionNature,
       description,
@@ -129,51 +126,27 @@ export async function POST(request: NextRequest) {
       status: "VERIFIED",
     };
 
-    let result;
-
-    if (id) {
-      // Ensure name is not reset when updating manually entered transactions
-      result = await prisma.transaction.update({
-        where: { id },
-        data: {
-          name: transactionData.name, // Preserve name properly
-          amount: Number(amount),
-          transactionNature,
-          description,
-          userId: transactionData.userId,
-          organizationId: transactionData.organizationId,
-        },
-      });
-    } else {
-      // Check if there's an existing transaction for the same user and date
-      const existingTransaction = await prisma.transaction.findFirst({
-        where: {
-          userId: transactionData.userId,
-          date: new Date(date),
-          entryType: "MANUAL",
-        },
-      });
-
-      if (existingTransaction) {
-        result = await prisma.transaction.update({
-          where: { id: existingTransaction.id },
-          data: {
-            amount: Number(amount),
-            transactionNature,
-            description,
-          },
-        });
-      } else {
-        result = await prisma.transaction.create({
+    const result = id
+      ? await prisma.transaction.update({
+          where: { id },
+          data: transactionData,
+        })
+      : await prisma.transaction.create({
           data: transactionData,
         });
-      }
-    }
 
     return NextResponse.json({
       success: true,
       message: "Donation saved successfully",
-      donationId: result.id,
+      donation: {
+        id: result.id,
+        userId: result.userId || result.organizationId || "",
+        userName: finalName,
+        date: result.date.toISOString().split("T")[0],
+        amount: result.amount,
+        transactionNature: result.transactionNature,
+        description: result.description,
+      },
     });
   } catch (error) {
     console.error("Error saving donation:", error);
@@ -183,5 +156,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-
