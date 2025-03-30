@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import DonationDayCell from "./DonationDayCell";
+import { motion } from "framer-motion";
 
 interface CalendarViewProps {
     monthNames: string[];
@@ -10,7 +11,7 @@ interface CalendarViewProps {
     dayLabels: string[];
     getDayDonations: (day: number) => any[];
     getDayTotal: (day: number) => number;
-    getUserName: (userId: string) => string;  // Added
+    getUserName: (userId: string) => string;
     openDonationEditor: (userId: string, day: number) => void;
     setSelectedUser: (userId: string | null) => void;
 }
@@ -27,29 +28,48 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     openDonationEditor,
     setSelectedUser,
 }) => (
-    <Card>
-        <CardContent className="p-4">
-            <div className="grid grid-cols-7 mb-2">
+    <Card className="bg-white shadow-md overflow-hidden">
+        <CardContent className="p-6">
+            {/* Day Labels */}
+            <div className="grid grid-cols-7 mb-4 border-b pb-2">
                 {dayLabels.map((day, index) => (
-                    <div key={index} className="text-center font-medium text-gray-500 py-2">
+                    <motion.div 
+                        key={index} 
+                        className="text-center font-semibold text-gray-600"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                    >
                         {day}
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-1">
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-2">
                 {calendarGrid.flat().map((day, index) => (
-                    <DonationDayCell
+                    <motion.div
                         key={index}
-                        day={day}
-                        currentMonth={currentMonth}
-                        currentYear={currentYear}
-                        getDayDonations={getDayDonations}
-                        getDayTotal={getDayTotal}
-                        getUserName={getUserName}  // Passed
-                        openDonationEditor={openDonationEditor}
-                        setSelectedUser={setSelectedUser}
-                    />
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ 
+                            type: "spring", 
+                            stiffness: 300, 
+                            damping: 10,
+                            delay: index * 0.05 
+                        }}
+                    >
+                        <DonationDayCell
+                            day={day}
+                            currentMonth={currentMonth}
+                            currentYear={currentYear}
+                            getDayDonations={getDayDonations}
+                            getDayTotal={getDayTotal}
+                            getUserName={getUserName}
+                            openDonationEditor={openDonationEditor}
+                            setSelectedUser={setSelectedUser}
+                        />
+                    </motion.div>
                 ))}
             </div>
         </CardContent>
