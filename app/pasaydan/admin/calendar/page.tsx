@@ -15,6 +15,9 @@ import { format } from "date-fns";
 interface User {
   id: string;
   fullname: string;
+  email?: string;
+  phone?: string;
+  type?: string;
 }
 
 interface DonationEntry {
@@ -25,6 +28,9 @@ interface DonationEntry {
   transactionNature: "CREDIT" | "DEBIT";
   description?: string;
   userName?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
 const DonationCalendarPage = () => {
@@ -63,14 +69,34 @@ const DonationCalendarPage = () => {
     if (dayCounter > daysInMonth) break;
   }
 
+  const previousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+        // Fetch users for dropdown selection
         const usersResponse = await fetch("/api/admin/calendar/users");
         const { success: usersSuccess, users } = await usersResponse.json();
         if (usersSuccess) setUsers(users);
 
+        // Fetch donations for current month
         const startDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-01`;
         const endDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${daysInMonth}`;
 
@@ -79,11 +105,12 @@ const DonationCalendarPage = () => {
         if (donationsSuccess) {
           const formatted = donations.map((donation: DonationEntry) => ({
             ...donation,
-            userName: donation.userName || "Unknown User",
+            userName: donation.userName || donation.name || "Unknown User",
           }));
           setDonations(formatted);
         }
 
+        // Fetch all donations for overall totals
         const fullStart = `${currentYear - 1}-01-01`;
         const fullEnd = `${currentYear + 1}-12-31`;
         const allRes = await fetch(`/api/admin/calendar?startDate=${fullStart}&endDate=${fullEnd}`);
@@ -92,6 +119,7 @@ const DonationCalendarPage = () => {
           setAllDonations(all);
         }
       } catch (error) {
+        console.error("Error fetching data:", error);
         toast.error("Failed to load data.");
       } finally {
         setIsLoading(false);
@@ -99,7 +127,7 @@ const DonationCalendarPage = () => {
     };
 
     fetchData();
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, daysInMonth]);
 
   const getDayDonations = (day: number) => {
     const date = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
@@ -143,14 +171,16 @@ const DonationCalendarPage = () => {
   
       const data = await response.json();
       if (data.success) {
+        // Update local state with the new donation
         setDonations((prev) => [...prev, data.donation]);
         setAllDonations((prev) => [...prev, data.donation]);
-        toast.success("Donation added.");
+        toast.success("Donation added successfully.");
         setAddingDonation(null);
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to add donation.");
       }
-    } catch {
+    } catch (error) {
+      console.error("Error saving donation:", error);
       toast.error("Failed to add donation.");
     } finally {
       setIsSaving(false);
@@ -159,19 +189,23 @@ const DonationCalendarPage = () => {
   
   const openDonationEditor = (donationId: string, day: number) => {
     const date = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-    const existing = donations.find((d) => d.id === donationId && d.date === date);
-    setEditingDonation(
-      existing || {
+    // Find the donation to edit
+    const donation = donations.find((d) => d.id === donationId);
+    
+    if (donation) {
+      setEditingDonation(donation);
+    } else {
+      // Fallback if donation not found (shouldn't happen but just in case)
+      setEditingDonation({
         userId: "",
         date,
         amount: 0,
         transactionNature: "CREDIT",
         description: "",
-      }
-    );
+      });
+    }
   };
   
-
   const saveDonation = async () => {
     if (!editingDonation) return;
     setIsSaving(true);
@@ -187,18 +221,20 @@ const DonationCalendarPage = () => {
   
       const data = await response.json();
       if (data.success) {
+        // Update both local state collections
         setDonations((prev) =>
           prev.map((d) => (d.id === data.donation.id ? data.donation : d))
         );
         setAllDonations((prev) =>
           prev.map((d) => (d.id === data.donation.id ? data.donation : d))
         );
-        toast.success("Donation updated.");
+        toast.success("Donation updated successfully.");
         setEditingDonation(null);
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to update donation.");
       }
-    } catch {
+    } catch (error) {
+      console.error("Error updating donation:", error);
       toast.error("Failed to update donation.");
     } finally {
       setIsSaving(false);
@@ -206,6 +242,11 @@ const DonationCalendarPage = () => {
   };
 
   const getUserName = (userId: string) => {
+    // First, try to find the user in the users array
+    const user = users.find((u) => u.id === userId);
+    if (user) return user.fullname;
+    
+    // If not found in users, try to find in donations
     const donation = donations.find((d) => d.userId === userId);
     return donation?.userName || donation?.name || "Unknown User";
   };
@@ -280,8 +321,8 @@ const DonationCalendarPage = () => {
             monthNames={monthNames}
             currentMonth={currentMonth}
             currentYear={currentYear}
-            previousMonth={() => setCurrentMonth(currentMonth === 0 ? 11 : currentMonth - 1)}
-            nextMonth={() => setCurrentMonth(currentMonth === 11 ? 0 : currentMonth + 1)}
+            previousMonth={previousMonth}
+            nextMonth={nextMonth}
           />
         </CardContent>
       </Card>
@@ -296,10 +337,9 @@ const DonationCalendarPage = () => {
           getDayDonations={getDayDonations}
           getDayTotal={getDayTotal}
           getUserName={getUserName}
-          openDonationEditor={(donationId, day) => openDonationEditor(donationId, day)}
-          setSelectedUser={setSelectedUser}
+          openDonationEditor={openDonationEditor}
           openAddDonationDialog={openAddDonationDialog}
-
+          setSelectedUser={setSelectedUser}
         />
       ) : (
         <ListView
@@ -309,7 +349,8 @@ const DonationCalendarPage = () => {
           currentMonth={currentMonth}
           currentYear={currentYear}
           days={Array.from({ length: daysInMonth }, (_, i) => i + 1)}
-          openDonationEditor={(donationId, day) => openDonationEditor(donationId, day)}
+          openDonationEditor={openDonationEditor}
+          openAddDonationDialog={openAddDonationDialog}
           setSelectedUser={setSelectedUser}
           getUserName={getUserName}
         />
@@ -324,24 +365,22 @@ const DonationCalendarPage = () => {
           saveDonation={saveDonation}
           isSaving={isSaving}
           users={users}
-          userName={users.find((u) => u.id === editingDonation.userId)?.fullname}
           dateDisplay={format(new Date(editingDonation.date), "MMMM d, yyyy")}
         />
       )}
 
-{addingDonation && (
-  <AddDonationDialog
-    open={!!addingDonation}
-    onClose={() => setAddingDonation(null)}
-    donation={addingDonation}
-    setDonation={setAddingDonation}
-    saveDonation={saveNewDonation}
-    isSaving={isSaving}
-    users={users}
-    dateDisplay={format(new Date(addingDonation.date), "MMMM d, yyyy")}
-  />
-)}
-
+      {addingDonation && (
+        <AddDonationDialog
+          open={!!addingDonation}
+          onClose={() => setAddingDonation(null)}
+          donation={addingDonation}
+          setDonation={setAddingDonation}
+          saveDonation={saveNewDonation}
+          isSaving={isSaving}
+          users={users}
+          dateDisplay={format(new Date(addingDonation.date), "MMMM d, yyyy")}
+        />
+      )}
     </div>
   );
 };

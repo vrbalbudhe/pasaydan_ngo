@@ -14,6 +14,7 @@ interface ListViewProps {
     currentYear: number;
     days: number[];
     openDonationEditor: (userId: string, day: number) => void;
+    openAddDonationDialog: (day: number) => void;
     setSelectedUser: (userId: string | null) => void;
     getUserName: (userId: string) => string;
 }
@@ -26,12 +27,17 @@ const ListView: React.FC<ListViewProps> = ({
     currentYear,
     days,
     openDonationEditor,
+    openAddDonationDialog,
     setSelectedUser,
     getUserName,
 }) => {
     const handleNewDonation = () => {
+        // Default to current day or first day of month
+        const today = new Date();
+        const day = today.getMonth() === currentMonth ? today.getDate() : 1;
         setSelectedUser(null);
-        openAddDonationDialog(day)}
+        openAddDonationDialog(day);
+    };
 
     return (
         <Card className="bg-white shadow-md overflow-hidden">
@@ -125,7 +131,7 @@ const ListView: React.FC<ListViewProps> = ({
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-gray-500 hover:text-blue-600"
-                                                        onClick={() => openDonationEditor(donation.userId, day)}
+                                                        onClick={() => openDonationEditor(donation.id, day)}
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>

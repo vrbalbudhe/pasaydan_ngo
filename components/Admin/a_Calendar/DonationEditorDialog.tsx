@@ -31,11 +31,15 @@ const DonationEditorDialog = ({
 }: any) => {
   const [manualName, setManualName] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("manual-entry");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     if (donation) {
-      setManualName(donation.name || "");
+      setManualName(donation.name || donation.userName || "");
       setSelectedUserId(donation.userId || "manual-entry");
+      setEmail(donation.email || "");
+      setPhone(donation.phone || "");
     }
   }, [donation]);
 
@@ -43,12 +47,21 @@ const DonationEditorDialog = ({
     const userName = selectedUserId === "manual-entry" 
       ? manualName 
       : users.find((u: any) => u.id === selectedUserId)?.fullname || manualName;
+    
+    // Find user email if a user is selected
+    const userEmail = selectedUserId === "manual-entry" 
+      ? email
+      : users.find((u: any) => u.id === selectedUserId)?.email || email;
 
     const updatedDonation = {
       ...donation,
       userId: selectedUserId === "manual-entry" ? null : selectedUserId,
       name: userName,
+      userName: userName, // Ensure userName is populated for display
+      email: userEmail,
+      phone: phone
     };
+    
     setDonation(updatedDonation);
     saveDonation();
   };
@@ -68,7 +81,15 @@ const DonationEditorDialog = ({
               value={selectedUserId}
               onValueChange={(value) => {
                 setSelectedUserId(value);
-                if (value !== "manual-entry") setManualName("");
+                if (value !== "manual-entry") {
+                  // Find the user and populate their information
+                  const selectedUser = users.find((u: any) => u.id === value);
+                  if (selectedUser) {
+                    setManualName("");
+                    setEmail(selectedUser.email || "");
+                    setPhone(selectedUser.mobile || selectedUser.phone || "");
+                  }
+                }
               }}
             >
               <SelectTrigger>
@@ -86,14 +107,35 @@ const DonationEditorDialog = ({
           </div>
 
           {selectedUserId === "manual-entry" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Enter Name</label>
-              <Input
-                placeholder="Enter name manually"
-                value={manualName}
-                onChange={(e) => setManualName(e.target.value)}
-                required
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Enter Name</label>
+                <Input
+                  placeholder="Enter name manually"
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email (Optional)</label>
+                <Input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Phone (Optional)</label>
+                <Input
+                  placeholder="Enter phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
             </div>
           )}
 

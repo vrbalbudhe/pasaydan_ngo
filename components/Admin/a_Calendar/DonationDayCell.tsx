@@ -11,7 +11,7 @@ interface DonationDayCellProps {
   getDayDonations: (day: number) => any[];
   getDayTotal: (day: number) => number;
   getUserName: (userId: string) => string;
-  openDonationEditor: (userId: string, day: number) => void;
+  openDonationEditor: (donationId: string, day: number) => void;
   openAddDonationDialog: (day: number) => void;
   setSelectedUser: (userId: string | null) => void;
 }
@@ -67,8 +67,7 @@ const DonationDayCell: React.FC<DonationDayCellProps> = ({
                   : "bg-red-50 hover:bg-red-100 text-red-800 border-l-2 border-red-500"
               }
             `}
-            // Update the onClick handler:
-onClick={() => openDonationEditor(donation.id, day)}
+            onClick={() => openDonationEditor(donation.id, day)}
           >
             <div className="font-medium truncate">
               {donation.userName || donation.name || "Unknown User"}

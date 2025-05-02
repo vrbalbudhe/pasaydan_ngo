@@ -1,158 +1,129 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, TransactionType, TransactionNature, UserType, EntryType, TransactionStatus, MoneyForCategory } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const { searchParams } = new URL(request.url);
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        { success: false, message: "startDate and endDate are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: "Start and end dates are required" }, { status: 400 });
     }
 
-    const startDateTime = new Date(startDate);
-    const endDateTime = new Date(endDate);
-    endDateTime.setHours(23, 59, 59, 999);
+    // Parse dates to ensure correct format for query
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+    parsedEndDate.setHours(23, 59, 59, 999); // Set to end of day
 
+    // Query transactions within the date range
     const transactions = await prisma.transaction.findMany({
       where: {
         date: {
-          gte: startDateTime,
-          lte: endDateTime,
+          gte: parsedStartDate,
+          lte: parsedEndDate,
         },
-        entryType: "MANUAL",
       },
-      select: {
-        id: true,
-        userId: true,
-        organizationId: true,
-        date: true,
-        amount: true,
-        transactionNature: true,
-        description: true,
-        name: true,
-        User: { select: { fullname: true } },
-        Organization: { select: { name: true } },
+      include: {
+        User: {
+          select: {
+            fullname: true,
+          },
+        },
+        Organization: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
-        date: "asc",
+        date: 'asc',
       },
     });
 
-    const formattedDonations = transactions.map(transaction => ({
+    // Transform transactions to DonationEntry format for the calendar
+    const donations = transactions.map(transaction => ({
       id: transaction.id,
-      userId: transaction.userId || transaction.organizationId || "",
-      userName: transaction.name || 
-               transaction.User?.fullname || 
-               transaction.Organization?.name || 
-               "Unknown User",
-      date: transaction.date.toISOString().split("T")[0],
+      userId: transaction.userId || transaction.organizationId || transaction.id, // Use org ID if available
+      date: transaction.date.toISOString().split('T')[0],
       amount: transaction.amount,
       transactionNature: transaction.transactionNature,
-      description: transaction.description,
-      name: transaction.name,
+      description: transaction.description || "",
+      // Handle various name sources to prevent "Unknown User"
+      userName: transaction.name || 
+                (transaction.User?.fullname) || 
+                (transaction.Organization?.name) || 
+                "Unknown User",
     }));
 
-    return NextResponse.json({
-      success: true,
-      donations: formattedDonations,
-    });
+    return NextResponse.json({ success: true, donations });
   } catch (error) {
-    console.error("Error fetching donations:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch donations" },
-      { status: 500 }
-    );
+    console.error("Error fetching calendar data:", error);
+    return NextResponse.json({ success: false, message: "Failed to fetch calendar data" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { id, userId, name, date, amount, transactionNature, description } = body;
-
-    if (!date || amount === undefined || !transactionNature) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    let user = null;
-    let organization = null;
-    let finalName = name || "Unknown User";
-
-    if (userId && userId !== "manual-entry") {
-      user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true, fullname: true, email: true, mobile: true },
-      });
-
-      if (user) {
-        finalName = user.fullname;
-      } else {
-        organization = await prisma.organization.findUnique({
-          where: { id: userId },
-          select: { id: true, name: true, email: true, mobile: true },
-        });
-        if (organization) {
-          finalName = organization.name;
-        }
-      }
-    }
-
+    const data = await request.json();
+    
+    // Check if it's an update (has ID) or a new donation
+    const isUpdate = !!data.id;
+    
+    // Prepare transaction data
     const transactionData = {
-      name: finalName,
-      email: user?.email || organization?.email || "unknown@email.com",
-      phone: user?.mobile || organization?.mobile || "Unknown",
-      userType: user ? "INDIVIDUAL" : organization ? "ORGANIZATION" : "INDIVIDUAL",
-      userId: user?.id || null,
-      organizationId: organization?.id || null,
-      amount: Number(amount),
-      type: "CASH",
-      transactionId: id ? undefined : `CALENDAR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      date: new Date(date),
-      transactionNature,
-      description,
-      entryType: "MANUAL",
-      entryBy: "ADMIN",
-      moneyFor: "OTHER",
-      status: "VERIFIED",
+      name: data.name || data.userName || "Manual Entry", // Store custom name
+      email: data.email || "manual@entry.com",
+      phone: data.phone || "0000000000",
+      userType: data.userType || "INDIVIDUAL" as UserType,
+      amount: parseFloat(data.amount),
+      type: "CASH" as TransactionType, // Default to CASH for calendar entries
+      transactionId: data.id || `CAL-${Date.now()}`, // Generate transaction ID if new
+      date: new Date(data.date),
+      transactionNature: data.transactionNature as TransactionNature,
+      entryType: "MANUAL" as EntryType,
+      entryBy: data.entryBy || "Calendar Admin",
+      status: "VERIFIED" as TransactionStatus,
+      moneyFor: "OTHER" as MoneyForCategory,
+      description: data.description || null,
+      userId: data.userId !== "manual-entry" ? data.userId : null,
     };
 
-    const result = id
-      ? await prisma.transaction.update({
-          where: { id },
-          data: transactionData,
-        })
-      : await prisma.transaction.create({
-          data: transactionData,
-        });
+    let transaction;
+    
+    if (isUpdate) {
+      // Update existing transaction
+      transaction = await prisma.transaction.update({
+        where: { id: data.id },
+        data: transactionData,
+      });
+    } else {
+      // Create new transaction
+      transaction = await prisma.transaction.create({
+        data: transactionData,
+      });
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: "Donation saved successfully",
-      donation: {
-        id: result.id,
-        userId: result.userId || result.organizationId || "",
-        userName: finalName,
-        date: result.date.toISOString().split("T")[0],
-        amount: result.amount,
-        transactionNature: result.transactionNature,
-        description: result.description,
-      },
+    // Format response to match DonationEntry structure
+    const donation = {
+      id: transaction.id,
+      userId: transaction.userId || transaction.id,
+      date: transaction.date.toISOString().split('T')[0],
+      amount: transaction.amount,
+      transactionNature: transaction.transactionNature,
+      description: transaction.description || "",
+      userName: transaction.name || "Unknown User",
+    };
+
+    return NextResponse.json({ 
+      success: true, 
+      donation,
+      message: isUpdate ? "Donation updated successfully" : "Donation added successfully" 
     });
   } catch (error) {
     console.error("Error saving donation:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to save donation" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Failed to save donation" }, { status: 500 });
   }
 }
