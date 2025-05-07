@@ -13,6 +13,8 @@ import {
   Settings,
   FileText,
   Shield,
+  BarChart,
+  Calendar,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,7 +29,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { MdLogout } from "react-icons/md";
-import { Calendar } from "lucide-react";
 
 const items = [
   { title: "Dashboard", url: "/pasaydan/admin", icon: Home },
@@ -36,14 +37,16 @@ const items = [
   { title: "Donations", url: "/pasaydan/admin/donationRequests", icon: Heart },
   { title: "Certificates", url: "/pasaydan/admin/certificates", icon: Award },
   { title: "Transactions", url: "/pasaydan/admin/transactions", icon: IndianRupeeIcon },
+  { title: "Expenditures", url: "/pasaydan/admin/expenditures", icon: BarChart }, // New item
   { title: "Downloads", url: "/pasaydan/admin/downloadData", icon: Download },
   { title: "EnterData", url: "/pasaydan/admin/enterData", icon: FileText },
-  { title: "Calendar", url: "/pasaydan/admin/calendar", icon: Calendar},
+  { title: "Calendar", url: "/pasaydan/admin/calendar", icon: Calendar },
   { title: "Manage Admins", url: "/pasaydan/admin/logsign", icon: Shield },
   { title: "Settings", url: "/pasaydan/admin/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
+  // Rest of the component remains the same
   const router = useRouter();
   const pathname = usePathname();
 

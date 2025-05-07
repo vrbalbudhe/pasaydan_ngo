@@ -44,6 +44,7 @@ model User {
   otp            String?
   organizationId String?       @db.ObjectId
   transactions   Transaction[]
+  expenditures   Expenditure[] // Add this line to establish relation
 }
 
 model Organization {
@@ -232,4 +233,27 @@ model Photo {
   url           String
   participantId String      @db.ObjectId
   participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+}
+
+model Expenditure {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  amount      Float
+  date        DateTime
+  description String?
+  category    ExpenditureCategory
+  customCategory String?          @default("")
+  entryBy     String?             @db.ObjectId // ID of the admin/subadmin who made the entry
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  
+  // Relations
+  User        User?               @relation(fields: [userId], references: [id])
+  userId      String?             @db.ObjectId // For member-wise reporting
+}
+
+enum ExpenditureCategory {
+  CYCLE
+  ASHRAM
+  STUDENT
+  OTHER
 }
