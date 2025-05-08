@@ -1,3 +1,4 @@
+// app/api/admin/calendar/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, TransactionType, TransactionNature, UserType, EntryType, TransactionStatus, MoneyForCategory } from "@prisma/client";
 
@@ -30,11 +31,15 @@ export async function GET(request: NextRequest) {
         User: {
           select: {
             fullname: true,
+            email: true,
+            mobile: true,
           },
         },
         Organization: {
           select: {
             name: true,
+            email: true,
+            mobile: true,
           },
         },
       },
@@ -46,16 +51,28 @@ export async function GET(request: NextRequest) {
     // Transform transactions to DonationEntry format for the calendar
     const donations = transactions.map(transaction => ({
       id: transaction.id,
-      userId: transaction.userId || transaction.organizationId || transaction.id, // Use org ID if available
+      userId: transaction.userId || transaction.organizationId || null,
       date: transaction.date.toISOString().split('T')[0],
       amount: transaction.amount,
       transactionNature: transaction.transactionNature,
       description: transaction.description || "",
-      // Handle various name sources to prevent "Unknown User"
+      // Explicitly pass all fields needed for proper display and editing
       userName: transaction.name || 
                 (transaction.User?.fullname) || 
                 (transaction.Organization?.name) || 
                 "Unknown User",
+      name: transaction.name,
+      email: transaction.email,
+      phone: transaction.phone,
+      type: transaction.type, // Include payment type
+      // Add additional fields that might be needed for complete updates
+      transactionId: transaction.transactionId,
+      userType: transaction.userType,
+      status: transaction.status,
+      moneyFor: transaction.moneyFor,
+      customMoneyFor: transaction.customMoneyFor,
+      entryType: transaction.entryType,
+      entryBy: transaction.entryBy,
     }));
 
     return NextResponse.json({ success: true, donations });
@@ -72,58 +89,116 @@ export async function POST(request: NextRequest) {
     // Check if it's an update (has ID) or a new donation
     const isUpdate = !!data.id;
     
-    // Prepare transaction data
-    const transactionData = {
-      name: data.name || data.userName || "Manual Entry", // Store custom name
-      email: data.email || "manual@entry.com",
-      phone: data.phone || "0000000000",
-      userType: data.userType || "INDIVIDUAL" as UserType,
-      amount: parseFloat(data.amount),
-      type: "CASH" as TransactionType, // Default to CASH for calendar entries
-      transactionId: data.id || `CAL-${Date.now()}`, // Generate transaction ID if new
-      date: new Date(data.date),
-      transactionNature: data.transactionNature as TransactionNature,
-      entryType: "MANUAL" as EntryType,
-      entryBy: data.entryBy || "Calendar Admin",
-      status: "VERIFIED" as TransactionStatus,
-      moneyFor: "OTHER" as MoneyForCategory,
-      description: data.description || null,
-      userId: data.userId !== "manual-entry" ? data.userId : null,
-    };
-
-    let transaction;
-    
+    // For update operations, use the transaction update API
     if (isUpdate) {
-      // Update existing transaction
-      transaction = await prisma.transaction.update({
-        where: { id: data.id },
-        data: transactionData,
+      // Call the transactions update API endpoint
+      const updateResponse = await fetch(new URL('/api/admin/transactions/update', request.url).toString(), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email || "manual@entry.com",
+          phone: data.phone || "0000000000",
+          userType: data.userType || "INDIVIDUAL",
+          amount: parseFloat(data.amount),
+          type: data.type || "CASH",
+          transactionId: data.transactionId || `CAL-${Date.now()}`,
+          date: new Date(data.date).toISOString(),
+          transactionNature: data.transactionNature,
+          description: data.description || null,
+          status: "VERIFIED", // Calendar entries are always verified
+          moneyFor: data.moneyFor || "OTHER",
+          customMoneyFor: data.customMoneyFor || null,
+          userId: data.userId !== "manual-entry" && data.userId ? data.userId : null,
+          entryType: "MANUAL",
+          entryBy: data.entryBy || "Calendar Admin",
+        }),
+      });
+
+      const result = await updateResponse.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update transaction");
+      }
+
+      // Format the response for the calendar
+      const donation = {
+        id: result.data.id,
+        userId: result.data.userId || result.data.organizationId || null,
+        date: new Date(result.data.date).toISOString().split('T')[0],
+        amount: result.data.amount,
+        transactionNature: result.data.transactionNature,
+        description: result.data.description || "",
+        userName: result.data.name,
+        name: result.data.name,
+        email: result.data.email,
+        phone: result.data.phone,
+        type: result.data.type,
+      };
+
+      return NextResponse.json({ 
+        success: true, 
+        donation,
+        message: "Donation updated successfully" 
       });
     } else {
-      // Create new transaction
-      transaction = await prisma.transaction.create({
-        data: transactionData,
+      // For new donations, use the transactions create API
+      const createResponse = await fetch(new URL('/api/admin/transactions', request.url).toString(), {
+        method: 'POST',
+        body: JSON.stringify({
+          name: data.name || data.userName || "Manual Entry",
+          email: data.email || "manual@entry.com",
+          phone: data.phone || "0000000000",
+          userType: data.userType || "INDIVIDUAL",
+          amount: parseFloat(data.amount),
+          type: data.type || "CASH",
+          transactionId: `CAL-${Date.now()}`,
+          date: new Date(data.date).toISOString(),
+          transactionNature: data.transactionNature,
+          description: data.description || null,
+          status: "VERIFIED", // Calendar entries are always verified
+          moneyFor: "OTHER",
+          entryType: "MANUAL",
+          entryBy: data.entryBy || "Calendar Admin",
+          userId: data.userId !== "manual-entry" && data.userId ? data.userId : null,
+        }),
+      });
+
+      const result = await createResponse.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create transaction");
+      }
+
+      // Format the response for the calendar
+      const donation = {
+        id: result.data.id,
+        userId: result.data.userId || result.data.organizationId || null,
+        date: new Date(result.data.date).toISOString().split('T')[0],
+        amount: result.data.amount,
+        transactionNature: result.data.transactionNature,
+        description: result.data.description || "",
+        userName: result.data.name,
+        name: result.data.name,
+        email: result.data.email,
+        phone: result.data.phone,
+        type: result.data.type,
+      };
+
+      return NextResponse.json({ 
+        success: true, 
+        donation,
+        message: "Donation added successfully" 
       });
     }
-
-    // Format response to match DonationEntry structure
-    const donation = {
-      id: transaction.id,
-      userId: transaction.userId || transaction.id,
-      date: transaction.date.toISOString().split('T')[0],
-      amount: transaction.amount,
-      transactionNature: transaction.transactionNature,
-      description: transaction.description || "",
-      userName: transaction.name || "Unknown User",
-    };
-
-    return NextResponse.json({ 
-      success: true, 
-      donation,
-      message: isUpdate ? "Donation updated successfully" : "Donation added successfully" 
-    });
   } catch (error) {
     console.error("Error saving donation:", error);
-    return NextResponse.json({ success: false, message: "Failed to save donation" }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to save donation" 
+    }, { status: 500 });
   }
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface MonthNavigationProps {
+interface CalendarNavigationProps {
   monthNames: string[];
   currentMonth: number;
   currentYear: number;
@@ -10,12 +10,12 @@ interface MonthNavigationProps {
   nextMonth: () => void;
 }
 
-const MonthNavigation: React.FC<MonthNavigationProps> = ({
+const CalendarNavigation: React.FC<CalendarNavigationProps> = ({
   monthNames,
   currentMonth,
   currentYear,
   previousMonth,
-  nextMonth,
+  nextMonth
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -44,4 +44,4 @@ const MonthNavigation: React.FC<MonthNavigationProps> = ({
   );
 };
 
-export default MonthNavigation;
+export default CalendarNavigation;

@@ -1,59 +1,70 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, CalendarCheck, List, TrendingUp } from "lucide-react";
+import { Loader2, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
-import CalendarView from "@/components/Admin/a_Calendar/CalendarView";
-import ListView from "@/components/Admin/a_Calendar/ListView";
-import MonthNavigation from "@/components/Admin/a_Calendar/MonthNavigation";
-import DonationEditorDialog from "@/components/Admin/a_Calendar/DonationEditorDialog";
-import AddDonationDialog from "@/components/Admin/a_Calendar/AddDonationDialog";
-import { formatCurrency } from "@/lib/utils";
-import { format } from "date-fns";
 
-interface User {
+// Import our new components
+import CalendarHeader from "@/components/Admin/a_Calendar/CalendarHeader";
+import CalendarGrid from "@/components/Admin/a_Calendar/CalendarGrid";
+import CalendarMetrics from "@/components/Admin/a_Calendar/CalendarMetrics";
+import CalendarNavigation from "@/components/Admin/a_Calendar/CalendarNavigation";
+import AddDonationDialog from "@/components/Admin/a_Calendar/AddDonationDialog";
+import EditDonationDialog from "@/components/Admin/a_Calendar/EditDonationDialog";
+
+export interface DonationEntry {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  amount: number;
+  type: string;
+  transactionNature: "CREDIT" | "DEBIT";
+  date: Date;
+  description?: string;
+  status: string;
+  userType?: string;
+  entryType?: string;
+  moneyFor?: string;
+  customMoneyFor?: string;
+  transactionId?: string; // Added transactionId to interface
+  userId?: string;
+}
+
+export interface User {
   id: string;
   fullname: string;
   email?: string;
   phone?: string;
+  mobile?: string;
   type?: string;
-}
-
-interface DonationEntry {
-  id?: string;
-  userId: string;
-  date: string;
-  amount: number;
-  transactionNature: "CREDIT" | "DEBIT";
-  description?: string;
-  userName?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
 }
 
 const DonationCalendarPage = () => {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+  // State for calendar view
   const currentDate = new Date();
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
-
-  const [users, setUsers] = useState<User[]>([]);
-  const [donations, setDonations] = useState<DonationEntry[]>([]);
-  const [allDonations, setAllDonations] = useState<DonationEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [monthData, setMonthData] = useState<DonationEntry[]>([]);
+  const [allDonations, setAllDonations] = useState<DonationEntry[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  
+  // State for donation dialogs
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDonation, setSelectedDonation] = useState<DonationEntry | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [editingDonation, setEditingDonation] = useState<DonationEntry | null>(null);
-  const [addingDonation, setAddingDonation] = useState<DonationEntry | null>(null);
 
+  // Calendar calculation
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
 
+  // Build calendar grid
   const calendarGrid = [];
   let dayCounter = 1;
   for (let week = 0; week < 6; week++) {
@@ -87,170 +98,273 @@ const DonationCalendarPage = () => {
     }
   };
 
+  // Fetch transactions and users
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         // Fetch users for dropdown selection
         const usersResponse = await fetch("/api/admin/calendar/users");
-        const { success: usersSuccess, users } = await usersResponse.json();
-        if (usersSuccess) setUsers(users);
-
-        // Fetch donations for current month
-        const startDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-01`;
-        const endDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${daysInMonth}`;
-
-        const donationsResponse = await fetch(`/api/admin/calendar?startDate=${startDate}&endDate=${endDate}`);
-        const { success: donationsSuccess, donations } = await donationsResponse.json();
-        if (donationsSuccess) {
-          const formatted = donations.map((donation: DonationEntry) => ({
-            ...donation,
-            userName: donation.userName || donation.name || "Unknown User",
-          }));
-          setDonations(formatted);
+        const usersData = await usersResponse.json();
+        if (usersData.success) {
+          setUsers(usersData.users || []);
+        }
+        
+        // Fetch current month data
+        const startDate = new Date(currentYear, currentMonth, 1);
+        const endDate = new Date(currentYear, currentMonth + 1, 0);
+        endDate.setHours(23, 59, 59, 999); // Set to end of day
+        
+        const response = await fetch(`/api/admin/transactions?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setMonthData(data.data || []);
+        } else {
+          toast.error("Failed to load transactions");
         }
 
         // Fetch all donations for overall totals
-        const fullStart = `${currentYear - 1}-01-01`;
-        const fullEnd = `${currentYear + 1}-12-31`;
-        const allRes = await fetch(`/api/admin/calendar?startDate=${fullStart}&endDate=${fullEnd}`);
-        const { success: allSuccess, donations: all } = await allRes.json();
-        if (allSuccess) {
-          setAllDonations(all);
+        const allStartDate = new Date(currentYear - 1, 0, 1); // Last year January 1
+        const allEndDate = new Date(currentYear + 1, 11, 31); // Next year December 31
+        allEndDate.setHours(23, 59, 59, 999);
+        
+        const allResponse = await fetch(`/api/admin/transactions?startDate=${allStartDate.toISOString()}&endDate=${allEndDate.toISOString()}`);
+        const allData = await allResponse.json();
+        
+        if (allData.success) {
+          setAllDonations(allData.data || []);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Failed to load data.");
+        toast.error("Failed to load data");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [currentMonth, currentYear, daysInMonth]);
+  }, [currentMonth, currentYear]);
 
+  // Get donations for a specific day
   const getDayDonations = (day: number) => {
-    const date = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-    return donations.filter((d) => d.date === date);
+    const targetDate = new Date(currentYear, currentMonth, day);
+    return monthData.filter(donation => {
+      const donationDate = new Date(donation.date);
+      return (
+        donationDate.getDate() === targetDate.getDate() &&
+        donationDate.getMonth() === targetDate.getMonth() &&
+        donationDate.getFullYear() === targetDate.getFullYear()
+      );
+    });
   };
 
+  // Calculate total for a day
   const getDayTotal = (day: number) => {
-    return getDayDonations(day).reduce((total, donation) => {
-      return donation.transactionNature === "CREDIT" ? total + donation.amount : total - donation.amount;
+    const donations = getDayDonations(day);
+    return donations.reduce((total, donation) => {
+      return donation.transactionNature === "CREDIT" 
+        ? total + donation.amount 
+        : total - donation.amount;
     }, 0);
   };
 
+  // Calculate totals
   const getMonthTotal = () => {
-    return donations.reduce((sum, d) => d.transactionNature === "CREDIT" ? sum + d.amount : sum - d.amount, 0);
+    return monthData.reduce((total, donation) => {
+      return donation.transactionNature === "CREDIT" 
+        ? total + donation.amount 
+        : total - donation.amount;
+    }, 0);
   };
 
   const getOverallTotal = () => {
-    return allDonations.reduce((sum, d) => d.transactionNature === "CREDIT" ? sum + d.amount : sum - d.amount, 0);
+    return allDonations.reduce((total, donation) => {
+      return donation.transactionNature === "CREDIT" 
+        ? total + donation.amount 
+        : total - donation.amount;
+    }, 0);
   };
 
-  const openAddDonationDialog = (day: number) => {
-    const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-    setAddingDonation({
-      userId: "",
-      date: dateStr,
-      amount: 0,
-      transactionNature: "CREDIT",
-      description: "",
+  // Open add donation dialog
+  const openAddDialog = (day: number) => {
+    const date = new Date(currentYear, currentMonth, day);
+    setSelectedDate(date);
+    setAddDialogOpen(true);
+  };
+
+  // Open edit donation dialog
+  const openEditDialog = (donation: DonationEntry) => {
+    setSelectedDonation(donation);
+    setEditDialogOpen(true);
+  };
+
+  // Save a new donation
+const saveNewDonation = async (formData: any) => {
+  setIsSaving(true);
+  try {
+    // Create form data object to match transaction API expectations
+    const formDataObj = new FormData();
+    formDataObj.append("name", formData.name);
+    formDataObj.append("email", formData.email || "calendar@entry.com");
+    formDataObj.append("phone", formData.phone || "0000000000");
+    formDataObj.append("amount", formData.amount.toString());
+    formDataObj.append("type", formData.type);
+    formDataObj.append("transactionNature", formData.transactionNature);
+    formDataObj.append("date", selectedDate.toISOString());
+    formDataObj.append("description", formData.description || "");
+    formDataObj.append("status", "VERIFIED");
+    formDataObj.append("userType", formData.userType || "INDIVIDUAL");
+    formDataObj.append("entryType", "MANUAL");
+    formDataObj.append("entryBy", formData.entryBy || "Calendar Admin");
+    formDataObj.append("moneyFor", formData.moneyFor || "OTHER");
+    
+    // Add transaction ID for non-cash payments
+    if (formData.type !== "CASH" && formData.transactionId) {
+      formDataObj.append("transactionId", formData.transactionId);
+    }
+
+    // Use the transaction API directly
+    const response = await fetch("/api/admin/transactions", {
+      method: "POST",
+      body: formDataObj,
     });
-  };
-  
-  const saveNewDonation = async () => {
-    if (!addingDonation) return;
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/admin/calendar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addingDonation),
-      });
-  
-      const data = await response.json();
-      if (data.success) {
-        // Update local state with the new donation
-        setDonations((prev) => [...prev, data.donation]);
-        setAllDonations((prev) => [...prev, data.donation]);
-        toast.success("Donation added successfully.");
-        setAddingDonation(null);
-      } else {
-        toast.error(data.message || "Failed to add donation.");
-      }
-    } catch (error) {
-      console.error("Error saving donation:", error);
-      toast.error("Failed to add donation.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-  
-  const openDonationEditor = (donationId: string, day: number) => {
-    const date = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-    // Find the donation to edit
-    const donation = donations.find((d) => d.id === donationId);
-    
-    if (donation) {
-      setEditingDonation(donation);
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Add the new donation to our local state
+      setMonthData(prev => [...prev, result.data]);
+      setAllDonations(prev => [...prev, result.data]);
+      toast.success("Donation added successfully");
+      setAddDialogOpen(false);
     } else {
-      // Fallback if donation not found (shouldn't happen but just in case)
-      setEditingDonation({
-        userId: "",
-        date,
-        amount: 0,
-        transactionNature: "CREDIT",
-        description: "",
-      });
+      toast.error(result.error || "Failed to add donation");
     }
-  };
+  } catch (error) {
+    console.error("Error adding donation:", error);
+    toast.error("Failed to add donation");
+  } finally {
+    setIsSaving(false);
+  }
+};
+
+  // Update an existing donation
+const updateDonation = async (formData: any) => {
+  if (!selectedDonation) return;
   
-  const saveDonation = async () => {
-    if (!editingDonation) return;
-    setIsSaving(true);
+  setIsSaving(true);
+  try {
+    // Create request payload for the transaction update API
+    const payload = {
+      id: selectedDonation.id,
+      name: formData.name,
+      email: formData.email || selectedDonation.email,
+      phone: formData.phone || selectedDonation.phone,
+      amount: formData.amount,
+      type: formData.type,
+      transactionNature: formData.transactionNature,
+      description: formData.description,
+      // Include the transaction ID - important for non-cash transactions
+      transactionId: formData.transactionId || selectedDonation.transactionId,
+      // Include necessary fields to ensure the update works
+      userType: selectedDonation.userType || "INDIVIDUAL",
+      status: selectedDonation.status || "VERIFIED",
+      date: selectedDonation.date,
+      entryType: selectedDonation.entryType || "MANUAL",
+      moneyFor: selectedDonation.moneyFor || "OTHER"
+    };
+
+    // Use transaction update API
+    const response = await fetch("/api/admin/transactions/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Update the donation in our local state
+      setMonthData(prev => 
+        prev.map(item => item.id === selectedDonation.id ? result.data : item)
+      );
+      setAllDonations(prev => 
+        prev.map(item => item.id === selectedDonation.id ? result.data : item)
+      );
+      toast.success("Donation updated successfully");
+      setEditDialogOpen(false);
+      
+      // Refresh data to ensure all changes are reflected
+      refreshCalendarData();
+    } else {
+      toast.error(result.error || "Failed to update donation");
+    }
+  } catch (error) {
+    console.error("Error updating donation:", error);
+    toast.error("Failed to update donation");
+  } finally {
+    setIsSaving(false);
+  }
+};
+
+  // Delete a donation
+  const deleteDonation = async (donationId: string) => {
     try {
-      const response = await fetch("/api/admin/calendar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...editingDonation,
-          id: editingDonation.id || undefined,
-        }),
+      const response = await fetch(`/api/admin/transactions/${donationId}`, {
+        method: "DELETE",
       });
-  
-      const data = await response.json();
-      if (data.success) {
-        // Update both local state collections
-        setDonations((prev) =>
-          prev.map((d) => (d.id === data.donation.id ? data.donation : d))
-        );
-        setAllDonations((prev) =>
-          prev.map((d) => (d.id === data.donation.id ? data.donation : d))
-        );
-        toast.success("Donation updated successfully.");
-        setEditingDonation(null);
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setMonthData(prev => prev.filter(item => item.id !== donationId));
+        setAllDonations(prev => prev.filter(item => item.id !== donationId));
+        toast.success("Donation deleted successfully");
+        setEditDialogOpen(false);
       } else {
-        toast.error(data.message || "Failed to update donation.");
+        toast.error("Failed to delete donation");
       }
     } catch (error) {
-      console.error("Error updating donation:", error);
-      toast.error("Failed to update donation.");
-    } finally {
-      setIsSaving(false);
+      console.error("Error deleting donation:", error);
+      toast.error("Failed to delete donation");
     }
   };
 
-  const getUserName = (userId: string) => {
-    // First, try to find the user in the users array
-    const user = users.find((u) => u.id === userId);
-    if (user) return user.fullname;
-    
-    // If not found in users, try to find in donations
-    const donation = donations.find((d) => d.userId === userId);
-    return donation?.userName || donation?.name || "Unknown User";
+  // Refresh calendar data
+  const refreshCalendarData = async () => {
+    try {
+      // Fetch current month data
+      const startDate = new Date(currentYear, currentMonth, 1);
+      const endDate = new Date(currentYear, currentMonth + 1, 0);
+      endDate.setHours(23, 59, 59, 999);
+      
+      const response = await fetch(`/api/admin/transactions?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setMonthData(data.data || []);
+      }
+
+      // Also refresh overall totals
+      const allStartDate = new Date(currentYear - 1, 0, 1);
+      const allEndDate = new Date(currentYear + 1, 11, 31);
+      allEndDate.setHours(23, 59, 59, 999);
+      
+      const allResponse = await fetch(`/api/admin/transactions?startDate=${allStartDate.toISOString()}&endDate=${allEndDate.toISOString()}`);
+      const allData = await allResponse.json();
+      
+      if (allData.success) {
+        setAllDonations(allData.data || []);
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-blue-50 to-blue-100">
@@ -264,60 +378,19 @@ const DonationCalendarPage = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6 bg-gray-50 min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-        <div className="flex items-center space-x-4">
-          <CalendarCheck className="h-10 w-10 text-blue-600" />
-          <h1 className="text-4xl font-bold text-gray-800">Pasaydan Donations</h1>
-        </div>
-        <div className="flex gap-2 shadow-sm rounded-lg bg-white">
-          <Button 
-            variant={viewMode === "calendar" ? "default" : "ghost"} 
-            onClick={() => setViewMode("calendar")}
-            className="flex items-center space-x-2"
-          >
-            <CalendarCheck className="h-4 w-4" />
-            <span>Calendar View</span>
-          </Button>
-          <Button 
-            variant={viewMode === "list" ? "default" : "ghost"} 
-            onClick={() => setViewMode("list")}
-            className="flex items-center space-x-2"
-          >
-            <List className="h-4 w-4" />
-            <span>List View</span>
-          </Button>
-        </div>
-      </div>
+      {/* Header */}
+      <CalendarHeader />
+      
+      {/* Metrics */}
+      <CalendarMetrics 
+        monthTotal={getMonthTotal()} 
+        overallTotal={getOverallTotal()} 
+      />
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <div className="text-sm text-gray-500 mb-2">Monthly Total</div>
-              <div className={`text-2xl font-bold ${getMonthTotal() >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {formatCurrency(getMonthTotal())}
-              </div>
-            </div>
-            <TrendingUp className={`h-10 w-10 ${getMonthTotal() >= 0 ? "text-green-400" : "text-red-400"}`} />
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <div className="text-sm text-gray-500 mb-2">Overall Total</div>
-              <div className={`text-2xl font-bold ${getOverallTotal() >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {formatCurrency(getOverallTotal())}
-              </div>
-            </div>
-            <TrendingUp className={`h-10 w-10 ${getOverallTotal() >= 0 ? "text-green-400" : "text-red-400"}`} />
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Month Navigation */}
       <Card className="bg-white shadow-md">
         <CardContent className="p-6">
-          <MonthNavigation
+          <CalendarNavigation 
             monthNames={monthNames}
             currentMonth={currentMonth}
             currentYear={currentYear}
@@ -327,60 +400,36 @@ const DonationCalendarPage = () => {
         </CardContent>
       </Card>
 
-      {viewMode === "calendar" ? (
-        <CalendarView
-          monthNames={monthNames}
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          calendarGrid={calendarGrid}
-          dayLabels={dayLabels}
-          getDayDonations={getDayDonations}
-          getDayTotal={getDayTotal}
-          getUserName={getUserName}
-          openDonationEditor={openDonationEditor}
-          openAddDonationDialog={openAddDonationDialog}
-          setSelectedUser={setSelectedUser}
-        />
-      ) : (
-        <ListView
-          users={users}
-          donations={donations}
-          monthNames={monthNames}
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          days={Array.from({ length: daysInMonth }, (_, i) => i + 1)}
-          openDonationEditor={openDonationEditor}
-          openAddDonationDialog={openAddDonationDialog}
-          setSelectedUser={setSelectedUser}
-          getUserName={getUserName}
-        />
-      )}
+      {/* Calendar Grid */}
+      <CalendarGrid 
+        calendarGrid={calendarGrid}
+        dayLabels={dayLabels}
+        getDayDonations={getDayDonations}
+        getDayTotal={getDayTotal}
+        openAddDialog={openAddDialog}
+        openEditDialog={openEditDialog}
+      />
 
-      {editingDonation && (
-        <DonationEditorDialog
-          open={!!editingDonation}
-          onClose={() => setEditingDonation(null)}
-          donation={editingDonation}
-          setDonation={setEditingDonation}
-          saveDonation={saveDonation}
-          isSaving={isSaving}
-          users={users}
-          dateDisplay={format(new Date(editingDonation.date), "MMMM d, yyyy")}
-        />
-      )}
+      {/* Add Donation Dialog */}
+      <AddDonationDialog 
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        onSave={saveNewDonation}
+        isSaving={isSaving}
+        selectedDate={selectedDate}
+        users={users}
+      />
 
-      {addingDonation && (
-        <AddDonationDialog
-          open={!!addingDonation}
-          onClose={() => setAddingDonation(null)}
-          donation={addingDonation}
-          setDonation={setAddingDonation}
-          saveDonation={saveNewDonation}
-          isSaving={isSaving}
-          users={users}
-          dateDisplay={format(new Date(addingDonation.date), "MMMM d, yyyy")}
-        />
-      )}
+      {/* Edit Donation Dialog */}
+      <EditDonationDialog 
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        onSave={updateDonation}
+        onDelete={deleteDonation}
+        isSaving={isSaving}
+        donation={selectedDonation}
+        users={users}
+      />
     </div>
   );
 };
