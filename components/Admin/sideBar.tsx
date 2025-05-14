@@ -38,6 +38,7 @@ const items = [
   { title: "Certificates", url: "/pasaydan/admin/certificates", icon: Award },
   { title: "Transactions", url: "/pasaydan/admin/transactions", icon: IndianRupeeIcon },
   { title: "Expenditures", url: "/pasaydan/admin/expenditures", icon: BarChart }, // New item
+  { title: "Custom Message", url: "/pasaydan/admin/customMessage", icon: FileText },
   { title: "Downloads", url: "/pasaydan/admin/downloadData", icon: Download },
   { title: "EnterData", url: "/pasaydan/admin/enterData", icon: FileText },
   { title: "Calendar", url: "/pasaydan/admin/calendar", icon: Calendar },
