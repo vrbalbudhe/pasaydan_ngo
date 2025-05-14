@@ -1,7 +1,7 @@
 // app/api/admin/transactions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
-import { TransactionType, EntryType } from "@prisma/client";
+import { TransactionType, EntryType, UserType } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
@@ -60,6 +60,13 @@ export async function POST(req: NextRequest) {
 
     // Extract and prepare transaction data
     const data = Object.fromEntries(formData.entries());
+    
+    // Handle userType properly - convert string to enum
+    let userTypeEnum = UserType.INDIVIDUAL;
+    if (data.userType === "organization" || data.userType === "ORGANIZATION") {
+      userTypeEnum = UserType.ORGANIZATION;
+    }
+    
     const transactionData = {
       name: data.name as string,
       email: data.email as string,
@@ -67,7 +74,7 @@ export async function POST(req: NextRequest) {
       amount: parseFloat(data.amount as string),
       type: data.type as TransactionType,
       transactionNature: data.transactionNature as string,
-      userType: data.userType as string,
+      userType: userTypeEnum, // Use the enum value
       date: new Date(data.date as string),
       transactionId:
         data.type === "CASH"
@@ -83,6 +90,8 @@ export async function POST(req: NextRequest) {
         data.moneyFor === "OTHER" ? (data.customMoneyFor as string) : null,
     };
 
+    console.log("Creating transaction with data:", transactionData);
+    
     const transaction = await prisma.transaction.create({
       data: transactionData,
       include: {
@@ -106,9 +115,11 @@ export async function POST(req: NextRequest) {
     return createResponse(true, transaction);
   } catch (error) {
     console.error("Transaction creation error:", error);
-    return createResponse(false, null, "Failed to create transaction");
+    return createResponse(false, null, error instanceof Error ? error.message : "Failed to create transaction");
   }
 }
+
+// Rest of the file remains the same...
 
 export async function GET(req: NextRequest) {
   try {

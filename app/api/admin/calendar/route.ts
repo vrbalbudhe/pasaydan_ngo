@@ -85,11 +85,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
+    console.log("Received calendar POST data:", data);
     
     // Check if it's an update (has ID) or a new donation
     const isUpdate = !!data.id;
+
+    // Convert userType string to enum
+    let userTypeValue = UserType.INDIVIDUAL;
+    if (data.userType === "organization" || data.userType === "ORGANIZATION") {
+      userTypeValue = UserType.ORGANIZATION;
+    }
     
-    // For update operations, use the transaction update API
+    // For update operations, use the transactions update API
     if (isUpdate) {
       // Call the transactions update API endpoint
       const updateResponse = await fetch(new URL('/api/admin/transactions/update', request.url).toString(), {
@@ -102,7 +109,7 @@ export async function POST(request: NextRequest) {
           name: data.name,
           email: data.email || "manual@entry.com",
           phone: data.phone || "0000000000",
-          userType: data.userType || "INDIVIDUAL",
+          userType: userTypeValue, // Use the enum value
           amount: parseFloat(data.amount),
           type: data.type || "CASH",
           transactionId: data.transactionId || `CAL-${Date.now()}`,
@@ -148,14 +155,17 @@ export async function POST(request: NextRequest) {
       // For new donations, use the transactions create API
       const createResponse = await fetch(new URL('/api/admin/transactions', request.url).toString(), {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           name: data.name || data.userName || "Manual Entry",
           email: data.email || "manual@entry.com",
           phone: data.phone || "0000000000",
-          userType: data.userType || "INDIVIDUAL",
+          userType: userTypeValue, // Use the enum value
           amount: parseFloat(data.amount),
           type: data.type || "CASH",
-          transactionId: `CAL-${Date.now()}`,
+          transactionId: data.transactionId || `CAL-${Date.now()}`,
           date: new Date(data.date).toISOString(),
           transactionNature: data.transactionNature,
           description: data.description || null,

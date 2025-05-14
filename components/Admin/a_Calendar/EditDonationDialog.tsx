@@ -59,57 +59,64 @@ const EditDonationDialog: React.FC<EditDonationDialogProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    amount: 0,
-    type: "CASH" as PaymentType,
-    transactionNature: "CREDIT",
-    description: "",
-    transactionId: "" // Add transaction ID field
-  });
+ // Add userType to formData state
+const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  phone: "",
+  amount: 0,
+  type: "CASH" as PaymentType,
+  transactionNature: "CREDIT",
+  description: "",
+  transactionId: "",
+  userType: "INDIVIDUAL" // Add userType to track
+});
 
-  // Update form when donation data changes
-  useEffect(() => {
-    if (donation) {
-      // Find if this donation is from a known user
-      const foundUser = users.find(u => u.id === donation.userId);
+// Update the useEffect to include userType from donation
+useEffect(() => {
+  if (donation) {
+    // Find if this donation is from a known user
+    const foundUser = users.find(u => u.id === donation.userId);
+    
+    setFormData({
+      name: donation.name || "",
+      email: donation.email || "",
+      phone: donation.phone || "",
+      amount: donation.amount || 0,
+      type: (donation.type as PaymentType) || "CASH",
+      transactionNature: donation.transactionNature || "CREDIT",
+      description: donation.description || "",
+      transactionId: donation.transactionId || "",
+      userType: donation.userType || "INDIVIDUAL" // Include userType
+    });
+    
+    setSelectedUserId(foundUser ? foundUser.id : "manual-entry");
+  }
+}, [donation, users]);
+
+// Update handleUserChange to handle userType properly
+const handleUserChange = (userId: string) => {
+  setSelectedUserId(userId);
+  
+  if (userId === "manual-entry") {
+    // Keep existing data for manual editing
+  } else {
+    // Find selected user and populate form
+    const selectedUser = users.find(user => user.id === userId);
+    if (selectedUser) {
+      // Set the proper userType based on the user's type
+      const userType = selectedUser.type?.toUpperCase() || "INDIVIDUAL";
       
       setFormData({
-        name: donation.name || "",
-        email: donation.email || "",
-        phone: donation.phone || "",
-        amount: donation.amount || 0,
-        type: (donation.type as PaymentType) || "CASH",
-        transactionNature: donation.transactionNature || "CREDIT",
-        description: donation.description || "",
-        transactionId: donation.transactionId || "" // Include transaction ID
+        ...formData,
+        name: selectedUser.fullname,
+        email: selectedUser.email || "",
+        phone: selectedUser.mobile || selectedUser.phone || "",
+        userType: userType // Update userType based on selected user
       });
-      
-      setSelectedUserId(foundUser ? foundUser.id : "manual-entry");
     }
-  }, [donation, users]);
-
-  // Handle user selection change
-  const handleUserChange = (userId: string) => {
-    setSelectedUserId(userId);
-    
-    if (userId === "manual-entry") {
-      // Keep existing data for manual editing
-    } else {
-      // Find selected user and populate form
-      const selectedUser = users.find(user => user.id === userId);
-      if (selectedUser) {
-        setFormData({
-          ...formData,
-          name: selectedUser.fullname,
-          email: selectedUser.email || "",
-          phone: selectedUser.mobile || selectedUser.phone || ""
-        });
-      }
-    }
-  };
+  }
+};
 
   // Handle saving the donation
   const handleSave = async () => {

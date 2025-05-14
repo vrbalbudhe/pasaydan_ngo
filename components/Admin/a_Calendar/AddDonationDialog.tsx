@@ -84,32 +84,36 @@ const AddDonationDialog: React.FC<AddDonationDialogProps> = ({
   }, [open]);
 
   // Handle user selection change
-  const handleUserChange = (userId: string) => {
-    setSelectedUserId(userId);
-    
-    if (userId === "manual-entry") {
-      // Reset to empty form for manual entry
+  // Change the handleUserChange function to include proper user type handling
+const handleUserChange = (userId: string) => {
+  setSelectedUserId(userId);
+  
+  if (userId === "manual-entry") {
+    // Reset to empty form for manual entry
+    setFormData({
+      ...formData,
+      name: "",
+      email: "",
+      phone: "",
+      userType: "INDIVIDUAL" // Default to INDIVIDUAL for manual entry
+    });
+  } else {
+    // Find selected user and populate form
+    const selectedUser = users.find(user => user.id === userId);
+    if (selectedUser) {
+      // Set the proper userType based on the user's type
+      const userType = selectedUser.type?.toUpperCase() || "INDIVIDUAL";
+      
       setFormData({
         ...formData,
-        name: "",
-        email: "",
-        phone: "",
-        userType: "INDIVIDUAL"
+        name: selectedUser.fullname,
+        email: selectedUser.email || "",
+        phone: selectedUser.mobile || selectedUser.phone || "",
+        userType: userType // Ensure userType is set based on selected user
       });
-    } else {
-      // Find selected user and populate form
-      const selectedUser = users.find(user => user.id === userId);
-      if (selectedUser) {
-        setFormData({
-          ...formData,
-          name: selectedUser.fullname,
-          email: selectedUser.email || "",
-          phone: selectedUser.mobile || selectedUser.phone || "",
-          userType: selectedUser.type || "INDIVIDUAL"
-        });
-      }
     }
-  };
+  }
+};
 
   // Handle saving the donation
   const handleSave = async () => {
