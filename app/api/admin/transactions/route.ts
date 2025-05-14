@@ -1,7 +1,7 @@
 // app/api/admin/transactions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
-import { TransactionType, EntryType, UserType } from "@prisma/client";
+import { TransactionType, EntryType, UserType, TransactionNature, TransactionStatus, MoneyForCategory } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
@@ -31,66 +31,162 @@ const createResponse = (
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const screenshot = formData.get("screenshot") as File | null;
-
-    // Process screenshot if present
+    // Check if request is FormData or JSON
+    let data: any;
+    let screenshot: File | null = null;
     let screenshotPath: string | undefined;
-    if (screenshot) {
-      try {
-        const bytes = await screenshot.arrayBuffer();
-        const buffer = Buffer.from(bytes);
 
-        const uniqueId = nanoid(10);
-        const filename = `${uniqueId}-${screenshot.name}`;
-        const transactionDir = path.join(
-          process.cwd(),
-          "public",
-          "transactions"
-        );
-        await mkdir(transactionDir, { recursive: true });
-
-        const filepath = path.join(transactionDir, filename); // Use the defined directory path
-        await writeFile(filepath, buffer);
-        screenshotPath = `/transactions/${filename}`;
-      } catch (error) {
-        console.error("Error saving screenshot:", error);
+    const contentType = req.headers.get('content-type') || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData
+      const formData = await req.formData();
+      data = Object.fromEntries(formData.entries());
+      screenshot = formData.get("screenshot") as File | null;
+      
+      // Process screenshot if present
+      if (screenshot) {
+        try {
+          const bytes = await screenshot.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          
+          const uniqueId = nanoid(10);
+          const filename = `${uniqueId}-${screenshot.name}`;
+          const transactionDir = path.join(
+            process.cwd(),
+            "public",
+            "transactions"
+          );
+          await mkdir(transactionDir, { recursive: true });
+          
+          const filepath = path.join(transactionDir, filename);
+          await writeFile(filepath, buffer);
+          screenshotPath = `/transactions/${filename}`;
+        } catch (error) {
+          console.error("Error saving screenshot:", error);
+        }
       }
+    } else {
+      // Handle JSON
+      data = await req.json();
     }
 
-    // Extract and prepare transaction data
-    const data = Object.fromEntries(formData.entries());
+    console.log("Transaction POST data:", data);
     
-    // Handle userType properly - convert string to enum
-    let userTypeEnum = UserType.INDIVIDUAL;
-    if (data.userType === "organization" || data.userType === "ORGANIZATION") {
-      userTypeEnum = UserType.ORGANIZATION;
+    // Convert userType to proper enum
+    let userTypeValue: UserType;
+    if (typeof data.userType === 'string' && 
+        (data.userType.toUpperCase() === 'ORGANIZATION' || data.userType === UserType.ORGANIZATION)) {
+      userTypeValue = UserType.ORGANIZATION;
+    } else {
+      userTypeValue = UserType.INDIVIDUAL;
+    }
+
+    // Convert transactionNature to proper enum
+    let transactionNatureValue: TransactionNature;
+    if (typeof data.transactionNature === 'string' && 
+        (data.transactionNature.toUpperCase() === 'DEBIT' || data.transactionNature === TransactionNature.DEBIT)) {
+      transactionNatureValue = TransactionNature.DEBIT;
+    } else {
+      transactionNatureValue = TransactionNature.CREDIT;
+    }
+
+    // Convert transaction type to proper enum
+    let transactionTypeValue: TransactionType;
+    switch(data.type) {
+      case 'UPI':
+      case TransactionType.UPI:
+        transactionTypeValue = TransactionType.UPI;
+        break;
+      case 'NET_BANKING':
+      case TransactionType.NET_BANKING:
+        transactionTypeValue = TransactionType.NET_BANKING;
+        break;
+      case 'CARD':
+      case TransactionType.CARD:
+        transactionTypeValue = TransactionType.CARD;
+        break;
+      default:
+        transactionTypeValue = TransactionType.CASH;
+    }
+
+    // Convert moneyFor to proper enum
+    let moneyForValue: MoneyForCategory;
+    switch(data.moneyFor) {
+      case 'CLOTHES':
+      case MoneyForCategory.CLOTHES:
+        moneyForValue = MoneyForCategory.CLOTHES;
+        break;
+      case 'FOOD':
+      case MoneyForCategory.FOOD:
+        moneyForValue = MoneyForCategory.FOOD;
+        break;
+      case 'CYCLE':
+      case MoneyForCategory.CYCLE:
+        moneyForValue = MoneyForCategory.CYCLE;
+        break;
+      case 'EDUCATION':
+      case MoneyForCategory.EDUCATION:
+        moneyForValue = MoneyForCategory.EDUCATION;
+        break;
+      case 'HEALTHCARE':
+      case MoneyForCategory.HEALTHCARE:
+        moneyForValue = MoneyForCategory.HEALTHCARE;
+        break;
+      default:
+        moneyForValue = MoneyForCategory.OTHER;
+    }
+
+    // Convert entryType to proper enum
+    const entryTypeValue = data.entryType === EntryType.DONATION_FORM ? 
+      EntryType.DONATION_FORM : EntryType.MANUAL;
+
+    // Convert status to proper enum
+    let statusValue: TransactionStatus;
+    switch(data.status) {
+      case 'VERIFIED':
+      case TransactionStatus.VERIFIED:
+        statusValue = TransactionStatus.VERIFIED;
+        break;
+      case 'REJECTED':
+      case TransactionStatus.REJECTED:
+        statusValue = TransactionStatus.REJECTED;
+        break;
+      default:
+        statusValue = TransactionStatus.PENDING;
     }
     
-    const transactionData = {
+    // Extract and prepare transaction data with TypeScript-friendly approach
+    // First create the base transaction data
+    const transactionData: any = {
       name: data.name as string,
       email: data.email as string,
       phone: data.phone as string,
-      amount: parseFloat(data.amount as string),
-      type: data.type as TransactionType,
-      transactionNature: data.transactionNature as string,
-      userType: userTypeEnum, // Use the enum value
+      amount: parseFloat(data.amount?.toString() || "0"),
+      type: transactionTypeValue,
+      transactionNature: transactionNatureValue,
+      userType: userTypeValue,
       date: new Date(data.date as string),
       transactionId:
-        data.type === "CASH"
+        data.type === TransactionType.CASH || data.type === "CASH"
           ? nanoid(10).toUpperCase()
           : (data.transactionId as string),
       screenshotPath,
-      entryType: EntryType.MANUAL,
+      entryType: entryTypeValue,
       entryBy: data.entryBy as string,
       description: (data.description as string) || null,
-      status: data.status || "PENDING",
-      moneyFor: data.moneyFor as string,
+      status: statusValue,
+      moneyFor: moneyForValue,
       customMoneyFor:
-        data.moneyFor === "OTHER" ? (data.customMoneyFor as string) : null,
+        data.moneyFor === MoneyForCategory.OTHER ? (data.customMoneyFor as string) : null,
     };
 
-    console.log("Creating transaction with data:", transactionData);
+    // If userId is provided and valid, include it
+    if (data.userId && data.userId !== "manual-entry") {
+      transactionData.userId = data.userId;
+    }
+
+    console.log("Creating transaction with:", transactionData);
     
     const transaction = await prisma.transaction.create({
       data: transactionData,
@@ -118,8 +214,6 @@ export async function POST(req: NextRequest) {
     return createResponse(false, null, error instanceof Error ? error.message : "Failed to create transaction");
   }
 }
-
-// Rest of the file remains the same...
 
 export async function GET(req: NextRequest) {
   try {

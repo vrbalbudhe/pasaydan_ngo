@@ -29,35 +29,118 @@ export async function PUT(req: NextRequest) {
     }
 
     // Handle userType properly - ensure it's an enum value
-    let userTypeValue = UserType.INDIVIDUAL;
-    if (data.userType === "organization" || data.userType === "ORGANIZATION") {
+    let userTypeValue: UserType;
+    if (typeof data.userType === 'string' && 
+        (data.userType.toUpperCase() === 'ORGANIZATION' || data.userType === UserType.ORGANIZATION)) {
       userTypeValue = UserType.ORGANIZATION;
+    } else {
+      userTypeValue = UserType.INDIVIDUAL;
     }
 
+    // Convert transactionNature to proper enum
+    let transactionNatureValue: TransactionNature;
+    if (typeof data.transactionNature === 'string' && 
+        (data.transactionNature.toUpperCase() === 'DEBIT' || data.transactionNature === TransactionNature.DEBIT)) {
+      transactionNatureValue = TransactionNature.DEBIT;
+    } else {
+      transactionNatureValue = TransactionNature.CREDIT;
+    }
+
+    // Convert transaction type to proper enum
+    let transactionTypeValue: TransactionType;
+    switch(data.type) {
+      case 'UPI':
+      case TransactionType.UPI:
+        transactionTypeValue = TransactionType.UPI;
+        break;
+      case 'NET_BANKING':
+      case TransactionType.NET_BANKING:
+        transactionTypeValue = TransactionType.NET_BANKING;
+        break;
+      case 'CARD':
+      case TransactionType.CARD:
+        transactionTypeValue = TransactionType.CARD;
+        break;
+      default:
+        transactionTypeValue = TransactionType.CASH;
+    }
+
+    // Convert moneyFor to proper enum
+    let moneyForValue: MoneyForCategory;
+    switch(data.moneyFor) {
+      case 'CLOTHES':
+      case MoneyForCategory.CLOTHES:
+        moneyForValue = MoneyForCategory.CLOTHES;
+        break;
+      case 'FOOD':
+      case MoneyForCategory.FOOD:
+        moneyForValue = MoneyForCategory.FOOD;
+        break;
+      case 'CYCLE':
+      case MoneyForCategory.CYCLE:
+        moneyForValue = MoneyForCategory.CYCLE;
+        break;
+      case 'EDUCATION':
+      case MoneyForCategory.EDUCATION:
+        moneyForValue = MoneyForCategory.EDUCATION;
+        break;
+      case 'HEALTHCARE':
+      case MoneyForCategory.HEALTHCARE:
+        moneyForValue = MoneyForCategory.HEALTHCARE;
+        break;
+      default:
+        moneyForValue = MoneyForCategory.OTHER;
+    }
+
+    // Convert status to proper enum
+    let statusValue: TransactionStatus;
+    switch(data.status) {
+      case 'VERIFIED':
+      case TransactionStatus.VERIFIED:
+        statusValue = TransactionStatus.VERIFIED;
+        break;
+      case 'REJECTED':
+      case TransactionStatus.REJECTED:
+        statusValue = TransactionStatus.REJECTED;
+        break;
+      default:
+        statusValue = TransactionStatus.PENDING;
+    }
+
+    // Convert entryType to proper enum
+    const entryTypeValue = data.entryType === EntryType.DONATION_FORM ? 
+      EntryType.DONATION_FORM : EntryType.MANUAL;
+
     // Prepare the update data with proper type casting
-    const updateData = {
+    // Use any type to allow dynamic property assignment
+    const updateData: any = {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      userType: userTypeValue, // Use the enum value
+      userType: userTypeValue,
       amount: parseFloat(data.amount.toString()),
-      type: data.type as TransactionType,
+      type: transactionTypeValue,
       transactionId: data.transactionId,
-      transactionNature: data.transactionNature as TransactionNature,
-      entryType: data.entryType as EntryType,
+      transactionNature: transactionNatureValue,
+      entryType: entryTypeValue,
       entryBy: data.entryBy,
       description: data.description || null,
-      status: data.status as TransactionStatus,
+      status: statusValue,
       statusDescription: data.statusDescription || null,
-      moneyFor: data.moneyFor as MoneyForCategory,
-      customMoneyFor: data.moneyFor === "OTHER" ? data.customMoneyFor : null,
+      moneyFor: moneyForValue,
+      customMoneyFor: data.moneyFor === MoneyForCategory.OTHER ? data.customMoneyFor : null,
       date: new Date(data.date),
       verifiedBy: data.verifiedBy || null,
       verifiedAt: data.verifiedAt ? new Date(data.verifiedAt) : null,
-      // User and organization relations
-      userId: data.userId || null,
-      // Don't include organizationId in update unless specifically provided
     };
+
+    // Only include userId if it's valid
+    if (data.userId && data.userId !== "manual-entry") {
+      updateData.userId = data.userId;
+    } else {
+      // If no valid userId, make sure to disconnect any existing user relation
+      updateData.userId = null;
+    }
 
     console.log("Updating transaction with data:", updateData);
 

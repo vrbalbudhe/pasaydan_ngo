@@ -90,10 +90,12 @@ export async function POST(request: NextRequest) {
     // Check if it's an update (has ID) or a new donation
     const isUpdate = !!data.id;
 
-    // Convert userType string to enum
-    let userTypeValue = UserType.INDIVIDUAL;
+    // Convert userType string to enum - fix TypeScript error by using enum directly
+    let userTypeValue: UserType;
     if (data.userType === "organization" || data.userType === "ORGANIZATION") {
       userTypeValue = UserType.ORGANIZATION;
+    } else {
+      userTypeValue = UserType.INDIVIDUAL;
     }
     
     // For update operations, use the transactions update API
@@ -111,16 +113,16 @@ export async function POST(request: NextRequest) {
           phone: data.phone || "0000000000",
           userType: userTypeValue, // Use the enum value
           amount: parseFloat(data.amount),
-          type: data.type || "CASH",
+          type: data.type || TransactionType.CASH,
           transactionId: data.transactionId || `CAL-${Date.now()}`,
           date: new Date(data.date).toISOString(),
-          transactionNature: data.transactionNature,
+          transactionNature: data.transactionNature || TransactionNature.CREDIT,
           description: data.description || null,
-          status: "VERIFIED", // Calendar entries are always verified
-          moneyFor: data.moneyFor || "OTHER",
+          status: TransactionStatus.VERIFIED, // Calendar entries are always verified
+          moneyFor: data.moneyFor || MoneyForCategory.OTHER,
           customMoneyFor: data.customMoneyFor || null,
           userId: data.userId !== "manual-entry" && data.userId ? data.userId : null,
-          entryType: "MANUAL",
+          entryType: EntryType.MANUAL,
           entryBy: data.entryBy || "Calendar Admin",
         }),
       });
@@ -164,14 +166,14 @@ export async function POST(request: NextRequest) {
           phone: data.phone || "0000000000",
           userType: userTypeValue, // Use the enum value
           amount: parseFloat(data.amount),
-          type: data.type || "CASH",
+          type: data.type || TransactionType.CASH,
           transactionId: data.transactionId || `CAL-${Date.now()}`,
           date: new Date(data.date).toISOString(),
-          transactionNature: data.transactionNature,
+          transactionNature: data.transactionNature || TransactionNature.CREDIT,
           description: data.description || null,
-          status: "VERIFIED", // Calendar entries are always verified
-          moneyFor: "OTHER",
-          entryType: "MANUAL",
+          status: TransactionStatus.VERIFIED, // Calendar entries are always verified
+          moneyFor: MoneyForCategory.OTHER,
+          entryType: EntryType.MANUAL,
           entryBy: data.entryBy || "Calendar Admin",
           userId: data.userId !== "manual-entry" && data.userId ? data.userId : null,
         }),

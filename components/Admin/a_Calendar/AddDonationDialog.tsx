@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,6 +27,22 @@ import { User } from "@/app/pasaydan/admin/calendar/page";
 const PAYMENT_TYPES = ["CASH", "UPI", "NET_BANKING", "CARD"] as const;
 type PaymentType = typeof PAYMENT_TYPES[number];
 
+// Define form data structure with index signature for TypeScript
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  userType: string;
+  amount: number;
+  transactionNature: string;
+  type: PaymentType;
+  transactionId: string;
+  description: string;
+  entryBy: string;
+  moneyFor: string;
+  [key: string]: string | number | PaymentType; // Add index signature
+}
+
 interface AddDonationDialogProps {
   open: boolean;
   onClose: () => void;
@@ -36,6 +52,62 @@ interface AddDonationDialogProps {
   users: User[];
 }
 
+// Memoized SelectItem components
+const MemoizedSelectItem = memo(SelectItem);
+
+// Extremely lightweight dropdown component to replace the shadcn UI Select
+const LightweightDropdown = memo(({ 
+  value, 
+  onChange, 
+  options, 
+  label 
+}: { 
+  value: string, 
+  onChange: (value: string) => void, 
+  options: {value: string, label: string}[],
+  label: string
+}) => {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">{label}</label>
+      <select
+        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        value={value}
+        onChange={(e) => {
+          // Call onChange handler directly for immediate UI update
+          onChange(e.target.value);
+        }}
+      >
+        {options.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
+
+// Memoized user select component
+const UserSelect = memo(({ value, onChange, items }: { 
+  value: string, 
+  onChange: (value: string) => void, 
+  items: React.ReactNode[] 
+}) => (
+  <div className="space-y-2">
+    <label className="text-sm font-medium">Select User</label>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select user..." />
+      </SelectTrigger>
+      <SelectContent>
+        {items}
+      </SelectContent>
+    </Select>
+  </div>
+));
+
+// The main component
 const AddDonationDialog: React.FC<AddDonationDialogProps> = ({
   open,
   onClose,
@@ -44,87 +116,191 @@ const AddDonationDialog: React.FC<AddDonationDialogProps> = ({
   selectedDate,
   users
 }) => {
-  const [selectedUserId, setSelectedUserId] = useState("manual-entry");
-  const [makeDefaultEntry, setMakeDefaultEntry] = useState(false);
-  
-  // Form state
-  const [formData, setFormData] = useState({
+  // Use references to avoid rendering delays - with proper type
+  const formDataRef = useRef<FormData>({
     name: "",
     email: "",
     phone: "",
+    userType: "INDIVIDUAL",
     amount: 0,
-    type: "CASH" as PaymentType,
     transactionNature: "CREDIT",
+    type: "CASH" as PaymentType,
+    transactionId: "",
     description: "",
     entryBy: localStorage.getItem("defaultEntryName") || "",
-    userType: "INDIVIDUAL",
-    transactionId: "", // Added transactionId field
     moneyFor: "OTHER"
   });
 
+  // UI state for controlled components
+  const [selectedUserId, setSelectedUserId] = useState("manual-entry");
+  const [nameField, setNameField] = useState("");
+  const [emailField, setEmailField] = useState("");
+  const [phoneField, setPhoneField] = useState("");
+  const [amountField, setAmountField] = useState("0");
+  const [transactionNatureField, setTransactionNatureField] = useState("CREDIT");
+  const [paymentTypeField, setPaymentTypeField] = useState<string>("CASH");
+  const [transactionIdField, setTransactionIdField] = useState("");
+  const [descriptionField, setDescriptionField] = useState("");
+  const [entryByField, setEntryByField] = useState(localStorage.getItem("defaultEntryName") || "");
+  const [makeDefaultEntry, setMakeDefaultEntry] = useState(false);
+  const [showTransactionIdField, setShowTransactionIdField] = useState(false);
+  
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
       setSelectedUserId("manual-entry");
+      setNameField("");
+      setEmailField("");
+      setPhoneField("");
+      setAmountField("0");
+      setTransactionNatureField("CREDIT");
+      setPaymentTypeField("CASH");
+      setTransactionIdField("");
+      setDescriptionField("");
+      // Keep entry by name
       setMakeDefaultEntry(false);
-      setFormData({
+      setShowTransactionIdField(false);
+      
+      // Reset ref data as well
+      formDataRef.current = {
+        ...formDataRef.current,
         name: "",
         email: "",
         phone: "",
-        amount: 0,
-        type: "CASH" as PaymentType,
-        transactionNature: "CREDIT",
-        description: "",
-        entryBy: localStorage.getItem("defaultEntryName") || "",
         userType: "INDIVIDUAL",
+        amount: 0,
+        transactionNature: "CREDIT",
+        type: "CASH",
         transactionId: "",
+        description: "",
         moneyFor: "OTHER"
-      });
+        // Keep entryBy as is
+      };
     }
   }, [open]);
 
-  // Handle user selection change
-  // Change the handleUserChange function to include proper user type handling
-const handleUserChange = (userId: string) => {
-  setSelectedUserId(userId);
-  
-  if (userId === "manual-entry") {
-    // Reset to empty form for manual entry
-    setFormData({
-      ...formData,
-      name: "",
-      email: "",
-      phone: "",
-      userType: "INDIVIDUAL" // Default to INDIVIDUAL for manual entry
-    });
-  } else {
-    // Find selected user and populate form
-    const selectedUser = users.find(user => user.id === userId);
-    if (selectedUser) {
-      // Set the proper userType based on the user's type
-      const userType = selectedUser.type?.toUpperCase() || "INDIVIDUAL";
-      
-      setFormData({
-        ...formData,
-        name: selectedUser.fullname,
-        email: selectedUser.email || "",
-        phone: selectedUser.mobile || selectedUser.phone || "",
-        userType: userType // Ensure userType is set based on selected user
-      });
+  // When user selection changes
+  const handleUserChange = useCallback((userId: string) => {
+    setSelectedUserId(userId);
+    
+    if (userId === "manual-entry") {
+      // Clear form fields for manual entry
+      setNameField("");
+      setEmailField("");
+      setPhoneField("");
+      formDataRef.current.userType = "INDIVIDUAL";
+    } else {
+      // Find selected user and populate form
+      const selectedUser = users.find(user => user.id === userId);
+      if (selectedUser) {
+        // Update UI fields
+        setNameField(selectedUser.fullname || "");
+        setEmailField(selectedUser.email || "");
+        setPhoneField(selectedUser.mobile || selectedUser.phone || "");
+        
+        // Update ref data
+        formDataRef.current.userType = selectedUser.type?.toUpperCase() || "INDIVIDUAL";
+      }
     }
-  }
-};
+  }, [users]);
 
-  // Handle saving the donation
-  const handleSave = async () => {
+  // Handle transaction nature change
+  const handleTransactionNatureChange = useCallback((value: string) => {
+    // Update UI state
+    setTransactionNatureField(value);
+    // Update data ref
+    formDataRef.current.transactionNature = value;
+  }, []);
+
+  // Handle payment type change
+  const handlePaymentTypeChange = useCallback((value: string) => {
+    console.log("Payment type changed to:", value);
+    
+    // Update UI state immediately
+    setPaymentTypeField(value);
+    
+    // Update reference data
+    formDataRef.current.type = value as PaymentType;
+    
+    // Update transaction ID visibility based on selection
+    setShowTransactionIdField(value !== "CASH");
+  }, []);
+
+  // Update form data ref when fields change - now type-safe with formData interface
+  const updateFormDataRef = useCallback((field: keyof FormData, value: string | number | PaymentType) => {
+    formDataRef.current[field] = value;
+  }, []);
+
+  // Get current form data combining UI state and ref data
+  const getFormData = useCallback(() => {
+    // Update ref with current UI values first
+    formDataRef.current.name = nameField;
+    formDataRef.current.email = emailField;
+    formDataRef.current.phone = phoneField;
+    formDataRef.current.amount = parseFloat(amountField) || 0;
+    formDataRef.current.transactionNature = transactionNatureField;
+    formDataRef.current.type = paymentTypeField as PaymentType;
+    formDataRef.current.transactionId = transactionIdField;
+    formDataRef.current.description = descriptionField;
+    formDataRef.current.entryBy = entryByField;
+    
+    // Return the combined data
+    return {
+      ...formDataRef.current,
+      userId: selectedUserId !== "manual-entry" ? selectedUserId : null
+    };
+  }, [
+    nameField, emailField, phoneField, amountField,
+    transactionNatureField, paymentTypeField, transactionIdField,
+    descriptionField, entryByField, selectedUserId
+  ]);
+
+  // Save handler
+  const handleSave = useCallback(async () => {
     // Save entry name preference if checked
-    if (makeDefaultEntry && formData.entryBy) {
-      localStorage.setItem("defaultEntryName", formData.entryBy);
+    if (makeDefaultEntry && entryByField) {
+      localStorage.setItem("defaultEntryName", entryByField);
     }
     
-    // Call parent save function
+    // Get all form data and save
+    const formData = getFormData();
+    console.log("Saving form data:", formData);
     await onSave(formData);
-  };
+  }, [makeDefaultEntry, entryByField, getFormData, onSave]);
+
+  // Memoized user items for user select dropdown
+  const userItems = useMemo(() => [
+    <MemoizedSelectItem key="manual-entry" value="manual-entry">
+      Manual Entry
+    </MemoizedSelectItem>,
+    ...users.map(user => (
+      <MemoizedSelectItem key={user.id} value={user.id}>
+        {user.fullname}
+      </MemoizedSelectItem>
+    ))
+  ], [users]);
+
+  // Options for payment type dropdown
+  const paymentTypeOptions = useMemo(() => [
+    { value: "CASH", label: "CASH" },
+    { value: "UPI", label: "UPI" },
+    { value: "NET_BANKING", label: "NET BANKING" },
+    { value: "CARD", label: "CARD" }
+  ], []);
+
+  // Transaction nature options
+  const transactionNatureOptions = useMemo(() => [
+    { value: "CREDIT", label: "Credit (Received)" },
+    { value: "DEBIT", label: "Debit (Paid Out)" }
+  ], []);
+
+  // Form validation
+  const isFormValid = useMemo(() => {
+    if (isSaving) return false;
+    if (selectedUserId === "manual-entry" && !nameField) return false;
+    if (paymentTypeField !== "CASH" && !transactionIdField) return false;
+    return true;
+  }, [isSaving, selectedUserId, nameField, paymentTypeField, transactionIdField]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -138,25 +314,11 @@ const handleUserChange = (userId: string) => {
 
         <div className="space-y-4 py-4">
           {/* User Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select User</label>
-            <Select
-              value={selectedUserId}
-              onValueChange={handleUserChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select user..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manual-entry">Manual Entry</SelectItem>
-                {users.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.fullname}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <UserSelect 
+            value={selectedUserId} 
+            onChange={handleUserChange}
+            items={userItems}
+          />
 
           {/* Manual Entry Form Fields */}
           {selectedUserId === "manual-entry" && (
@@ -164,8 +326,11 @@ const handleUserChange = (userId: string) => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Name</label>
                 <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  value={nameField}
+                  onChange={(e) => {
+                    setNameField(e.target.value);
+                    updateFormDataRef("name", e.target.value);
+                  }}
                   placeholder="Enter name"
                   required
                 />
@@ -175,8 +340,11 @@ const handleUserChange = (userId: string) => {
                 <label className="text-sm font-medium">Email (Optional)</label>
                 <Input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  value={emailField}
+                  onChange={(e) => {
+                    setEmailField(e.target.value);
+                    updateFormDataRef("email", e.target.value);
+                  }}
                   placeholder="Enter email address"
                 />
               </div>
@@ -184,8 +352,11 @@ const handleUserChange = (userId: string) => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone (Optional)</label>
                 <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  value={phoneField}
+                  onChange={(e) => {
+                    setPhoneField(e.target.value);
+                    updateFormDataRef("phone", e.target.value);
+                  }}
                   placeholder="Enter phone number"
                 />
               </div>
@@ -198,64 +369,49 @@ const handleUserChange = (userId: string) => {
               <label className="text-sm font-medium">Amount</label>
               <Input
                 type="number"
-                value={formData.amount}
-                onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value) || 0})}
+                value={amountField}
+                onChange={(e) => {
+                  setAmountField(e.target.value);
+                  updateFormDataRef("amount", parseFloat(e.target.value) || 0);
+                }}
                 placeholder="Enter amount"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Transaction Type</label>
-              <Select
-                value={formData.transactionNature}
-                onValueChange={(value) => setFormData({...formData, transactionNature: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CREDIT">Credit (Received)</SelectItem>
-                  <SelectItem value="DEBIT">Debit (Paid Out)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <LightweightDropdown
+              label="Transaction Type"
+              value={transactionNatureField}
+              onChange={handleTransactionNatureChange}
+              options={transactionNatureOptions}
+            />
           </div>
 
-          {/* Payment Method */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Payment Method</label>
-            <Select
-              value={formData.type}
-              onValueChange={(value: PaymentType) => setFormData({...formData, type: value})}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.replace("_", " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Payment Method - Using lightweight dropdown */}
+          <LightweightDropdown
+            label="Payment Method"
+            value={paymentTypeField}
+            onChange={handlePaymentTypeChange}
+            options={paymentTypeOptions}
+          />
 
           {/* Transaction ID Field - Only show for non-CASH payment types */}
-          {formData.type !== "CASH" && (
+          {showTransactionIdField && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Transaction ID</label>
                 <div className="text-xs text-amber-600 flex items-center">
                   <AlertCircle className="h-3 w-3 mr-1" />
-                  Required for {formData.type.replace("_", " ")} payments
+                  Required for {paymentTypeField.replace("_", " ")} payments
                 </div>
               </div>
               <Input
-                value={formData.transactionId}
-                onChange={(e) => setFormData({...formData, transactionId: e.target.value})}
-                placeholder={`Enter ${formData.type.replace("_", " ")} Transaction ID`}
+                value={transactionIdField}
+                onChange={(e) => {
+                  setTransactionIdField(e.target.value);
+                  updateFormDataRef("transactionId", e.target.value);
+                }}
+                placeholder={`Enter ${paymentTypeField.replace("_", " ")} Transaction ID`}
                 required
               />
             </div>
@@ -265,8 +421,11 @@ const handleUserChange = (userId: string) => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Entry By</label>
             <Input
-              value={formData.entryBy}
-              onChange={(e) => setFormData({...formData, entryBy: e.target.value})}
+              value={entryByField}
+              onChange={(e) => {
+                setEntryByField(e.target.value);
+                updateFormDataRef("entryBy", e.target.value);
+              }}
               placeholder="Your name"
             />
           </div>
@@ -290,8 +449,11 @@ const handleUserChange = (userId: string) => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Description (Optional)</label>
             <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              value={descriptionField}
+              onChange={(e) => {
+                setDescriptionField(e.target.value);
+                updateFormDataRef("description", e.target.value);
+              }}
               placeholder="Enter description"
               rows={3}
             />
@@ -304,11 +466,7 @@ const handleUserChange = (userId: string) => {
           </Button>
           <Button 
             onClick={handleSave} 
-            disabled={
-              isSaving || 
-              (selectedUserId === "manual-entry" && !formData.name) || 
-              (formData.type !== "CASH" && !formData.transactionId) // Disable if non-cash payment and no transaction ID
-            }
+            disabled={!isFormValid}
           >
             {isSaving ? (
               <>
@@ -326,4 +484,4 @@ const handleUserChange = (userId: string) => {
   );
 };
 
-export default AddDonationDialog;
+export default memo(AddDonationDialog);
