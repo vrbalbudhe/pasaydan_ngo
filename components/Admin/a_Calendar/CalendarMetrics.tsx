@@ -1,6 +1,7 @@
+// components/Admin/a_Calendar/CalendarMetrics.tsx
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, CalendarDays, CalendarRange } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface CalendarMetricsProps {
@@ -14,7 +15,10 @@ const CalendarMetrics: React.FC<CalendarMetricsProps> = ({ monthTotal, overallTo
       <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="p-6 flex items-center justify-between">
           <div>
-            <div className="text-sm text-gray-500 mb-2">Monthly Total</div>
+            <div className="text-sm text-gray-500 mb-2 flex items-center">
+              <CalendarDays className="h-4 w-4 mr-1" />
+              <span>Monthly Total</span>
+            </div>
             <div className={`text-2xl font-bold ${monthTotal >= 0 ? "text-green-600" : "text-red-600"}`}>
               {formatCurrency(monthTotal)}
             </div>
@@ -26,7 +30,10 @@ const CalendarMetrics: React.FC<CalendarMetricsProps> = ({ monthTotal, overallTo
       <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="p-6 flex items-center justify-between">
           <div>
-            <div className="text-sm text-gray-500 mb-2">Overall Total</div>
+            <div className="text-sm text-gray-500 mb-2 flex items-center">
+              <CalendarRange className="h-4 w-4 mr-1" />
+              <span>All-Time Total</span>
+            </div>
             <div className={`text-2xl font-bold ${overallTotal >= 0 ? "text-green-600" : "text-red-600"}`}>
               {formatCurrency(overallTotal)}
             </div>
