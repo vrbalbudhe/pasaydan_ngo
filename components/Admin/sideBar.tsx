@@ -36,9 +36,21 @@ const items = [
   { title: "Users", url: "/pasaydan/admin/users", icon: Users },
   { title: "Donations", url: "/pasaydan/admin/donationRequests", icon: Heart },
   { title: "Certificates", url: "/pasaydan/admin/certificates", icon: Award },
-  { title: "Transactions", url: "/pasaydan/admin/transactions", icon: IndianRupeeIcon },
-  { title: "Expenditures", url: "/pasaydan/admin/expenditures", icon: BarChart }, // New item
-  { title: "Custom Message", url: "/pasaydan/admin/customMessage", icon: FileText },
+  {
+    title: "Transactions",
+    url: "/pasaydan/admin/transactions",
+    icon: IndianRupeeIcon,
+  },
+  {
+    title: "Expenditures",
+    url: "/pasaydan/admin/expenditures",
+    icon: BarChart,
+  }, // New item
+  {
+    title: "Custom Message",
+    url: "/pasaydan/admin/customMessage",
+    icon: FileText,
+  },
   { title: "Downloads", url: "/pasaydan/admin/downloadData", icon: Download },
   { title: "EnterData", url: "/pasaydan/admin/enterData", icon: FileText },
   { title: "Calendar", url: "/pasaydan/admin/calendar", icon: Calendar },
@@ -78,7 +90,9 @@ export function AppSidebar() {
         <div className="px-4 py-6">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-              <span className="text-lg font-bold md:text-white text-gray-800">P</span>
+              <span className="text-lg font-bold md:text-white text-gray-800">
+                P
+              </span>
             </div>
             <h1 className="text-lg font-semibold tracking-tight md:text-white text-gray-800">
               Pasaydan
@@ -86,6 +100,11 @@ export function AppSidebar() {
           </div>
 
           <SidebarGroup className="bg-white text-gray-800 md:bg-[#40434e] md:text-white">
+            <Link href="/pasaydan/com">
+              <SidebarGroupLabel className="text-xs uppercase tracking-wider bg-gray-400 cursor-pointer md:hover:bg-gray-500 text-gray-800 md:text-gray-800 font-semibold px-3 mb-3">
+                Homepage
+              </SidebarGroupLabel>
+            </Link>
             <SidebarGroupLabel className="text-xs uppercase tracking-wider text-gray-800 md:text-white font-medium px-3 mb-3">
               Administration
             </SidebarGroupLabel>
@@ -109,7 +128,9 @@ export function AppSidebar() {
                       >
                         <item.icon
                           className={`w-5 h-5 ${
-                            isActive ? "text-white" : "text-gray-700 md:text-white"
+                            isActive
+                              ? "text-white"
+                              : "text-gray-700 md:text-white"
                           }`}
                         />
                         <span className="text-sm font-medium">

@@ -45,7 +45,7 @@ export default function Navigator() {
                   isActiveRoute(link.href)
                     ? "text-gray-900 font-semibold "
                     : isLogsignRoute
-                      ? "text-white"
+                      ? "text-gray-700"
                       : "text-gray-700 font-medium"
                 } hover:text-slate-700`}
               >

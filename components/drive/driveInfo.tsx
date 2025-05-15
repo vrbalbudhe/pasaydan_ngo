@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useToast } from "hooks/use-toast"; // Corrected import
 import { Badge } from "components/ui/badge"; // Corrected import
 import AddParticipants from "./addParticipants";
+import ParticipantsList from "./participantsList";
 
 interface GeoLocation {
   latitude: string;
@@ -235,18 +236,22 @@ export default function DriveInfo() {
 
             {/* Image Gallery */}
             <section className="px-4 lg:px-20 py-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+              <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mb-10">
                 {drive.photos.map((photo, index) => (
                   <div
                     key={index}
-                    className="w-full rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                    className="group relative rounded-lg shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-102"
                     onClick={() => setActiveImage(photo)}
                   >
-                    <img
-                      src={photo}
-                      alt={`Drive photo ${index + 1}`}
-                      className="w-full h-40 md:h-56 lg:h-64 object-cover"
-                    />
+                    <div className="aspect-square w-full h-full bg-gray-100">
+                      <img
+                        src={photo}
+                        alt={`Drive photo ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -305,6 +310,11 @@ export default function DriveInfo() {
           />
         </div>
       )}
+      <div className="w-full min-h-fit flex justify-center items-center mb-10">
+        {user?.id === "67896357a0f50f59fa5f7044" && (
+          <ParticipantsList driveId={id} />
+        )}
+      </div>
     </div>
   );
 }
