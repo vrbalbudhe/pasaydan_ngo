@@ -58,7 +58,18 @@ const CertificateEntryForm = () => {
   const [isParsingFile, setIsParsingFile] = useState(false)
   const { toast } = useToast()
 
-  const getSampleData = () => {
+  const sampleDataKeys = [
+    'donationId*',
+    'email*',
+    'type*',
+    'fullname*',
+    'mobile*',
+    'description (optional)'
+  ] as const
+
+  type SampleData = Record<typeof sampleDataKeys[number], string>
+
+  const getSampleData = (): SampleData => {
     return {
       'donationId*': 'DON123456',
       'email*': 'donor@example.com',
@@ -72,7 +83,7 @@ const CertificateEntryForm = () => {
   const downloadTemplate = () => {
     const headers = Object.keys(fieldConfig.baseFields).map(getHeaderName)
     const sampleData = getSampleData()
-    const dataRow = headers.map(header => String(sampleData[header] || ''))
+    const dataRow = headers.map(header => String(sampleData[header as keyof SampleData] || ''))
     
     const csvContent = Papa.unparse({
       fields: headers,
