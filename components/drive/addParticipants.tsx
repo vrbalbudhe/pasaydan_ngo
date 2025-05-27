@@ -16,7 +16,7 @@ export default function AddParticipants() {
         className="rounded-none w-fit px-2 py-2 bg-blue-500 md:hover:scale-95 transition-all duration-300 cursor-pointer"
       >
         <p className="font-semibold text-md rounded-sm text-white tracking-tight">
-          Add Participants
+          Add Beneficiary
         </p>
       </div>
       {openForm && (
